@@ -87,6 +87,7 @@ function sairIntro() {
 function mostrarDefinicao(aula) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
   renderIntroSegs(aula);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
@@ -107,6 +108,7 @@ function mostrarDefinicao(aula) {
 function mostrarContexto(aula) {
   const ctx = aula.contexto || {};
   questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
   renderIntroSegs(aula);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
@@ -267,7 +269,13 @@ carregarAula(aulaId).then(aula => {
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
-    if (introAtiva) return;
+    if (introAtiva) {
+      if (introIdx > 0) {
+        introIdx--;
+        introFns[introScreens[introIdx]](aula);
+      }
+      return;
+    }
     if (estado.atual > 0) { estado.atual--; renderQuestao(aula); }
   });
 
