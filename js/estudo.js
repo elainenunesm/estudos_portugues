@@ -43,6 +43,17 @@ const btnProxima       = document.getElementById('btnProxima');
 const questaoArea      = document.getElementById('questaoArea');
 const scrollFade       = document.getElementById('scrollFade');
 
+// Monta o texto da barra de feedback com o "Correto!"/"Incorreto." em
+// uma linha e a explicação em outra, separados por um espaço maior.
+// Quando errado, acrescenta uma terceira linha indicando a alternativa certa.
+function montarFeedbackHtml(acertou, texto, letraCorreta) {
+  const titulo = acertou ? 'Correto!' : 'Incorreto.';
+  const correta = !acertou && letraCorreta
+    ? `<span class="feedback-correta">Alternativa ${letraCorreta} é a correta.</span>`
+    : '';
+  return `<span class="feedback-titulo">${titulo}</span><span class="feedback-explicacao">${texto}</span>${correta}`;
+}
+
 function atualizarScrollFade() {
   if (!questaoArea || !scrollFade) return;
   const atBottom = questaoArea.scrollHeight - questaoArea.scrollTop <= questaoArea.clientHeight + 8;
@@ -317,6 +328,63 @@ function mostrarIdentificacao(aula, introIdx) {
   atualizarScrollFade();
 }
 
+// ── CHECAGEM (pergunta rápida no meio da introdução) ─────────
+// Não conta na pontuação da aula — é só um checkpoint de leitura.
+// A resposta escolhida fica guardada em dados._escolhida, então
+// voltar/avançar preserva o estado já respondido.
+function mostrarChecagem(aula, introIdx, dados) {
+  questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
+  renderIntroSegs(introIdx - 1);
+  // Ordem invertida: a pergunta curta vem primeiro (em negrito, no
+  // tamanho do subtítulo) e "O que é um verbo?" vem depois, mantendo
+  // o tamanho grande que já tinha.
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  feedbackBar.style.display    = '';
+
+  const respondida = dados._escolhida !== undefined;
+
+  // Só a primeira checagem ("O que é um verbo?") usa a ordem invertida
+  // (pergunta curta em negrito antes do título grande). As demais seguem
+  // o layout padrão das questões, com o verbo em destaque no subtítulo.
+  opcoesEl.innerHTML = dados.invertido
+    ? `<p class="questao-subtitulo checagem-pergunta">${dados.subtitulo || ''}</p>
+       <h2 class="questao-titulo checagem-titulo">${dados.titulo || ''}</h2>`
+    : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>
+       <p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`;
+  (dados.opcoes || []).forEach((texto, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'opcao';
+    if (respondida) {
+      btn.disabled = true;
+      if (i === dados.correta)                                btn.classList.add('correta');
+      else if (i === dados._escolhida && i !== dados.correta) btn.classList.add('errada');
+    } else {
+      btn.addEventListener('click', () => {
+        dados._escolhida = i;
+        mostrarChecagem(aula, introIdx, dados);
+      });
+    }
+    btn.innerHTML = `<span class="letra">${LETRAS[i]}</span><span class="opcao-texto">${texto}</span>`;
+    opcoesEl.appendChild(btn);
+  });
+
+  if (respondida) {
+    const acertou = dados._escolhida === dados.correta;
+    feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
+    feedbackIcon.textContent  = acertou ? '✅' : '❌';
+    feedbackTexto.innerHTML   = montarFeedbackHtml(acertou, dados.feedback, LETRAS[dados.correta]);
+  } else {
+    feedbackBar.className = 'feedback-bar';
+  }
+
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = !respondida;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
+}
+
 function mostrarSentido(aula, introIdx) {
   const s = aula.sentido || {};
   questaoInfo.textContent      = aula.titulo;
@@ -374,8 +442,8 @@ function renderQuestao(aula) {
   });
 
   // Enunciado
-  questaoTitulo.textContent    = q.titulo;
-  questaoSubtitulo.textContent = q.subtitulo;
+  questaoTitulo.textContent = q.titulo;
+  questaoSubtitulo.innerHTML = q.subtitulo;
 
   // Opções
   opcoesEl.innerHTML = '';
@@ -406,7 +474,7 @@ function renderQuestao(aula) {
     const acertou = respostaDada === q.correta;
     feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
     feedbackIcon.textContent  = acertou ? '✅' : '❌';
-    feedbackTexto.textContent = acertou ? `Correto! ${q.feedback}` : `Incorreto. ${q.feedback}`;
+    feedbackTexto.innerHTML   = montarFeedbackHtml(acertou, q.feedback, LETRAS[q.correta]);
   } else {
     feedbackBar.className = 'feedback-bar';
   }
@@ -517,6 +585,11 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
     const chave = `exemplo${i}`;
     introScreens.push(chave);
     introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
+  });
+  (aula.checagem || []).forEach((dados, i) => {
+    const chave = `checagem${i}`;
+    introScreens.push(chave);
+    introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados);
   });
   // Tela de resumo desativada por enquanto (dado da aula mantido para uso futuro)
   // if (aula.resumo)     introScreens.push('resumo');

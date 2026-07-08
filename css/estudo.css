@@ -149,6 +149,33 @@ body {
   margin-bottom: 24px;
 }
 
+/* TELA DE CHECAGEM — pergunta curta em negrito antes do título grande */
+.checagem-pergunta {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.checagem-titulo {
+  margin-bottom: 24px;
+}
+
+/* Perguntas de "o verbo em destaque indica" — instrução menor,
+   frase analisada maior (é o que realmente importa ler com atenção). */
+.checagem-instrucao {
+  font-size: 16px;
+}
+
+.checagem-frase {
+  font-size: 19px;
+  font-weight: 400;
+  color: #1a1a2e;
+}
+
+.checagem-frase strong {
+  font-weight: 700;
+  color: #4A80F0;
+}
+
 /* TELA DE INTRODUÇÃO (Antes de começar) */
 .intro-label {
   display: block;
@@ -730,9 +757,25 @@ body {
 
 .feedback-texto {
   font-size: 15px;
-  font-weight: 600;
   line-height: 1.4;
   text-align: justify;
+}
+
+.feedback-titulo {
+  display: block;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.feedback-explicacao {
+  display: block;
+  font-weight: 400;
+}
+
+.feedback-correta {
+  display: block;
+  font-weight: 700;
+  margin-top: 8px;
 }
 
 .feedback-bar.acerto .feedback-texto { color: #16a34a; }

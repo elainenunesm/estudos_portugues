@@ -33,18 +33,62 @@ window.AULA_DATA = {
     },
     {
       tipo:      'estado',
-      texto:     'Ao ouvir a palavra <strong class="destaque">Estou</strong>, imaginamos alguém que permanece de uma determinada forma e <strong class="destaque">não ouve mudança</strong>.',
+      texto:     'Ao ouvir a palavra <strong class="destaque">estou</strong>, imaginamos alguém que permanece de uma determinada forma e <strong class="destaque">não ouve mudança</strong>.',
       conclusao: 'Isso representa um <span class="destaque">estado</span>.',
     },
     {
       tipo:      'mudanca',
-      texto:     'Ao ouvir a palavra <strong class="destaque">Ficou</strong>, imaginamos alguém que alterou o seu estado original.',
+      texto:     'Ao ouvir a palavra <strong class="destaque">ficou</strong>, imaginamos alguém que alterou o seu estado original.',
       conclusao: 'Isso representa uma <span class="destaque">mudança de estado</span>.',
     },
     {
       tipo:      'fenomeno',
-      texto:     'Ao ouvir a palavra <strong class="destaque">Amanheceu</strong>, imaginamos um fenômeno que independe de ação humana, simplesmente acontece.',
+      texto:     'Ao ouvir a palavra <strong class="destaque">amanheceu</strong>, imaginamos um fenômeno que independe de ação humana, simplesmente acontece.',
       conclusao: 'Isso representa um <span class="destaque">fenômeno da natureza</span>.',
+    },
+  ],
+
+  checagem: [
+    {
+      invertido: true,
+      titulo:    'O que é um verbo?',
+      subtitulo: 'Escolha a definição correta.',
+      opcoes: [
+        'A palavra que dá nome a pessoas, lugares ou coisas.',
+        'A palavra que expressa ação, estado, mudança de estado ou fenômeno da natureza.',
+        'A palavra que qualifica o substantivo, indicando uma característica.',
+        'A palavra que substitui o substantivo na frase.',
+      ],
+      correta:  1,
+      feedback: 'Verbo é a palavra que expressa ação, estado, mudança de estado ou fenômeno da natureza — como vimos em "correr", "Estou", "Ficou" e "Amanheceu".',
+    },
+    {
+      titulo:    'O verbo em destaque indica:',
+      subtitulo: '"O cachorro <strong>correu</strong> pelo jardim."',
+      opcoes:    ['Ação', 'Estado', 'Mudança de estado', 'Fenômeno da natureza'],
+      correta:   0,
+      feedback:  '"Correu" indica uma ação — um movimento realizado pelo cachorro.',
+    },
+    {
+      titulo:    'O verbo em destaque indica:',
+      subtitulo: '"Ana <strong>está</strong> muito animada com a viagem."',
+      opcoes:    ['Ação', 'Estado', 'Mudança de estado', 'Fenômeno da natureza'],
+      correta:   1,
+      feedback:  '"Está" indica um estado — uma forma em que Ana permanece, sem mudança.',
+    },
+    {
+      titulo:    'O verbo em destaque indica:',
+      subtitulo: '"O garoto <strong>cresceu</strong> cinco centímetros em seis meses."',
+      opcoes:    ['Ação', 'Estado', 'Mudança de estado', 'Fenômeno da natureza'],
+      correta:   2,
+      feedback:  '"Cresceu" indica uma mudança de estado — o garoto alterou sua altura original.',
+    },
+    {
+      titulo:    'O verbo em destaque indica:',
+      subtitulo: '"<strong>Amanheceu</strong> com neblina hoje."',
+      opcoes:    ['Ação', 'Estado', 'Mudança de estado', 'Fenômeno da natureza'],
+      correta:   3,
+      feedback:  '"Amanheceu" indica um fenômeno da natureza — acontece independente de ação humana.',
     },
   ],
 
