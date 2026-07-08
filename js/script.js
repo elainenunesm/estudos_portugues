@@ -266,7 +266,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function toggleLevel() {
     isCollapsed = !isCollapsed;
-    [nivelSelector, heroContent, heroCard, pathContainer].forEach(el => {
+    // heroContent permanece visível — só as aulas recolhem
+    [nivelSelector, heroCard, pathContainer].forEach(el => {
       el.classList.toggle('collapsed', isCollapsed);
     });
   }
