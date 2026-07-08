@@ -50,6 +50,11 @@ function mostrarIntro(aula) {
   // Atualiza header
   questaoInfo.textContent = aula.titulo;
   progressSegs.innerHTML  = '';
+  (aula.questoes || []).forEach(() => {
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    progressSegs.appendChild(seg);
+  });
 
   // Monta conteúdo da intro
   questaoTitulo.innerHTML = `
@@ -79,6 +84,11 @@ function mostrarDefinicao(aula) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
   progressSegs.innerHTML       = '';
+  (aula.questoes || []).forEach(() => {
+    const seg = document.createElement('div');
+    seg.className = 'seg';
+    progressSegs.appendChild(seg);
+  });
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
