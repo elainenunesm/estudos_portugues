@@ -34,9 +34,9 @@ const state = {
   dirHandle:  null,
   folderName: null,
   aulas: [
-    { id: 1, status: 'completed', progress: 100, stars: 3 },
-    { id: 2, status: 'active',    progress: 40,  stars: 1 },
-    { id: 3, status: 'locked',    progress: 0,   stars: 0 },
+    { id: 1, status: 'active',  progress: 0, stars: 0 },
+    { id: 2, status: 'locked',  progress: 0, stars: 0 },
+    { id: 3, status: 'locked',  progress: 0, stars: 0 },
   ],
 };
 
@@ -172,9 +172,9 @@ function renderAulas() {
       node.style.pointerEvents = 'auto';
       iconCircle.className = 'icon-circle active';
       card.classList.remove('locked');
-      statusEl.textContent = 'Em andamento';
+      statusEl.textContent = aula.progress > 0 ? 'Em andamento' : 'Não iniciada';
       barFill.style.width  = `${aula.progress}%`;
-      btn.textContent = 'Continuar';
+      btn.textContent = aula.progress > 0 ? 'Continuar' : 'Começar';
       btn.disabled    = false;
       btn.className   = 'btn-recomecar';
       stars.forEach((s, i) => { s.style.color = i < aula.stars ? '#FFD700' : '#e5e7eb'; });

@@ -59,11 +59,11 @@
 <div class="path-container" id="pathContainer">
   <div class="path-line"></div>
 
-  <div class="aula-node" data-aula="1">
-    <div class="stars">
-      <span class="star">★</span>
-      <span class="star">★</span>
-      <span class="star">★</span>
+  <div class=\"aula-node\" data-aula=\"1\">
+    <div class=\"stars\">
+      <span class=\"star\" style=\"color:#e5e7eb;\">★</span>
+      <span class=\"star\" style=\"color:#e5e7eb;\">★</span>
+      <span class=\"star\" style=\"color:#e5e7eb;\">★</span>
     </div>
     <div class="icon-circle active">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -73,11 +73,11 @@
     </div>
     <div class="aula-card">
       <h3>Aula 1: Identifique o verbo</h3>
-      <p class="status">Concluída</p>
+      <p class="status">Não iniciada</p>
       <div class="progress-bar">
-        <div class="progress-bar-fill" style="width: 100%;"></div>
+        <div class="progress-bar-fill" style="width: 0%;"></div>
       </div>
-      <button class="btn-recomecar">Recomeçar</button>
+      <button class="btn-recomecar">Começar</button>
     </div>
   </div>
 
@@ -87,25 +87,25 @@
     <div class="dot"></div>
   </div>
 
-  <div class="aula-node" data-aula="2">
+  <div class="aula-node locked" data-aula="2">
     <div class="stars">
-      <span class="star">★</span>
+      <span class="star" style="color:#e5e7eb;">★</span>
       <span class="star" style="color:#e5e7eb;">★</span>
       <span class="star" style="color:#e5e7eb;">★</span>
     </div>
-    <div class="icon-circle active">
+    <div class="icon-circle locked">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-        <circle cx="12" cy="7" r="4"></circle>
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
       </svg>
     </div>
-    <div class="aula-card">
+    <div class="aula-card locked">
       <h3>Aula 2: Sujeito simples</h3>
-      <p class="status">Em andamento</p>
+      <p class="status">Bloqueada</p>
       <div class="progress-bar">
-        <div class="progress-bar-fill" style="width: 40%;"></div>
+        <div class="progress-bar-fill" style="width: 0%;"></div>
       </div>
-      <button class="btn-recomecar">Continuar</button>
+      <button class="btn-bloqueado" disabled>🔒 Bloqueada</button>
     </div>
   </div>
 
