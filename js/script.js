@@ -30,21 +30,25 @@ async function idbSet(key, value) {
 }
 
 // ── ESTADO ───────────────────────────────────────────────────
+const PROGRESS_VERSION = 2; // incrementar para invalidar saves antigos
+
+const DEFAULT_AULAS = () => [
+  { id: 1, status: 'active',  progress: 0, stars: 0 },
+  { id: 2, status: 'locked',  progress: 0, stars: 0 },
+  { id: 3, status: 'locked',  progress: 0, stars: 0 },
+];
+
 const state = {
   dirHandle:  null,
   folderName: null,
-  aulas: [
-    { id: 1, status: 'active',  progress: 0, stars: 0 },
-    { id: 2, status: 'locked',  progress: 0, stars: 0 },
-    { id: 3, status: 'locked',  progress: 0, stars: 0 },
-  ],
+  aulas: DEFAULT_AULAS(),
 };
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
 async function saveProgress() {
   if (!state.dirHandle) return;
   try {
-    const data = { aulas: state.aulas, savedAt: new Date().toISOString() };
+    const data = { version: PROGRESS_VERSION, aulas: state.aulas, savedAt: new Date().toISOString() };
     const fh = await state.dirHandle.getFileHandle('gramix-progresso.json', { create: true });
     const wr = await fh.createWritable();
     await wr.write(JSON.stringify(data, null, 2));
@@ -62,6 +66,13 @@ async function loadProgress() {
     const fh   = await state.dirHandle.getFileHandle('gramix-progresso.json');
     const file = await fh.getFile();
     const data = JSON.parse(await file.text());
+    if (data.version !== PROGRESS_VERSION) {
+      // Save desatualizado — reseta para o estado padrão e salva novamente
+      state.aulas = DEFAULT_AULAS();
+      renderAulas();
+      await saveProgress();
+      return;
+    }
     if (Array.isArray(data.aulas) && data.aulas.length === state.aulas.length) {
       state.aulas = data.aulas;
       renderAulas();
