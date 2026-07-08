@@ -149,7 +149,7 @@ body {
   margin-bottom: 24px;
 }
 
-/* TELA DE INTRODUÇÃO */
+/* TELA DE INTRODUÇÃO (Antes de começar) */
 .intro-label {
   display: block;
   font-size: 11px;
@@ -157,28 +157,65 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: #5B2BCB;
+  margin-bottom: 8px;
+}
+
+.intro-titulo {
+  font-size: 30px;
+  font-weight: 800;
+  color: #1a1a2e;
+  line-height: 1.25;
+  margin-bottom: 14px;
+}
+
+.intro-desc {
+  font-size: 15.5px;
+  color: #4b5563;
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.intro-info {
+  background: #faf9ff;
+  border: 1.5px solid #e6dffa;
+  border-radius: 18px;
+  padding: 22px 20px;
+}
+
+.intro-info-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.intro-info-item + .intro-info-item {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e6dffa;
+}
+
+.intro-info-icone-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: #f0eaff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.intro-info-texto h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #5B2BCB;
   margin-bottom: 6px;
 }
 
-.intro-card {
-  background: linear-gradient(135deg, #f0eaff 0%, #e9dffb 100%);
-  border: 2px solid #d4c4f0;
-  border-radius: 18px;
-  padding: 24px 20px;
-  margin-top: 8px;
-}
-
-.intro-card p {
-  font-size: 15px;
-  color: #1a1a2e;
-  line-height: 1.7;
-  font-weight: 500;
-}
-
-.intro-card p + p {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px solid #d4c4f0;
+.intro-info-texto p {
+  font-size: 14.5px;
+  color: #374151;
+  line-height: 1.6;
 }
 
 /* TELA DE DEFINIÇÃO */

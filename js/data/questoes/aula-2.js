@@ -9,10 +9,12 @@ window.AULA_DATA = {
   modulo: 'Etapa 1: Fundamentos',
   titulo: 'Aula 2: Sujeito simples',
 
-  justificativa: [
-    'Esta etapa tem como objetivo identificar o sujeito das orações, compreendendo sua relação com o verbo.',
-    'Reconhecer o sujeito é fundamental para a interpretação textual e para a concordância verbal.',
-  ],
+  antesComecar: {
+    titulo:      'Sujeito simples',
+    descricao:   'Nesta aula você vai aprender a encontrar o sujeito das orações e entender sua relação com o verbo.',
+    aprender:    'Nesta aula você aprenderá a identificar o sujeito simples, composto e oculto em frases.',
+    importancia: 'Reconhecer o sujeito é essencial para a interpretação de textos e para a concordância verbal.',
+  },
 
   licao: {
     titulo: '📖 Lição: O Sujeito',

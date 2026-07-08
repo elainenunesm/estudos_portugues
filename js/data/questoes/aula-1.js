@@ -9,10 +9,12 @@ window.AULA_DATA = {
   modulo: 'Etapa 1: Fundamentos',
   titulo: 'Aula 1: Identifique o verbo',
 
-  justificativa: [
-    'Esta etapa tem como objetivo desenvolver a compreensão de textos simples por meio da identificação do verbo.',
-    'O reconhecimento do verbo auxilia na interpretação das frases e na identificação do sujeito.',
-  ],
+  antesComecar: {
+    titulo:      'Identifique o verbo',
+    descricao:   'Nesta aula você vai dar o primeiro passo para entender a estrutura das frases.',
+    aprender:    'Nesta aula você aprenderá a identificar o verbo em frases simples.',
+    importancia: 'Saber identificar o verbo ajuda a compreender a frase e facilita encontrar o sujeito.',
+  },
 
   definicao: {
     texto: 'Verbo é a palavra que expressa <span class="destaque">ação</span>, <span class="destaque">estado</span>, <span class="destaque">mudança de estado</span> ou <span class="destaque">fenômeno da natureza</span>.',

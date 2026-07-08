@@ -503,6 +503,101 @@ body {
   border-radius: 50%;
 }
 
+/* CADERNO DE ERROS */
+.view-erros {
+  padding: 20px 20px 0;
+}
+
+.erros-header {
+  margin-bottom: 18px;
+}
+
+.erros-header h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 6px;
+}
+
+.erros-header p {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.5;
+}
+
+.erros-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.erro-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: white;
+  border: 2px solid #fde0e0;
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.06);
+}
+
+.erro-card-info h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.erro-card-info p {
+  font-size: 13px;
+  color: #ef4444;
+  font-weight: 600;
+}
+
+.btn-praticar {
+  flex-shrink: 0;
+  padding: 10px 18px;
+  background: #5B2BCB;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-praticar:hover {
+  background: #4a22a8;
+  transform: translateY(-1px);
+}
+
+.erros-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: #6b7280;
+}
+
+.erros-empty-emoji {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+.erros-empty p {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.erros-empty-sub {
+  font-size: 13px;
+  color: #9ca3af;
+  max-width: 280px;
+  margin: 6px auto 0;
+  line-height: 1.5;
+}
+
 /* BOTTOM NAV */
 .bottom-nav {
   position: fixed;
@@ -556,6 +651,29 @@ body {
 
 .nav-item.active span {
   color: #5B2BCB;
+}
+
+.nav-icon-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.nav-badge {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: -6px;
+  right: -8px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background: #ef4444;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
 }
 
 @media (max-width: 380px) {

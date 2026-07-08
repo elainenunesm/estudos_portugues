@@ -7,12 +7,15 @@
  */
 
 const LETRAS = ['A', 'B', 'C', 'D'];
-const aulaId = new URLSearchParams(window.location.search).get('aula') || '1';
+const params   = new URLSearchParams(window.location.search);
+const aulaId   = params.get('aula') || '1';
+const modoErros = params.get('modo') === 'erros';
 
 // ── ESTADO ───────────────────────────────────────────────────
 const estado = {
   atual:     0,
   respostas: [],   // preenchido após carregar as questões
+  origIdx:   [],   // mapeia índice exibido -> índice original em aula.questoes (modo caderno de erros)
 };
 
 // ── CARREGAR QUESTÕES DINAMICAMENTE ─────────────────────────
@@ -73,15 +76,42 @@ function mostrarIntro(aula, introIdx = 0) {
   }
 
   // Monta conteúdo da intro
-  questaoTitulo.innerHTML = `
-    <span class="intro-label">Justificativa da lição</span>
-    ${aula.titulo}`;
-
+  questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
 
+  const ac = aula.antesComecar || {};
   opcoesEl.innerHTML = `
     <div class="intro-card">
-      ${(aula.justificativa || []).map(p => `<p>${p}</p>`).join('')}
+      <span class="intro-label">Antes de começar</span>
+      <h2 class="intro-titulo">${ac.titulo || aula.titulo}</h2>
+      <p class="intro-desc">${ac.descricao || ''}</p>
+      <div class="intro-info">
+        <div class="intro-info-item">
+          <div class="intro-info-icone-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5B2BCB" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+            </svg>
+          </div>
+          <div class="intro-info-texto">
+            <h3>O que você vai aprender</h3>
+            <p>${ac.aprender || ''}</p>
+          </div>
+        </div>
+        <div class="intro-info-item">
+          <div class="intro-info-icone-wrap">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#5B2BCB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="26" height="26">
+              <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/>
+              <path d="M9 18h6"/>
+              <path d="M10 22h4"/>
+            </svg>
+          </div>
+          <div class="intro-info-texto">
+            <h3>Por que isso é importante</h3>
+            <p>${ac.importancia || ''}</p>
+          </div>
+        </div>
+      </div>
     </div>`;
 
   // Botão "Começar"
@@ -389,6 +419,13 @@ function renderQuestao(aula) {
 function responder(opcaoIdx, aula) {
   if (estado.respostas[estado.atual] !== null) return;
   estado.respostas[estado.atual] = opcaoIdx;
+
+  // Errou → vai para o caderno de erros e não sai mais de lá, mesmo se acertar depois.
+  const q = aula.questoes[estado.atual];
+  if (opcaoIdx !== q.correta) {
+    addErro(aulaId, estado.origIdx[estado.atual]);
+  }
+
   renderQuestao(aula);
 }
 
@@ -404,10 +441,19 @@ function calcularEstrelas(aula) {
 }
 
 function mostrarResultado(aula) {
-  const questoes         = aula.questoes;
-  const acertos          = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
-  const { estrelas, emoji, titulo, desc } = calcularEstrelas(aula);
+  const questoes = aula.questoes;
+  const acertos  = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
 
+  if (modoErros) {
+    document.getElementById('resultadoEmoji').textContent   = '📓';
+    document.getElementById('resultadoTitulo').textContent  = 'Prática concluída!';
+    document.getElementById('resultadoDesc').textContent    = `Você acertou ${acertos} de ${questoes.length} questões revisadas. As questões erradas continuam no caderno de erros para você revisar de novo.`;
+    document.getElementById('resultadoEstrelas').textContent = '';
+    document.getElementById('resultadoOverlay').classList.add('show');
+    return;
+  }
+
+  const { estrelas, emoji, titulo, desc } = calcularEstrelas(aula);
   document.getElementById('resultadoEmoji').textContent   = emoji;
   document.getElementById('resultadoTitulo').textContent  = titulo;
   document.getElementById('resultadoDesc').textContent    = desc;
@@ -433,11 +479,25 @@ function abrirLicao(aula) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-carregarAula(aulaId).then(aula => {
+Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.resolve(null)]).then(([aulaOriginal, notebook]) => {
+  let aula = aulaOriginal;
+
+  if (modoErros) {
+    const errIdxs = (notebook[String(aulaId)] || []).slice().sort((a, b) => a - b);
+    if (errIdxs.length === 0) {
+      window.location.href = 'index.html?view=erros';
+      return;
+    }
+    aula = { ...aulaOriginal, titulo: `Caderno de Erros — ${aulaOriginal.titulo}`, questoes: errIdxs.map(i => aulaOriginal.questoes[i]) };
+    estado.origIdx = errIdxs;
+  } else {
+    estado.origIdx = aula.questoes.map((_, i) => i);
+  }
+
   // Inicializa estado com o número correto de questões
   estado.respostas = new Array(aula.questoes.length).fill(null);
 
-  // Telas de intro em ordem (dinâmico, baseado nos campos da aula)
+  // Telas de intro em ordem (dinâmico, baseado nos campos da aula) — puladas no modo caderno de erros
   const introScreens = ['justificativa'];
   if (aula.definicao)     introScreens.push('definicao');
   if (aula.contexto)      introScreens.push('contexto');
@@ -449,8 +509,13 @@ carregarAula(aulaId).then(aula => {
   introTotal = introScreens.length - 1;
   const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido };
   let introIdx = 0;
-  let introAtiva = true;
-  introFns[introScreens[0]](aula, 0);
+  let introAtiva = !modoErros;
+  if (introAtiva) {
+    introFns[introScreens[0]](aula, 0);
+  } else {
+    sairIntro();
+    renderQuestao(aula);
+  }
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
@@ -489,13 +554,14 @@ carregarAula(aulaId).then(aula => {
   document.getElementById('licaoBtnFechar').addEventListener('click', () => document.getElementById('licaoOverlay').classList.remove('show'));
 
   // Fechar / voltar
+  const destinoVoltar = modoErros ? 'index.html?view=erros' : 'index.html';
   document.getElementById('btnFechar').addEventListener('click', () => {
-    window.location.href = 'index.html';
+    window.location.href = destinoVoltar;
   });
 
   // Voltar ao início após resultado
   document.getElementById('resultadoBtnContinuar').addEventListener('click', () => {
-    window.location.href = 'index.html';
+    window.location.href = destinoVoltar;
   });
 
 }).catch(err => {

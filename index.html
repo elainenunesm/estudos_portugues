@@ -38,6 +38,8 @@
   </div>
 </header>
 
+<div class="view-inicio" id="viewInicio">
+
 <div class="hero-card" id="heroCard">
   <div class="nivel-selector" id="nivelSelector">
     <span>Nível: Básico</span>
@@ -100,7 +102,7 @@
       </svg>
     </div>
     <div class="aula-card locked">
-      <h3>Aula 2: Sujeito simples</h3>
+      <h3>Aula 2: Sc</h3>
       <p class="status">Bloqueada</p>
       <div class="progress-bar">
         <div class="progress-bar-fill" style="width: 0%;"></div>
@@ -138,19 +140,32 @@
   </div>
 </div>
 
+</div>
+
+<div class="view-erros" id="viewErros" style="display:none">
+  <div class="erros-header">
+    <h2>Caderno de Erros</h2>
+    <p>As questões que você errar ficam aqui até você dominá-las de vez.</p>
+  </div>
+  <div class="erros-list" id="errosList"></div>
+</div>
+
 <nav class="bottom-nav">
-  <div class="nav-item active">
+  <div class="nav-item active" id="navInicio" data-view="inicio">
     <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
       <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
     </svg>
     <span>Início</span>
   </div>
-  <div class="nav-item">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
-      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
-    </svg>
-    <span>Conteúdos</span>
+  <div class="nav-item" id="navErros" data-view="erros">
+    <div class="nav-icon-wrap">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+      <span class="nav-badge" id="errosBadge">0</span>
+    </div>
+    <span>Caderno de erros</span>
   </div>
   <div class="nav-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -185,6 +200,8 @@
 
 </div>
 
+<script src="js/idb.js"></script>
+<script src="js/data/modulos.js"></script>
 <script src="js/script.js"></script>
 
 </body>

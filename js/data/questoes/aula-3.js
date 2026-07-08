@@ -9,10 +9,12 @@ window.AULA_DATA = {
   modulo: 'Etapa 1: Fundamentos',
   titulo: 'Aula 3: Predicado',
 
-  justificativa: [
-    'Esta etapa tem como objetivo compreender o predicado e suas classificações dentro da oração.',
-    'Identificar o tipo de predicado auxilia na análise sintática e na produção de textos com maior clareza.',
-  ],
+  antesComecar: {
+    titulo:      'Predicado',
+    descricao:   'Nesta aula você vai aprender a identificar o predicado e entender o que ele revela sobre o sujeito.',
+    aprender:    'Nesta aula você aprenderá a reconhecer o predicado verbal, nominal e verbo-nominal.',
+    importancia: 'Identificar o tipo de predicado ajuda na análise das frases e na produção de textos mais claros.',
+  },
 
   licao: {
     titulo: '📖 Lição: O Predicado',

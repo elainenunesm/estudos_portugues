@@ -1,33 +1,6 @@
 ﻿'use strict';
 
-// ── INDEXEDDB ────────────────────────────────────────────────
-const IDB_NAME  = 'gramix';
-const IDB_STORE = 'config';
-
-function openIDB() {
-  return new Promise((res, rej) => {
-    const req = indexedDB.open(IDB_NAME, 1);
-    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
-    req.onsuccess = e => res(e.target.result);
-    req.onerror   = e => rej(e.target.error);
-  });
-}
-async function idbGet(key) {
-  const db = await openIDB();
-  return new Promise((res, rej) => {
-    const req = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key);
-    req.onsuccess = () => res(req.result ?? null);
-    req.onerror   = e => rej(e.target.error);
-  });
-}
-async function idbSet(key, value) {
-  const db = await openIDB();
-  return new Promise((res, rej) => {
-    const req = db.transaction(IDB_STORE, 'readwrite').objectStore(IDB_STORE).put(value, key);
-    req.onsuccess = () => res();
-    req.onerror   = e => rej(e.target.error);
-  });
-}
+// IndexedDB (openIDB/idbGet/idbSet/getErrorNotebook/addErro) vem de js/idb.js
 
 // ── ESTADO ───────────────────────────────────────────────────
 const PROGRESS_VERSION = 2; // incrementar para invalidar saves antigos
@@ -205,6 +178,72 @@ function renderAulas() {
   // Rebind dos botões após renderização — não é mais necessário (delegação)
 }
 
+// ── CADERNO DE ERROS ─────────────────────────────────────────
+function listaAulas() {
+  return (MODULOS || []).flatMap(m => m.aulas);
+}
+
+async function updateErrosBadge() {
+  const badge    = document.getElementById('errosBadge');
+  const notebook = await getErrorNotebook();
+  const total    = Object.values(notebook).reduce((sum, arr) => sum + arr.length, 0);
+  if (!badge) return total;
+  badge.textContent  = total;
+  badge.style.display = total > 0 ? 'flex' : 'none';
+  return total;
+}
+
+async function renderErrosView() {
+  const list     = document.getElementById('errosList');
+  if (!list) return;
+  const notebook = await getErrorNotebook();
+
+  let html = '';
+  listaAulas().forEach(aula => {
+    const idxs = notebook[String(aula.id)] || [];
+    if (idxs.length === 0) return;
+    html += `
+      <div class="erro-card">
+        <div class="erro-card-info">
+          <h3>${aula.titulo}</h3>
+          <p>${idxs.length} questão${idxs.length !== 1 ? 'ões' : ''} para revisar</p>
+        </div>
+        <button type="button" class="btn-praticar" data-aula="${aula.id}">Praticar</button>
+      </div>`;
+  });
+
+  list.innerHTML = html || `
+    <div class="erros-empty">
+      <p class="erros-empty-emoji">🎉</p>
+      <p>Nenhum erro registrado ainda.</p>
+      <p class="erros-empty-sub">As questões que você errar aparecem aqui e ficam disponíveis para revisão até você dominá-las.</p>
+    </div>`;
+
+  list.querySelectorAll('.btn-praticar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.location.href = `estudo.html?aula=${btn.dataset.aula}&modo=erros`;
+    });
+  });
+
+  updateErrosBadge();
+}
+
+// ── TROCA DE VIEW (Início / Caderno de erros) ────────────────
+function showView(view) {
+  const viewInicio = document.getElementById('viewInicio');
+  const viewErros  = document.getElementById('viewErros');
+  const navInicio  = document.getElementById('navInicio');
+  const navErros   = document.getElementById('navErros');
+  const isErros    = view === 'erros';
+
+  if (viewInicio) viewInicio.style.display = isErros ? 'none' : '';
+  if (viewErros)  viewErros.style.display  = isErros ? '' : 'none';
+  if (navInicio)  navInicio.classList.toggle('active', !isErros);
+  if (navErros)   navErros.classList.toggle('active', isErros);
+
+  if (isErros) renderErrosView();
+}
+
 // ── TOAST ────────────────────────────────────────────────────
 let toastTimer;
 function showToast(msg, type = 'default') {
@@ -314,10 +353,16 @@ document.addEventListener('DOMContentLoaded', function () {
   // Navegação inferior
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function () {
-      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-      this.classList.add('active');
+      const view = this.dataset.view;
+      if (!view) { showToast('🚧 Em breve'); return; }
+      showView(view);
     });
   });
+
+  // Abre direto no Caderno de Erros se veio de estudo.html?modo=erros
+  const viewParam = new URLSearchParams(window.location.search).get('view');
+  showView(viewParam === 'erros' ? 'erros' : 'inicio');
+  updateErrosBadge();
 
   // Animação de entrada das aulas
   const observer = new IntersectionObserver((entries) => {
