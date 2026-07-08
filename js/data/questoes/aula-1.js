@@ -9,6 +9,11 @@ window.AULA_DATA = {
   modulo: 'Etapa 1: Fundamentos',
   titulo: 'Aula 1: Identifique o verbo',
 
+  justificativa: [
+    'Esta etapa tem como objetivo desenvolver a compreensão de textos simples por meio da identificação do verbo.',
+    'O reconhecimento do verbo auxilia na interpretação das frases e na identificação do sujeito.',
+  ],
+
   licao: {
     titulo: '📖 Lição: O Verbo',
     html: `

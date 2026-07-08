@@ -9,6 +9,11 @@ window.AULA_DATA = {
   modulo: 'Etapa 1: Fundamentos',
   titulo: 'Aula 2: Sujeito simples',
 
+  justificativa: [
+    'Esta etapa tem como objetivo identificar o sujeito das orações, compreendendo sua relação com o verbo.',
+    'Reconhecer o sujeito é fundamental para a interpretação textual e para a concordância verbal.',
+  ],
+
   licao: {
     titulo: '📖 Lição: O Sujeito',
     html: `

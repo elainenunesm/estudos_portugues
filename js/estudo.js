@@ -38,6 +38,42 @@ const feedbackIcon     = document.getElementById('feedbackIcon');
 const feedbackTexto    = document.getElementById('feedbackTexto');
 const btnAnterior      = document.getElementById('btnAnterior');
 const btnProxima       = document.getElementById('btnProxima');
+const tagsRow          = document.getElementById('tagsRow');
+
+// ── TELA DE INTRODUÇÃO ───────────────────────────────────────
+function mostrarIntro(aula) {
+  // Oculta elementos das questões
+  tagsRow.style.display    = 'none';
+  feedbackBar.style.display = 'none';
+  btnAnterior.style.display = 'none';
+
+  // Atualiza header
+  questaoInfo.textContent = aula.titulo;
+  progressSegs.innerHTML  = '';
+
+  // Monta conteúdo da intro
+  questaoTitulo.innerHTML = `
+    <span class="intro-label">Justificativa da lição</span>
+    ${aula.titulo}`;
+
+  questaoSubtitulo.textContent = '';
+
+  opcoesEl.innerHTML = `
+    <div class="intro-card">
+      ${(aula.justificativa || []).map(p => `<p>${p}</p>`).join('')}
+    </div>`;
+
+  // Botão "Começar"
+  btnProxima.innerHTML  = 'Começar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled   = false;
+}
+
+function sairIntro() {
+  tagsRow.style.display     = '';
+  feedbackBar.style.display = '';
+  btnAnterior.style.display = '';
+  questaoTitulo.innerHTML   = '';
+}
 
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
 function renderQuestao(aula) {
@@ -166,8 +202,9 @@ carregarAula(aulaId).then(aula => {
   // Inicializa estado com o número correto de questões
   estado.respostas = new Array(aula.questoes.length).fill(null);
 
-  // Renderiza a primeira questão
-  renderQuestao(aula);
+  // Mostra tela de introdução antes das questões
+  let introVisivel = true;
+  mostrarIntro(aula);
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
@@ -175,6 +212,12 @@ carregarAula(aulaId).then(aula => {
   });
 
   btnProxima.addEventListener('click', () => {
+    if (introVisivel) {
+      introVisivel = false;
+      sairIntro();
+      renderQuestao(aula);
+      return;
+    }
     if (estado.atual < aula.questoes.length - 1) {
       estado.atual++;
       renderQuestao(aula);

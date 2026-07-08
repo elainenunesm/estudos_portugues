@@ -9,6 +9,11 @@ window.AULA_DATA = {
   modulo: 'Etapa 1: Fundamentos',
   titulo: 'Aula 3: Predicado',
 
+  justificativa: [
+    'Esta etapa tem como objetivo compreender o predicado e suas classificações dentro da oração.',
+    'Identificar o tipo de predicado auxilia na análise sintática e na produção de textos com maior clareza.',
+  ],
+
   licao: {
     titulo: '📖 Lição: O Predicado',
     html: `
