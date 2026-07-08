@@ -24,12 +24,18 @@
       <p>Estudo da Língua Portuguesa</p>
     </div>
   </div>
-  <button class="btn-continuar">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-    </svg>
-    Continuar
-  </button>
+  <div class="header-actions">
+    <div class="folder-badge" id="folderBadge" title="Clique para alterar a pasta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      <span id="folderName">Sem pasta</span>
+    </div>
+    <button class="btn-continuar" id="btnContinuar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+      </svg>
+      Continuar
+    </button>
+  </div>
 </header>
 
 <div class="hero-card" id="heroCard">
@@ -53,7 +59,7 @@
 <div class="path-container" id="pathContainer">
   <div class="path-line"></div>
 
-  <div class="aula-node">
+  <div class="aula-node" data-aula="1">
     <div class="stars">
       <span class="star">★</span>
       <span class="star">★</span>
@@ -81,7 +87,7 @@
     <div class="dot"></div>
   </div>
 
-  <div class="aula-node">
+  <div class="aula-node" data-aula="2">
     <div class="stars">
       <span class="star">★</span>
       <span class="star" style="color:#e5e7eb;">★</span>
@@ -109,7 +115,7 @@
     <div class="dot"></div>
   </div>
 
-  <div class="aula-node locked">
+  <div class="aula-node locked" data-aula="3">
     <div class="stars">
       <span class="star" style="color:#e5e7eb;">★</span>
       <span class="star" style="color:#e5e7eb;">★</span>
@@ -162,6 +168,20 @@
     <span>Perfil</span>
   </div>
 </nav>
+
+<!-- MODAL: SALVAR PROGRESSO -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card">
+    <div class="modal-icon">💾</div>
+    <h2 class="modal-title">Salvar progresso?</h2>
+    <p class="modal-desc">Escolha uma pasta no seu computador para salvar o progresso automaticamente em um arquivo <strong>gramix-progresso.json</strong>.</p>
+    <button class="modal-btn-primary" id="btnEscolherPasta">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+      Escolher pasta
+    </button>
+    <button class="modal-btn-secondary" id="btnSemPasta">Agora não</button>
+  </div>
+</div>
 
 </div>
 
