@@ -1,32 +1,32 @@
-﻿'use strict';
+'use strict';
 
 /**
- * ESTUDO.JS — Controller genérico da tela de estudos.
- * Carrega dinamicamente o arquivo de questões da aula via URL: ?aula=N
+ * ESTUDO.JS � Controller gen�rico da tela de estudos.
+ * Carrega dinamicamente o arquivo de quest�es da aula via URL: ?aula=N
  * Para criar uma nova aula, basta criar js/data/questoes/aula-N.js
  */
 
 const LETRAS = ['A', 'B', 'C', 'D'];
 const aulaId = new URLSearchParams(window.location.search).get('aula') || '1';
 
-// ── ESTADO ───────────────────────────────────────────────────
+// -- ESTADO ---------------------------------------------------
 const estado = {
   atual:     0,
-  respostas: [],   // preenchido após carregar as questões
+  respostas: [],   // preenchido ap�s carregar as quest�es
 };
 
-// ── CARREGAR QUESTÕES DINAMICAMENTE ─────────────────────────
+// -- CARREGAR QUEST�ES DINAMICAMENTE -------------------------
 function carregarAula(id) {
   return new Promise((resolve, reject) => {
     const script  = document.createElement('script');
     script.src    = `js/data/questoes/aula-${id}.js`;
     script.onload = () => resolve(window.AULA_DATA);
-    script.onerror = () => reject(new Error(`Aula ${id} não encontrada.`));
+    script.onerror = () => reject(new Error(`Aula ${id} n�o encontrada.`));
     document.head.appendChild(script);
   });
 }
 
-// ── ELEMENTOS ────────────────────────────────────────────────
+// -- ELEMENTOS ------------------------------------------------
 const questaoInfo      = document.getElementById('questaoInfo');
 const progressSegs     = document.getElementById('progressSegmentos');
 const questaoTitulo    = document.getElementById('questaoTitulo');
@@ -47,18 +47,21 @@ function atualizarScrollFade() {
 }
 questaoArea.addEventListener('scroll', atualizarScrollFade);
 
-// ── TELAS DE INTRODUÇÃO ─────────────────────────────────────
-function renderIntroSegs(aula, step) {
+// -- TELAS DE INTRODU��O -------------------------------------
+let introTotal = 0; // definido no init com base no n�mero de telas
+
+function renderIntroSegs(step) {
   progressSegs.innerHTML = '';
-  (aula.questoes || []).forEach((_, i) => {
+  for (let i = 0; i < introTotal; i++) {
     const seg = document.createElement('div');
     seg.className = i <= step ? 'seg respondida' : 'seg';
     progressSegs.appendChild(seg);
-  });
+  }
+}
 }
 
 function mostrarIntro(aula, introIdx = 0) {
-  // Oculta elementos das questões
+  // Oculta elementos das quest�es
   feedbackBar.style.display = 'none';
   btnAnterior.style.display = introIdx > 0 ? '' : 'none';
 
@@ -67,12 +70,12 @@ function mostrarIntro(aula, introIdx = 0) {
   if (introIdx === 0) {
     progressSegs.innerHTML = '';
   } else {
-    renderIntroSegs(aula, introIdx - 1);
+    renderIntroSegs(introIdx - 1);
   }
 
-  // Monta conteúdo da intro
+  // Monta conte�do da intro
   questaoTitulo.innerHTML = `
-    <span class="intro-label">Justificativa da lição</span>
+    <span class="intro-label">Justificativa da li��o</span>
     ${aula.titulo}`;
 
   questaoSubtitulo.textContent = '';
@@ -82,8 +85,8 @@ function mostrarIntro(aula, introIdx = 0) {
       ${(aula.justificativa || []).map(p => `<p>${p}</p>`).join('')}
     </div>`;
 
-  // Botão "Começar"
-  btnProxima.innerHTML  = 'Começar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  // Bot�o "Come�ar"
+  btnProxima.innerHTML  = 'Come�ar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled   = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
@@ -99,7 +102,7 @@ function mostrarDefinicao(aula, introIdx) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
-  renderIntroSegs(aula, introIdx - 1);
+  renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -112,7 +115,7 @@ function mostrarDefinicao(aula, introIdx) {
       </div>
       <p class="definicao-texto">${def.texto || ''}</p>
     </div>`;
-  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.innerHTML = 'Pr�ximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
@@ -122,7 +125,7 @@ function mostrarContexto(aula, introIdx) {
   const ctx = aula.contexto || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = introIdx > 0 ? '' : 'none';
-  renderIntroSegs(aula, introIdx - 1);
+  renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -140,7 +143,7 @@ function mostrarContexto(aula, introIdx) {
         <span>${ctx.nota}</span>
       </div>` : ''}
     </div>`;
-  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.innerHTML = 'Pr�ximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
@@ -150,7 +153,7 @@ function mostrarExemplo(aula, introIdx) {
   const ex = aula.exemplo || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
-  renderIntroSegs(aula, introIdx - 1);
+  renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -166,13 +169,13 @@ function mostrarExemplo(aula, introIdx) {
       <p class="exemplo-texto">${ex.texto || ''}</p>
       ${ex.conclusao ? `<p class="exemplo-conclusao">${ex.conclusao}</p>` : ''}
     </div>`;
-  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.innerHTML = 'Pr�ximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
 }
 
-// ── ÍCONES DO RESUMO ─────────────────────────────────────────
+// -- �CONES DO RESUMO -----------------------------------------
 const RESUMO_ICONES = {
   acao:     cor => `<path fill="${cor}" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>`,
   estado:   cor => `<circle cx="12" cy="5" r="2.5" fill="${cor}"/><path fill="${cor}" d="M12 9c-3 0-5 2-5 4.5V17h3v4h4v-4h3v-3.5C17 11 15 9 12 9z"/>`,
@@ -184,13 +187,13 @@ function mostrarInfinitivo(aula, introIdx) {
   const inf = aula.infinitivo || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
-  renderIntroSegs(aula, introIdx - 1);
+  renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
     <div class="infinitivo-card">
       <div class="infinitivo-icone-wrap">
-        <span class="infinitivo-icone-simbolo">∞</span>
+        <span class="infinitivo-icone-simbolo">8</span>
       </div>
       <p class="infinitivo-descricao">${inf.descricao || ''}</p>
       ${inf.nota ? `<p class="infinitivo-nota">${inf.nota}</p>` : ''}
@@ -204,7 +207,7 @@ function mostrarInfinitivo(aula, introIdx) {
       </div>
       ${inf.extra ? `<p class="infinitivo-extra">${inf.extra}</p>` : ''}
     </div>`;
-  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.innerHTML = 'Pr�ximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
@@ -214,7 +217,7 @@ function mostrarResumo(aula, introIdx) {
   const res = aula.resumo || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
-  renderIntroSegs(aula, introIdx - 1);
+  renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -233,7 +236,7 @@ function mostrarResumo(aula, introIdx) {
         </div>
       </div>`).join('')}
     </div>`;
-  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.innerHTML = 'Pr�ximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
@@ -243,7 +246,7 @@ function mostrarIdentificacao(aula, introIdx) {
   const idf = aula.identificacao || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
-  renderIntroSegs(aula, introIdx - 1);
+  renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -262,19 +265,19 @@ function mostrarIdentificacao(aula, introIdx) {
         ${(idf.exemplos || []).map(e => `
         <div class="idf-exemplo-card">
           <span class="idf-palavra">${e.palavra}</span>
-          <span class="idf-linha">${e.infinitivo} → terminação <strong>${e.terminacao}</strong></span>
-          <span class="idf-linha">→ ${e.conjugacao}</span>
+          <span class="idf-linha">${e.infinitivo} ? terminac�a~o <strong>${e.terminacao}</strong></span>
+          <span class="idf-linha">? ${e.conjugacao}</span>
         </div>`).join('')}
       </div>
       ${idf.rodape ? `<p class="idf-rodape">${idf.rodape}</p>` : ''}
     </div>`;
-  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.innerHTML = 'Pr�ximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
 }
 
-// ── RENDERIZAR QUESTÃO ───────────────────────────────────────
+// -- RENDERIZAR QUEST�O ---------------------------------------
 function renderQuestao(aula) {
   const questoes = aula.questoes;
   const q        = questoes[estado.atual];
@@ -282,7 +285,7 @@ function renderQuestao(aula) {
   const total    = questoes.length;
 
   // Header
-  questaoInfo.textContent = `Questão ${idx + 1} de ${total} • ${aula.titulo}`;
+  questaoInfo.textContent = `Quest�o ${idx + 1} de ${total} � ${aula.titulo}`;
 
   // Segmentos de progresso
   progressSegs.innerHTML = '';
@@ -298,7 +301,7 @@ function renderQuestao(aula) {
   questaoTitulo.textContent    = q.titulo;
   questaoSubtitulo.textContent = q.subtitulo;
 
-  // Opções
+  // Op��es
   opcoesEl.innerHTML = '';
   const respostaDada = estado.respostas[idx];
 
@@ -326,43 +329,43 @@ function renderQuestao(aula) {
   if (respostaDada !== null) {
     const acertou = respostaDada === q.correta;
     feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
-    feedbackIcon.textContent  = acertou ? '✅' : '❌';
+    feedbackIcon.textContent  = acertou ? '?' : '?';
     feedbackTexto.textContent = acertou ? `Correto! ${q.feedback}` : `Incorreto. ${q.feedback}`;
   } else {
     feedbackBar.className = 'feedback-bar';
   }
 
-  // Botões de navegação
+  // Bot�es de navega��o
   btnAnterior.disabled = idx === 0;
 
   const todasRespondidas = estado.respostas.every(r => r !== null);
   if (idx === total - 1) {
-    btnProxima.innerHTML  = 'Concluir ✓';
+    btnProxima.innerHTML  = 'Concluir ?';
     btnProxima.disabled   = !todasRespondidas;
   } else {
-    btnProxima.innerHTML  = `Próxima <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+    btnProxima.innerHTML  = `Pr�xima <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
     btnProxima.disabled   = respostaDada === null;
   }
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
 }
 
-// ── RESPONDER ────────────────────────────────────────────────
+// -- RESPONDER ------------------------------------------------
 function responder(opcaoIdx, aula) {
   if (estado.respostas[estado.atual] !== null) return;
   estado.respostas[estado.atual] = opcaoIdx;
   renderQuestao(aula);
 }
 
-// ── RESULTADO ────────────────────────────────────────────────
+// -- RESULTADO ------------------------------------------------
 function calcularEstrelas(aula) {
   const questoes = aula.questoes;
   const acertos  = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
   const pct      = acertos / questoes.length;
 
-  if (pct >= 0.8) return { estrelas: 3, emoji: '🎉', titulo: 'Excelente!',        desc: `Você acertou ${acertos} de ${questoes.length} questões. Parabéns!` };
-  if (pct >= 0.5) return { estrelas: 2, emoji: '👍', titulo: 'Bom trabalho!',      desc: `Você acertou ${acertos} de ${questoes.length} questões. Continue praticando!` };
-  return           { estrelas: 1, emoji: '💪', titulo: 'Continue tentando!', desc: `Você acertou ${acertos} de ${questoes.length} questões. Revise a lição e tente novamente.` };
+  if (pct >= 0.8) return { estrelas: 3, emoji: '??', titulo: 'Excelente!',        desc: `Voc� acertou ${acertos} de ${questoes.length} quest�es. Parab�ns!` };
+  if (pct >= 0.5) return { estrelas: 2, emoji: '??', titulo: 'Bom trabalho!',      desc: `Voc� acertou ${acertos} de ${questoes.length} quest�es. Continue praticando!` };
+  return           { estrelas: 1, emoji: '??', titulo: 'Continue tentando!', desc: `Voc� acertou ${acertos} de ${questoes.length} quest�es. Revise a li��o e tente novamente.` };
 }
 
 function mostrarResultado(aula) {
@@ -373,7 +376,7 @@ function mostrarResultado(aula) {
   document.getElementById('resultadoEmoji').textContent   = emoji;
   document.getElementById('resultadoTitulo').textContent  = titulo;
   document.getElementById('resultadoDesc').textContent    = desc;
-  document.getElementById('resultadoEstrelas').textContent = '★'.repeat(estrelas) + '☆'.repeat(3 - estrelas);
+  document.getElementById('resultadoEstrelas').textContent = '?'.repeat(estrelas) + '?'.repeat(3 - estrelas);
   document.getElementById('resultadoOverlay').classList.add('show');
 
   // Passa resultado para index.html via sessionStorage
@@ -385,7 +388,7 @@ function mostrarResultado(aula) {
   }));
 }
 
-// ── LIÇÃO (modal) ────────────────────────────────────────────
+// -- LI��O (modal) --------------------------------------------
 function abrirLicao(aula) {
   const el = document.getElementById('licaoHeader');
   if (el) el.textContent = aula.licao.titulo;
@@ -394,25 +397,26 @@ function abrirLicao(aula) {
   document.getElementById('licaoOverlay').classList.add('show');
 }
 
-// ── INIT ─────────────────────────────────────────────────────
+// -- INIT -----------------------------------------------------
 carregarAula(aulaId).then(aula => {
-  // Inicializa estado com o número correto de questões
+  // Inicializa estado com o n�mero correto de quest�es
   estado.respostas = new Array(aula.questoes.length).fill(null);
 
-  // Telas de intro em ordem (dinâmico, baseado nos campos da aula)
+  // Telas de intro em ordem (din�mico, baseado nos campos da aula)
   const introScreens = ['justificativa'];
-  if (aula.contexto)   introScreens.push('contexto');
-  if (aula.definicao)  introScreens.push('definicao');
-  if (aula.exemplo)    introScreens.push('exemplo');
-  if (aula.resumo)     introScreens.push('resumo');
+  if (aula.definicao)     introScreens.push('definicao');
+  if (aula.contexto)      introScreens.push('contexto');
+  if (aula.exemplo)       introScreens.push('exemplo');
+  if (aula.resumo)        introScreens.push('resumo');
   if (aula.infinitivo)    introScreens.push('infinitivo');
   if (aula.identificacao) introScreens.push('identificacao');
+  introTotal = introScreens.length - 1; // exclui justificativa do total de segmentos
   const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao };
   let introIdx = 0;
   let introAtiva = true;
   introFns[introScreens[0]](aula, 0);
 
-  // Navegação
+  // Navega��o
   btnAnterior.addEventListener('click', () => {
     if (introAtiva) {
       if (introIdx > 0) {
@@ -444,7 +448,7 @@ carregarAula(aulaId).then(aula => {
     }
   });
 
-  // Fechar lição
+  // Fechar li��o
   document.getElementById('licaoFechar').addEventListener('click',    () => document.getElementById('licaoOverlay').classList.remove('show'));
   document.getElementById('licaoBtnFechar').addEventListener('click', () => document.getElementById('licaoOverlay').classList.remove('show'));
 
@@ -453,12 +457,12 @@ carregarAula(aulaId).then(aula => {
     window.location.href = 'index.html';
   });
 
-  // Voltar ao início após resultado
+  // Voltar ao in�cio ap�s resultado
   document.getElementById('resultadoBtnContinuar').addEventListener('click', () => {
     window.location.href = 'index.html';
   });
 
 }).catch(err => {
   console.error(err);
-  document.getElementById('questaoTitulo').textContent = 'Aula não encontrada.';
+  document.getElementById('questaoTitulo').textContent = 'Aula n�o encontrada.';
 });
