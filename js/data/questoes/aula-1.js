@@ -14,6 +14,10 @@ window.AULA_DATA = {
     'O reconhecimento do verbo auxilia na interpretação das frases e na identificação do sujeito.',
   ],
 
+  definicao: {
+    texto: 'Verbo é a palavra que expressa <span class="destaque">ação</span>, <span class="destaque">estado</span>, <span class="destaque">mudança de estado</span> ou <span class="destaque">fenômeno da natureza</span>.',
+  },
+
   licao: {
     titulo: '📖 Lição: O Verbo',
     html: `

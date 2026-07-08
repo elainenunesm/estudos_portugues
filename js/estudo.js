@@ -75,6 +75,26 @@ function sairIntro() {
   questaoTitulo.innerHTML   = '';
 }
 
+function mostrarDefinicao(aula) {
+  const def = aula.definicao || {};
+  questaoInfo.textContent      = aula.titulo;
+  progressSegs.innerHTML       = '';
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  opcoesEl.innerHTML = `
+    <div class="definicao-card">
+      <div class="definicao-icone-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="40" height="40">
+          <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+          <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+        </svg>
+      </div>
+      <p class="definicao-texto">${def.texto || ''}</p>
+    </div>`;
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = false;
+}
+
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
 function renderQuestao(aula) {
   const questoes = aula.questoes;
@@ -202,18 +222,30 @@ carregarAula(aulaId).then(aula => {
   // Inicializa estado com o número correto de questões
   estado.respostas = new Array(aula.questoes.length).fill(null);
 
-  // Mostra tela de introdução antes das questões
-  let introVisivel = true;
+  // Passos de intro: 0=justificativa, 1=definição, 2=questões
+  let introStep = 0;
   mostrarIntro(aula);
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
+    if (introStep > 0) return;
     if (estado.atual > 0) { estado.atual--; renderQuestao(aula); }
   });
 
   btnProxima.addEventListener('click', () => {
-    if (introVisivel) {
-      introVisivel = false;
+    if (introStep === 0) {
+      if (aula.definicao) {
+        introStep = 1;
+        mostrarDefinicao(aula);
+      } else {
+        introStep = 2;
+        sairIntro();
+        renderQuestao(aula);
+      }
+      return;
+    }
+    if (introStep === 1) {
+      introStep = 2;
       sairIntro();
       renderQuestao(aula);
       return;
