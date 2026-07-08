@@ -1,0 +1,171 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gramix - Estudo da Língua Portuguesa</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="app-wrapper">
+
+<header class="header">
+  <div class="header-left">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
+        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+      </svg>
+    </div>
+    <div class="header-title">
+      <h1>Gramix</h1>
+      <p>Estudo da Língua Portuguesa</p>
+    </div>
+  </div>
+  <button class="btn-continuar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="16" height="16">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+    </svg>
+    Continuar
+  </button>
+</header>
+
+<div class="hero-card" id="heroCard">
+  <div class="nivel-selector" id="nivelSelector">
+    <span>Nível: Básico</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <polyline points="6 9 12 15 18 9"></polyline>
+    </svg>
+  </div>
+  <div class="hero-content" id="heroContent">
+    <h2 class="hero-title">Etapa 1: Fundamentos</h2>
+    <div class="progress-segments">
+      <div class="segment filled"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+      <div class="segment"></div>
+    </div>
+  </div>
+</div>
+
+<div class="path-container" id="pathContainer">
+  <div class="path-line"></div>
+
+  <div class="aula-node">
+    <div class="stars">
+      <span class="star">★</span>
+      <span class="star">★</span>
+      <span class="star">★</span>
+    </div>
+    <div class="icon-circle active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+    <div class="aula-card">
+      <h3>Aula 1: Identifique o verbo</h3>
+      <p class="status">Concluída</p>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: 100%;"></div>
+      </div>
+      <button class="btn-recomecar">Recomeçar</button>
+    </div>
+  </div>
+
+  <div class="connector-dots" style="top: 50%;">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="aula-node">
+    <div class="stars">
+      <span class="star">★</span>
+      <span class="star" style="color:#e5e7eb;">★</span>
+      <span class="star" style="color:#e5e7eb;">★</span>
+    </div>
+    <div class="icon-circle active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </div>
+    <div class="aula-card">
+      <h3>Aula 2: Sujeito simples</h3>
+      <p class="status">Em andamento</p>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: 40%;"></div>
+      </div>
+      <button class="btn-recomecar">Continuar</button>
+    </div>
+  </div>
+
+  <div class="connector-dots" style="top: 50%;">
+    <div class="dot"></div>
+    <div class="dot"></div>
+    <div class="dot"></div>
+  </div>
+
+  <div class="aula-node locked">
+    <div class="stars">
+      <span class="star" style="color:#e5e7eb;">★</span>
+      <span class="star" style="color:#e5e7eb;">★</span>
+      <span class="star" style="color:#e5e7eb;">★</span>
+    </div>
+    <div class="icon-circle locked">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+    </div>
+    <div class="aula-card locked">
+      <h3>Aula 3: Predicado</h3>
+      <p class="status">Bloqueada</p>
+      <div class="progress-bar">
+        <div class="progress-bar-fill" style="width: 0%;"></div>
+      </div>
+      <button class="btn-bloqueado" disabled>🔒 Bloqueada</button>
+    </div>
+  </div>
+</div>
+
+<nav class="bottom-nav">
+  <div class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
+      <path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+    </svg>
+    <span>Início</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+      <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+    </svg>
+    <span>Conteúdos</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="18" y1="20" x2="18" y2="10"></line>
+      <line x1="12" y1="20" x2="12" y2="4"></line>
+      <line x1="6" y1="20" x2="6" y2="14"></line>
+    </svg>
+    <span>Desempenho</span>
+  </div>
+  <div class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+      <circle cx="12" cy="7" r="4"></circle>
+    </svg>
+    <span>Perfil</span>
+  </div>
+</nav>
+
+</div>
+
+<script src="js/script.js"></script>
+
+</body>
+</html>
