@@ -349,8 +349,8 @@ carregarAula(aulaId).then(aula => {
   if (aula.definicao) introScreens.push('definicao');
   if (aula.contexto)  introScreens.push('contexto');
   if (aula.exemplo)   introScreens.push('exemplo');
+  if (aula.resumo)     introScreens.push('resumo');
   if (aula.infinitivo) introScreens.push('infinitivo');
-  if (aula.resumo)    introScreens.push('resumo');
   const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo };
   let introIdx = 0;
   let introAtiva = true;
