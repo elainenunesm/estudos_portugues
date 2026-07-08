@@ -246,14 +246,10 @@ function setupAulaEvents(pathContainer) {
     const btn = e.target.closest('.btn-recomecar');
     if (btn) {
       e.stopPropagation();
-      const originalText = btn.textContent.trim();
-      const label = originalText === 'Continuar' ? 'Carregando...' : originalText === 'Começar' ? 'Iniciando...' : 'Reiniciando...';
-      btn.textContent = label;
-      btn.style.background = '#4a22a8';
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.background = '';
-      }, 1200);
+      const node = btn.closest('[data-aula]');
+      const aulaId = node ? node.dataset.aula : null;
+      // Navega para a tela de estudos
+      window.location.href = `estudo.html?aula=${aulaId || 1}`;
     }
   });
 }
@@ -349,6 +345,22 @@ document.addEventListener('DOMContentLoaded', function () {
   document.querySelectorAll('.aula-node.locked').forEach(node => {
     node.style.pointerEvents = 'auto';
   });
+
+  // Verifica resultado ao voltar da tela de estudos
+  const resultado = sessionStorage.getItem('aula1_resultado');
+  if (resultado) {
+    sessionStorage.removeItem('aula1_resultado');
+    const { estrelas, acertos, total } = JSON.parse(resultado);
+    const concluida = acertos >= Math.ceil(total * 0.5);
+    if (concluida) {
+      state.aulas[0] = { id: 1, status: 'completed', progress: 100, stars: estrelas };
+      state.aulas[1] = { id: 2, status: 'active',    progress: 0,   stars: 0 };
+    } else {
+      state.aulas[0] = { id: 1, status: 'active', progress: Math.round((acertos / total) * 100), stars: estrelas };
+    }
+    renderAulas();
+    saveProgress();
+  }
 
   // Tenta reconectar à pasta salva
   tryReconnect();
