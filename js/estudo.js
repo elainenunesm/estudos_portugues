@@ -37,6 +37,15 @@ const feedbackIcon     = document.getElementById('feedbackIcon');
 const feedbackTexto    = document.getElementById('feedbackTexto');
 const btnAnterior      = document.getElementById('btnAnterior');
 const btnProxima       = document.getElementById('btnProxima');
+const questaoArea      = document.getElementById('questaoArea');
+const scrollFade       = document.getElementById('scrollFade');
+
+function atualizarScrollFade() {
+  if (!questaoArea || !scrollFade) return;
+  const atBottom = questaoArea.scrollHeight - questaoArea.scrollTop <= questaoArea.clientHeight + 8;
+  scrollFade.classList.toggle('oculto', atBottom);
+}
+questaoArea.addEventListener('scroll', atualizarScrollFade);
 
 // ── TELAS DE INTRODUÇÃO ─────────────────────────────────────
 function renderIntroSegs(aula, step) {
@@ -76,6 +85,8 @@ function mostrarIntro(aula, introIdx = 0) {
   // Botão "Começar"
   btnProxima.innerHTML  = 'Começar <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled   = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 function sairIntro() {
@@ -103,6 +114,8 @@ function mostrarDefinicao(aula, introIdx) {
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 function mostrarContexto(aula, introIdx) {
@@ -129,6 +142,8 @@ function mostrarContexto(aula, introIdx) {
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 function mostrarExemplo(aula, introIdx) {
@@ -153,6 +168,8 @@ function mostrarExemplo(aula, introIdx) {
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 // ── ÍCONES DO RESUMO ─────────────────────────────────────────
@@ -189,6 +206,8 @@ function mostrarInfinitivo(aula, introIdx) {
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 function mostrarResumo(aula, introIdx) {
@@ -216,6 +235,8 @@ function mostrarResumo(aula, introIdx) {
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
@@ -287,6 +308,8 @@ function renderQuestao(aula) {
     btnProxima.innerHTML  = `Próxima <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
     btnProxima.disabled   = respostaDada === null;
   }
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
 }
 
 // ── RESPONDER ────────────────────────────────────────────────

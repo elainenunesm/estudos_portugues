@@ -107,11 +107,32 @@ body {
 .tag-consultar:hover { background: #e4d9ff; }
 
 /* QUESTÃO */
-.questao-area {
+.questao-wrap {
+  position: relative;
   flex: 1;
   min-height: 0;
+}
+
+.questao-area {
+  height: 100%;
   overflow-y: auto;
   padding: 24px 20px 12px;
+}
+
+.scroll-fade {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background: linear-gradient(to bottom, transparent, #ffffff);
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0.3s;
+}
+
+.scroll-fade.oculto {
+  opacity: 0;
 }
 
 .questao-titulo {
