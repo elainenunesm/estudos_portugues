@@ -233,6 +233,38 @@ body {
   line-height: 1.5;
 }
 
+/* TELA DE EXEMPLO */
+.exemplo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 4px;
+}
+
+.exemplo-icone-wrap {
+  width: 88px;
+  height: 88px;
+  background: #eef2ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;
+}
+
+.exemplo-texto {
+  font-size: 16px;
+  color: #1a1a2e;
+  line-height: 1.65;
+}
+
+.exemplo-conclusao {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
 /* OPÇÕES */
 .opcoes {
   display: flex;

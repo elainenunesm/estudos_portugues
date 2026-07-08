@@ -23,6 +23,11 @@ window.AULA_DATA = {
     nota: 'Oração é toda frase que possui um verbo.',
   },
 
+  exemplo: {
+    texto: 'Por exemplo, ao ouvir a palavra <span class="destaque">correr</span>, imaginamos alguém se movimentando rapidamente de um lugar para outro.',
+    conclusao: 'Isso representa uma <span class="destaque">ação</span>.',
+  },
+
   licao: {
     titulo: '📖 Lição: O Verbo',
     html: `
