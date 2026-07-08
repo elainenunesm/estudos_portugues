@@ -28,6 +28,16 @@ window.AULA_DATA = {
     conclusao: 'Isso representa uma <span class="destaque">ação</span>.',
   },
 
+  infinitivo: {
+    descricao: 'Os verbos no infinitivo aparecem em sua forma original, sem indicar tempo, pessoa ou número.',
+    nota: 'Essa é a forma considerada <span class="destaque">“padrão”</span> da palavra.',
+    conjugacoes: [
+      { sufixo: '-ar', label: '1ª conjugação' },
+      { sufixo: '-er', label: '2ª conjugação' },
+      { sufixo: '-ir', label: '3ª conjugação' },
+    ],
+  },
+
   resumo: {
     titulo: 'Os verbos podem indicar:',
     itens: [

@@ -163,6 +163,36 @@ const RESUMO_ICONES = {
   fenomeno: cor => `<path fill="${cor}" d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/><line x1="8" y1="20" x2="8" y2="23" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="23" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="20" x2="16" y2="23" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"/>`,
 };
 
+function mostrarInfinitivo(aula, introIdx) {
+  const inf = aula.infinitivo || {};
+  questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
+  renderIntroSegs(aula, introIdx - 1);
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  opcoesEl.innerHTML = `
+    <div class="infinitivo-card">
+      <div class="infinitivo-icone-wrap">
+        <svg viewBox="0 0 48 28" width="52" height="32" fill="none">
+          <path d="M14 14C14 8.48 18 4 23 4c3 0 5.5 1.8 7 4.5L24 14l6 5.5C28.5 22.2 26 24 23 24c-5 0-9-4.48-9-10z" fill="#2563eb"/>
+          <path d="M34 14C34 8.48 30 4 25 4c-3 0-5.5 1.8-7 4.5L24 14l-6 5.5C19.5 22.2 22 24 25 24c5 0 9-4.48 9-10z" fill="#2563eb"/>
+        </svg>
+      </div>
+      <p class="infinitivo-descricao">${inf.descricao || ''}</p>
+      ${inf.nota ? `<p class="infinitivo-nota">${inf.nota}</p>` : ''}
+      <p class="infinitivo-conj-titulo">Normalmente, os infinitivos terminam em:</p>
+      <div class="infinitivo-conjs">
+        ${(inf.conjugacoes || []).map(c => `
+        <div class="infinitivo-conj-card">
+          <span class="infinitivo-conj-sufixo">${c.sufixo}</span>
+          <span class="infinitivo-conj-label">${c.label}</span>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = false;
+}
+
 function mostrarResumo(aula, introIdx) {
   const res = aula.resumo || {};
   questaoInfo.textContent      = aula.titulo;
@@ -322,8 +352,9 @@ carregarAula(aulaId).then(aula => {
   if (aula.definicao) introScreens.push('definicao');
   if (aula.contexto)  introScreens.push('contexto');
   if (aula.exemplo)   introScreens.push('exemplo');
+  if (aula.infinitivo) introScreens.push('infinitivo');
   if (aula.resumo)    introScreens.push('resumo');
-  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, resumo: mostrarResumo };
+  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo };
   let introIdx = 0;
   let introAtiva = true;
   mostrarIntro(aula);

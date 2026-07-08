@@ -268,6 +268,78 @@ body {
   line-height: 1.5;
 }
 
+/* TELA DE INFINITIVO */
+.infinitivo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  text-align: center;
+}
+
+.infinitivo-icone-wrap {
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.infinitivo-descricao {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.infinitivo-nota {
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.infinitivo-conj-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-align: center;
+  margin-top: 4px;
+}
+
+.infinitivo-conjs {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+
+.infinitivo-conj-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 14px 16px;
+}
+
+.infinitivo-conj-sufixo {
+  font-size: 26px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.infinitivo-conj-label {
+  font-size: 13px;
+  color: #64748b;
+}
+
 /* TELA DE RESUMO */
 .resumo-card {
   display: flex;
