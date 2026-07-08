@@ -39,6 +39,17 @@ window.AULA_DATA = {
     extra: 'Existe também o verbo <span class="destaque">pôr</span>, que antigamente era escrito como <span class="destaque">poer</span>. Por isso, ele pertence à <span class="destaque">2ª conjugação</span>.',
   },
 
+  identificacao: {
+    titulo: 'Como identificar um verbo na oração?',
+    intro: 'Uma maneira simples é transformar a palavra em infinitivo:',
+    exemplos: [
+      { palavra: 'cantou', infinitivo: 'cantar', terminacao: '-ar', conjugacao: '1ª conjugação' },
+      { palavra: 'bebeu',  infinitivo: 'beber',  terminacao: '-er', conjugacao: '2ª conjugação' },
+      { palavra: 'partiu', infinitivo: 'partir', terminacao: '-ir', conjugacao: '3ª conjugação' },
+    ],
+    rodape: 'Você pode fazer isso com qualquer palavra que suspeite ser um verbo. Assim, fica mais fácil praticar e reconhecer cada caso.',
+  },
+
   resumo: {
     titulo: 'Os verbos podem indicar:',
     itens: [

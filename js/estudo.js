@@ -239,6 +239,41 @@ function mostrarResumo(aula, introIdx) {
   atualizarScrollFade();
 }
 
+function mostrarIdentificacao(aula, introIdx) {
+  const idf = aula.identificacao || {};
+  questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
+  renderIntroSegs(aula, introIdx - 1);
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  opcoesEl.innerHTML = `
+    <div class="idf-card">
+      <div class="idf-header">
+        <div class="idf-icone-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="30" height="30">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </div>
+        <p class="idf-titulo">${idf.titulo || ''}</p>
+      </div>
+      <p class="idf-intro">${idf.intro || ''}</p>
+      <div class="idf-exemplos">
+        ${(idf.exemplos || []).map(e => `
+        <div class="idf-exemplo-card">
+          <span class="idf-palavra">${e.palavra}</span>
+          <span class="idf-linha">${e.infinitivo} → terminação <strong>${e.terminacao}</strong></span>
+          <span class="idf-linha">→ ${e.conjugacao}</span>
+        </div>`).join('')}
+      </div>
+      ${idf.rodape ? `<p class="idf-rodape">${idf.rodape}</p>` : ''}
+    </div>`;
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
+}
+
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
 function renderQuestao(aula) {
   const questoes = aula.questoes;
@@ -370,8 +405,9 @@ carregarAula(aulaId).then(aula => {
   if (aula.definicao)  introScreens.push('definicao');
   if (aula.exemplo)    introScreens.push('exemplo');
   if (aula.resumo)     introScreens.push('resumo');
-  if (aula.infinitivo) introScreens.push('infinitivo');
-  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo };
+  if (aula.infinitivo)    introScreens.push('infinitivo');
+  if (aula.identificacao) introScreens.push('identificacao');
+  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao };
   let introIdx = 0;
   let introAtiva = true;
   introFns[introScreens[0]](aula, 0);

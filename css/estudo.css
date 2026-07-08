@@ -432,6 +432,78 @@ body {
   color: #64748b;
 }
 
+/* TELA DE IDENTIFICAÇÃO */
+.idf-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.idf-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.idf-icone-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: #eff6ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.idf-titulo {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+  line-height: 1.4;
+  padding-top: 4px;
+}
+
+.idf-intro {
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.5;
+}
+
+.idf-exemplos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.idf-exemplo-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  background: #ffffff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 16px;
+}
+
+.idf-palavra {
+  font-size: 17px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.idf-linha {
+  font-size: 13px;
+  color: #64748b;
+}
+
+.idf-rodape {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.6;
+}
+
 /* OPÇÕES */
 .opcoes {
   display: flex;
