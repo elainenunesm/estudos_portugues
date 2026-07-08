@@ -87,7 +87,7 @@ function sairIntro() {
 function mostrarDefinicao(aula) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
-  progressSegs.innerHTML       = '';
+  renderIntroSegs(aula);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -107,7 +107,7 @@ function mostrarDefinicao(aula) {
 function mostrarContexto(aula) {
   const ctx = aula.contexto || {};
   questaoInfo.textContent      = aula.titulo;
-  progressSegs.innerHTML       = '';
+  renderIntroSegs(aula);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
