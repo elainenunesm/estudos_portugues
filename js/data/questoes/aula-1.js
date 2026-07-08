@@ -36,6 +36,7 @@ window.AULA_DATA = {
       { sufixo: '-er', label: '2ª conjugação' },
       { sufixo: '-ir', label: '3ª conjugação' },
     ],
+    extra: 'Existe também o verbo <span class="destaque">pôr</span>, que antigamente era escrito como <span class="destaque">poer</span>. Por isso, ele pertence à <span class="destaque">2ª conjugação</span>.',
   },
 
   resumo: {

@@ -185,6 +185,7 @@ function mostrarInfinitivo(aula, introIdx) {
           <span class="infinitivo-conj-label">${c.label}</span>
         </div>`).join('')}
       </div>
+      ${inf.extra ? `<p class="infinitivo-extra">${inf.extra}</p>` : ''}
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
