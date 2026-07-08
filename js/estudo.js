@@ -45,9 +45,7 @@ function renderIntroSegs(aula, step) {
   progressSegs.innerHTML = '';
   (aula.questoes || []).forEach((_, i) => {
     const seg = document.createElement('div');
-    if (i < step)        seg.className = 'seg respondida';
-    else if (i === step) seg.className = 'seg atual';
-    else                 seg.className = 'seg';
+    seg.className = i <= step ? 'seg respondida' : 'seg';
     progressSegs.appendChild(seg);
   });
 }
