@@ -40,7 +40,16 @@ const btnAnterior      = document.getElementById('btnAnterior');
 const btnProxima       = document.getElementById('btnProxima');
 const tagsRow          = document.getElementById('tagsRow');
 
-// ── TELA DE INTRODUÇÃO ───────────────────────────────────────
+// ── TELAS DE INTRODUÇÃO ─────────────────────────────────────
+function renderIntroSegs(aula) {
+  progressSegs.innerHTML = '';
+  (aula.questoes || []).forEach((_, i) => {
+    const seg = document.createElement('div');
+    seg.className = i === 0 ? 'seg atual' : 'seg';
+    progressSegs.appendChild(seg);
+  });
+}
+
 function mostrarIntro(aula) {
   // Oculta elementos das questões
   tagsRow.style.display    = 'none';
@@ -49,12 +58,7 @@ function mostrarIntro(aula) {
 
   // Atualiza header
   questaoInfo.textContent = aula.titulo;
-  progressSegs.innerHTML  = '';
-  (aula.questoes || []).forEach(() => {
-    const seg = document.createElement('div');
-    seg.className = 'seg';
-    progressSegs.appendChild(seg);
-  });
+  renderIntroSegs(aula);
 
   // Monta conteúdo da intro
   questaoTitulo.innerHTML = `
@@ -83,12 +87,7 @@ function sairIntro() {
 function mostrarDefinicao(aula) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
-  progressSegs.innerHTML       = '';
-  (aula.questoes || []).forEach(() => {
-    const seg = document.createElement('div');
-    seg.className = 'seg';
-    progressSegs.appendChild(seg);
-  });
+  renderIntroSegs(aula);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -100,6 +99,31 @@ function mostrarDefinicao(aula) {
         </svg>
       </div>
       <p class="definicao-texto">${def.texto || ''}</p>
+    </div>`;
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = false;
+}
+
+function mostrarContexto(aula) {
+  const ctx = aula.contexto || {};
+  questaoInfo.textContent      = aula.titulo;
+  renderIntroSegs(aula);
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  opcoesEl.innerHTML = `
+    <div class="contexto-card">
+      <div class="contexto-icone-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="#4A80F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+      </div>
+      <p class="contexto-texto">${ctx.texto || ''}</p>
+      ${ctx.nota ? `
+      <div class="contexto-nota">
+        <svg viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" fill="#4A80F0"/><rect x="11" y="11" width="2" height="6" rx="1" fill="white"/><rect x="11" y="8" width="2" height="2" rx="1" fill="white"/></svg>
+        <span>${ctx.nota}</span>
+      </div>` : ''}
     </div>`;
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
@@ -232,32 +256,31 @@ carregarAula(aulaId).then(aula => {
   // Inicializa estado com o número correto de questões
   estado.respostas = new Array(aula.questoes.length).fill(null);
 
-  // Passos de intro: 0=justificativa, 1=definição, 2=questões
-  let introStep = 0;
+  // Telas de intro em ordem (dinâmico, baseado nos campos da aula)
+  const introScreens = ['justificativa'];
+  if (aula.definicao) introScreens.push('definicao');
+  if (aula.contexto)  introScreens.push('contexto');
+  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto };
+  let introIdx = 0;
+  let introAtiva = true;
   mostrarIntro(aula);
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
-    if (introStep > 0) return;
+    if (introAtiva) return;
     if (estado.atual > 0) { estado.atual--; renderQuestao(aula); }
   });
 
   btnProxima.addEventListener('click', () => {
-    if (introStep === 0) {
-      if (aula.definicao) {
-        introStep = 1;
-        mostrarDefinicao(aula);
+    if (introAtiva) {
+      introIdx++;
+      if (introIdx < introScreens.length) {
+        introFns[introScreens[introIdx]](aula);
       } else {
-        introStep = 2;
+        introAtiva = false;
         sairIntro();
         renderQuestao(aula);
       }
-      return;
-    }
-    if (introStep === 1) {
-      introStep = 2;
-      sairIntro();
-      renderQuestao(aula);
       return;
     }
     if (estado.atual < aula.questoes.length - 1) {

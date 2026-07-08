@@ -18,6 +18,11 @@ window.AULA_DATA = {
     texto: 'Verbo é a palavra que expressa <span class="destaque">ação</span>, <span class="destaque">estado</span>, <span class="destaque">mudança de estado</span> ou <span class="destaque">fenômeno da natureza</span>.',
   },
 
+  contexto: {
+    texto: 'Ao ler uma frase ou texto, uma das primeiras coisas que devemos procurar é o <strong>verbo</strong>, pois ele dá movimento e sentido à oração.',
+    nota: 'Oração é toda frase que possui um verbo.',
+  },
+
   licao: {
     titulo: '📖 Lição: O Verbo',
     html: `
