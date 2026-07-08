@@ -29,7 +29,6 @@ function carregarAula(id) {
 // ── ELEMENTOS ────────────────────────────────────────────────
 const questaoInfo      = document.getElementById('questaoInfo');
 const progressSegs     = document.getElementById('progressSegmentos');
-const tagDificuldade   = document.getElementById('tagDificuldade');
 const questaoTitulo    = document.getElementById('questaoTitulo');
 const questaoSubtitulo = document.getElementById('questaoSubtitulo');
 const opcoesEl         = document.getElementById('opcoes');
@@ -38,7 +37,6 @@ const feedbackIcon     = document.getElementById('feedbackIcon');
 const feedbackTexto    = document.getElementById('feedbackTexto');
 const btnAnterior      = document.getElementById('btnAnterior');
 const btnProxima       = document.getElementById('btnProxima');
-const tagsRow          = document.getElementById('tagsRow');
 
 // ── TELAS DE INTRODUÇÃO ─────────────────────────────────────
 function renderIntroSegs(aula, step) {
@@ -50,15 +48,18 @@ function renderIntroSegs(aula, step) {
   });
 }
 
-function mostrarIntro(aula) {
+function mostrarIntro(aula, introIdx = 0) {
   // Oculta elementos das questões
-  tagsRow.style.display    = 'none';
   feedbackBar.style.display = 'none';
-  btnAnterior.style.display = 'none';
+  btnAnterior.style.display = introIdx > 0 ? '' : 'none';
 
   // Atualiza header
   questaoInfo.textContent = aula.titulo;
-  progressSegs.innerHTML  = '';
+  if (introIdx === 0) {
+    progressSegs.innerHTML = '';
+  } else {
+    renderIntroSegs(aula, introIdx - 1);
+  }
 
   // Monta conteúdo da intro
   questaoTitulo.innerHTML = `
@@ -78,7 +79,6 @@ function mostrarIntro(aula) {
 }
 
 function sairIntro() {
-  tagsRow.style.display     = '';
   feedbackBar.style.display = '';
   btnAnterior.style.display = '';
   questaoTitulo.innerHTML   = '';
@@ -108,7 +108,7 @@ function mostrarDefinicao(aula, introIdx) {
 function mostrarContexto(aula, introIdx) {
   const ctx = aula.contexto || {};
   questaoInfo.textContent      = aula.titulo;
-  btnAnterior.style.display    = '';
+  btnAnterior.style.display    = introIdx > 0 ? '' : 'none';
   renderIntroSegs(aula, introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
@@ -227,10 +227,6 @@ function renderQuestao(aula) {
 
   // Header
   questaoInfo.textContent = `Questão ${idx + 1} de ${total} • ${aula.titulo}`;
-  tagDificuldade.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
-      <line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>
-    </svg> ${q.dificuldade}`;
 
   // Segmentos de progresso
   progressSegs.innerHTML = '';
@@ -347,15 +343,15 @@ carregarAula(aulaId).then(aula => {
 
   // Telas de intro em ordem (dinâmico, baseado nos campos da aula)
   const introScreens = ['justificativa'];
-  if (aula.definicao) introScreens.push('definicao');
-  if (aula.contexto)  introScreens.push('contexto');
-  if (aula.exemplo)   introScreens.push('exemplo');
+  if (aula.contexto)   introScreens.push('contexto');
+  if (aula.definicao)  introScreens.push('definicao');
+  if (aula.exemplo)    introScreens.push('exemplo');
   if (aula.resumo)     introScreens.push('resumo');
   if (aula.infinitivo) introScreens.push('infinitivo');
   const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo };
   let introIdx = 0;
   let introAtiva = true;
-  mostrarIntro(aula);
+  introFns[introScreens[0]](aula, 0);
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
@@ -388,9 +384,6 @@ carregarAula(aulaId).then(aula => {
       mostrarResultado(aula);
     }
   });
-
-  // Consultar lição
-  document.getElementById('btnConsultar').addEventListener('click', () => abrirLicao(aula));
 
   // Fechar lição
   document.getElementById('licaoFechar').addEventListener('click',    () => document.getElementById('licaoOverlay').classList.remove('show'));
