@@ -294,7 +294,7 @@ carregarAula(aulaId).then(aula => {
     if (introAtiva) {
       if (introIdx > 0) {
         introIdx--;
-        introFns[introScreens[introIdx]](aula);
+        introFns[introScreens[introIdx]](aula, introIdx);
       }
       return;
     }
@@ -305,7 +305,7 @@ carregarAula(aulaId).then(aula => {
     if (introAtiva) {
       introIdx++;
       if (introIdx < introScreens.length) {
-        introFns[introScreens[introIdx]](aula);
+        introFns[introScreens[introIdx]](aula, introIdx);
       } else {
         introAtiva = false;
         sairIntro();
