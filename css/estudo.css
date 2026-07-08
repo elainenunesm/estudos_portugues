@@ -288,6 +288,14 @@ body {
   flex-shrink: 0;
 }
 
+.infinitivo-icone-simbolo {
+  font-size: 44px;
+  font-weight: 700;
+  color: #2563eb;
+  line-height: 1;
+  font-family: Arial, sans-serif;
+}
+
 .infinitivo-descricao {
   font-size: 18px;
   font-weight: 700;

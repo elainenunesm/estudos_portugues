@@ -173,10 +173,7 @@ function mostrarInfinitivo(aula, introIdx) {
   opcoesEl.innerHTML = `
     <div class="infinitivo-card">
       <div class="infinitivo-icone-wrap">
-        <svg viewBox="0 0 48 28" width="52" height="32" fill="none">
-          <path d="M14 14C14 8.48 18 4 23 4c3 0 5.5 1.8 7 4.5L24 14l6 5.5C28.5 22.2 26 24 23 24c-5 0-9-4.48-9-10z" fill="#2563eb"/>
-          <path d="M34 14C34 8.48 30 4 25 4c-3 0-5.5 1.8-7 4.5L24 14l-6 5.5C19.5 22.2 22 24 25 24c5 0 9-4.48 9-10z" fill="#2563eb"/>
-        </svg>
+        <span class="infinitivo-icone-simbolo">∞</span>
       </div>
       <p class="infinitivo-descricao">${inf.descricao || ''}</p>
       ${inf.nota ? `<p class="infinitivo-nota">${inf.nota}</p>` : ''}
