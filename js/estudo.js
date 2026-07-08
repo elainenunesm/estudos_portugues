@@ -58,7 +58,7 @@ function mostrarIntro(aula) {
 
   // Atualiza header
   questaoInfo.textContent = aula.titulo;
-  renderIntroSegs(aula);
+  progressSegs.innerHTML  = '';
 
   // Monta conteúdo da intro
   questaoTitulo.innerHTML = `
@@ -87,7 +87,7 @@ function sairIntro() {
 function mostrarDefinicao(aula) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
-  renderIntroSegs(aula);
+  progressSegs.innerHTML       = '';
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
@@ -107,7 +107,7 @@ function mostrarDefinicao(aula) {
 function mostrarContexto(aula) {
   const ctx = aula.contexto || {};
   questaoInfo.textContent      = aula.titulo;
-  renderIntroSegs(aula);
+  progressSegs.innerHTML       = '';
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
