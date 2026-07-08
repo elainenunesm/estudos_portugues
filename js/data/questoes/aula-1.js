@@ -1,16 +1,16 @@
 'use strict';
 
 /**
- * AULA-1.JS — Aula 1: Identifique o verbo
+ * AULA-1.JS — Aula 1: Aprenda o que é o verbo
  * Para adicionar/editar questões, edite apenas este arquivo.
  */
 window.AULA_DATA = {
   id:     1,
   modulo: 'Etapa 1: Fundamentos',
-  titulo: 'Aula 1: Identifique o verbo',
+  titulo: 'Aula 1: Aprenda o que é o verbo',
 
   antesComecar: {
-    titulo:      'Identifique o verbo',
+    titulo:      'Aprenda o que é o verbo',
     descricao:   'Nesta aula você vai dar o primeiro passo para entender a estrutura das frases.',
     aprender:    'Nesta aula você aprenderá a identificar o verbo em frases simples.',
     importancia: 'Saber identificar o verbo ajuda a compreender a frase e facilita encontrar o sujeito.',

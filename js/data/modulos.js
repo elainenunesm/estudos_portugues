@@ -11,7 +11,7 @@ const MODULOS = [
     aulas: [
       {
         id:        1,
-        titulo:    'Aula 1: Identifique o verbo',
+        titulo:    'Aula 1: Aprenda o que é o verbo',
         arquivo:   'aula-1',   // carrega js/data/questoes/aula-1.js
         icone:     'busca',
       },

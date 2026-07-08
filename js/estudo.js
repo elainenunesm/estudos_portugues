@@ -11,11 +11,16 @@ const params   = new URLSearchParams(window.location.search);
 const aulaId   = params.get('aula') || '1';
 const modoErros = params.get('modo') === 'erros';
 
+// Questões pontuadas desativadas por enquanto (dado da aula mantido em
+// js/data/questoes/aula-N.js para reativar depois — é só voltar para true).
+const QUESTOES_ATIVAS = false;
+
 // ── ESTADO ───────────────────────────────────────────────────
 const estado = {
-  atual:     0,
-  respostas: [],   // preenchido após carregar as questões
-  origIdx:   [],   // mapeia índice exibido -> índice original em aula.questoes (modo caderno de erros)
+  atual:         0,
+  respostas:     [],   // preenchido após carregar as questões
+  origIdx:       [],   // mapeia índice exibido -> índice original em aula.questoes (modo caderno de erros)
+  totalOriginal: 0,    // nº de questões da 1ª rodada, para a mensagem final após rodadas de revisão
 };
 
 // ── CARREGAR QUESTÕES DINAMICAMENTE ─────────────────────────
@@ -138,6 +143,33 @@ function sairIntro() {
   questaoTitulo.innerHTML   = '';
 }
 
+// ── MARCAR CARTÃO PARA REVISÃO ───────────────────────────────
+// Etiqueta tipo marca-página no lado esquerdo das telas de conteúdo
+// (definição, contexto, exemplo...). Fica salva no arquivo de progresso.
+let cartaoMarcadoSet = new Set();
+
+function marcarCartaoHtml(chave) {
+  const marcada = cartaoMarcadoSet.has(chave);
+  return `
+    <button type="button" class="btn-marcar-cartao${marcada ? ' marcada' : ''}" data-chave="${chave}" title="Marcar para revisão">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </button>`;
+}
+
+function ativarBotaoMarcar() {
+  const btn = opcoesEl.querySelector('.btn-marcar-cartao');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const chave = btn.dataset.chave;
+    const marcando = !cartaoMarcadoSet.has(chave);
+    if (marcando) cartaoMarcadoSet.add(chave); else cartaoMarcadoSet.delete(chave);
+    btn.classList.toggle('marcada', marcando);
+    alternarCartaoMarcado(aulaId, chave);
+  });
+}
+
 function mostrarDefinicao(aula, introIdx) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
@@ -147,6 +179,7 @@ function mostrarDefinicao(aula, introIdx) {
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
     <div class="definicao-card">
+      ${marcarCartaoHtml('definicao')}
       <div class="definicao-icone-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" width="40" height="40">
           <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/>
@@ -155,6 +188,7 @@ function mostrarDefinicao(aula, introIdx) {
       </div>
       <p class="definicao-texto">${def.texto || ''}</p>
     </div>`;
+  ativarBotaoMarcar();
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
@@ -170,6 +204,7 @@ function mostrarContexto(aula, introIdx) {
   questaoSubtitulo.textContent = '';
   opcoesEl.innerHTML = `
     <div class="contexto-card">
+      ${marcarCartaoHtml('contexto')}
       <div class="contexto-icone-wrap">
         <svg viewBox="0 0 24 24" fill="none" stroke="#4A80F0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="36" height="36">
           <circle cx="11" cy="11" r="8"/>
@@ -183,6 +218,7 @@ function mostrarContexto(aula, introIdx) {
         <span>${ctx.nota}</span>
       </div>` : ''}
     </div>`;
+  ativarBotaoMarcar();
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
@@ -209,6 +245,7 @@ function mostrarExemplo(aula, introIdx, i) {
     : (RESUMO_ICONES[ex.tipo] ? RESUMO_ICONES[ex.tipo]('#4A80F0') : RESUMO_ICONES.acao('#4A80F0'));
   opcoesEl.innerHTML = `
     <div class="exemplo-card">
+      ${marcarCartaoHtml(`exemplo${i}`)}
       <div class="exemplo-icone-wrap">
         <svg viewBox="-6 0 30 24" fill="none" width="60" height="48">
           <line x1="-5" y1="8"  x2="0" y2="8"  stroke="#b8ccf4" stroke-width="2.2" stroke-linecap="round"/>
@@ -220,6 +257,7 @@ function mostrarExemplo(aula, introIdx, i) {
       <p class="exemplo-texto">${ex.texto || ''}</p>
       ${ex.conclusao ? `<p class="exemplo-conclusao">${ex.conclusao}</p>` : ''}
     </div>`;
+  ativarBotaoMarcar();
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = false;
   questaoArea.scrollTop = 0;
@@ -332,7 +370,7 @@ function mostrarIdentificacao(aula, introIdx) {
 // Não conta na pontuação da aula — é só um checkpoint de leitura.
 // A resposta escolhida fica guardada em dados._escolhida, então
 // voltar/avançar preserva o estado já respondido.
-function mostrarChecagem(aula, introIdx, dados) {
+function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
@@ -363,7 +401,8 @@ function mostrarChecagem(aula, introIdx, dados) {
     } else {
       btn.addEventListener('click', () => {
         dados._escolhida = i;
-        mostrarChecagem(aula, introIdx, dados);
+        if (i !== dados.correta) addErro(aulaId, `checagem${checagemIdx}`);
+        mostrarChecagem(aula, introIdx, dados, checagemIdx);
       });
     }
     btn.innerHTML = `<span class="letra">${LETRAS[i]}</span><span class="opcao-texto">${texto}</span>`;
@@ -508,17 +547,79 @@ function responder(opcaoIdx, aula) {
   renderQuestao(aula);
 }
 
-// ── RESULTADO ────────────────────────────────────────────────
-function calcularEstrelas(aula) {
-  const questoes = aula.questoes;
-  const acertos  = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
-  const pct      = acertos / questoes.length;
+// ── REVISÃO (repete só as questões erradas até acertar tudo) ─
+// Regra vale para qualquer aula, pois vive aqui no controller genérico,
+// não no arquivo de dados de cada aula.
+let aguardandoRevisao   = false;
+let idxsRevisaoPendente = [];
+let aguardandoReinicio  = false;
 
-  if (pct >= 0.8) return { estrelas: 3, emoji: '🎉', titulo: 'Excelente!',        desc: `Você acertou ${acertos} de ${questoes.length} questões. Parabéns!` };
-  if (pct >= 0.5) return { estrelas: 2, emoji: '👍', titulo: 'Bom trabalho!',      desc: `Você acertou ${acertos} de ${questoes.length} questões. Continue praticando!` };
-  return           { estrelas: 1, emoji: '💪', titulo: 'Continue tentando!', desc: `Você acertou ${acertos} de ${questoes.length} questões. Revise a lição e tente novamente.` };
+function mostrarRevisao(idxsErrados) {
+  aguardandoRevisao   = true;
+  idxsRevisaoPendente = idxsErrados;
+  const n = idxsErrados.length;
+  document.getElementById('resultadoEmoji').textContent    = '🔄';
+  document.getElementById('resultadoTitulo').textContent   = 'Vamos revisar!';
+  document.getElementById('resultadoDesc').textContent     = `Você errou ${n} ${n !== 1 ? 'questões' : 'questão'}. Responda de novo até acertar tudo para concluir a aula.`;
+  document.getElementById('resultadoEstrelas').textContent = '';
+  document.getElementById('resultadoBtnContinuar').textContent = 'Revisar agora';
+  document.getElementById('resultadoOverlay').classList.add('show');
 }
 
+// Errou tudo na rodada — a lição inteira não ficou clara, volta pro início
+// da aula (telas de introdução) em vez de só repetir as mesmas questões.
+function mostrarReinicio() {
+  aguardandoReinicio = true;
+  document.getElementById('resultadoEmoji').textContent    = '📚';
+  document.getElementById('resultadoTitulo').textContent   = 'Vamos rever a aula';
+  document.getElementById('resultadoDesc').textContent     = 'Você errou todas as questões. Vamos revisar a aula desde o início antes de tentar de novo.';
+  document.getElementById('resultadoEstrelas').textContent = '';
+  document.getElementById('resultadoBtnContinuar').textContent = 'Rever a aula';
+  document.getElementById('resultadoOverlay').classList.add('show');
+}
+
+// ── MESMA REGRA PARA AS CHECAGENS ─────────────────────────────
+// Enquanto as questões pontuadas estiverem desativadas, as checagens são
+// "as questões" da aula — então valem as mesmas regras de revisão/reinício.
+let aguardandoRevisaoChecagem = false;
+let checagemRevisaoPendente   = [];
+
+function mostrarRevisaoChecagem(itens) {
+  aguardandoRevisaoChecagem = true;
+  checagemRevisaoPendente   = itens;
+  const n = itens.length;
+  document.getElementById('resultadoEmoji').textContent    = '🔄';
+  document.getElementById('resultadoTitulo').textContent   = 'Vamos revisar!';
+  document.getElementById('resultadoDesc').textContent     = `Você errou ${n} ${n !== 1 ? 'questões' : 'questão'}. Responda de novo até acertar tudo para concluir a aula.`;
+  document.getElementById('resultadoEstrelas').textContent = '';
+  document.getElementById('resultadoBtnContinuar').textContent = 'Revisar agora';
+  document.getElementById('resultadoOverlay').classList.add('show');
+}
+
+function mostrarFinalizadoChecagem() {
+  document.getElementById('resultadoEmoji').textContent    = '🎉';
+  document.getElementById('resultadoTitulo').textContent   = 'Excelente!';
+  document.getElementById('resultadoDesc').textContent     = 'Você completou a aula com 100% de acerto!';
+  document.getElementById('resultadoEstrelas').textContent = '★★★';
+  document.getElementById('resultadoBtnContinuar').textContent = 'Voltar ao início';
+  document.getElementById('resultadoOverlay').classList.add('show');
+  sessionStorage.setItem(`aula${aulaId}_resultado`, JSON.stringify({
+    aulaId: parseInt(aulaId), estrelas: 3, acertos: 1, total: 1,
+  }));
+}
+
+// Praticando só os erros do caderno de erros (não a aula inteira) —
+// termina sem estrelas nem desbloquear a próxima aula.
+function mostrarPraticaConcluidaChecagem() {
+  document.getElementById('resultadoEmoji').textContent    = '📓';
+  document.getElementById('resultadoTitulo').textContent   = 'Prática concluída!';
+  document.getElementById('resultadoDesc').textContent     = 'Você acertou todas as questões revisadas.';
+  document.getElementById('resultadoEstrelas').textContent = '';
+  document.getElementById('resultadoBtnContinuar').textContent = 'Voltar ao início';
+  document.getElementById('resultadoOverlay').classList.add('show');
+}
+
+// ── RESULTADO ────────────────────────────────────────────────
 function mostrarResultado(aula) {
   const questoes = aula.questoes;
   const acertos  = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
@@ -532,19 +633,21 @@ function mostrarResultado(aula) {
     return;
   }
 
-  const { estrelas, emoji, titulo, desc } = calcularEstrelas(aula);
-  document.getElementById('resultadoEmoji').textContent   = emoji;
-  document.getElementById('resultadoTitulo').textContent  = titulo;
-  document.getElementById('resultadoDesc').textContent    = desc;
-  document.getElementById('resultadoEstrelas').textContent = '★'.repeat(estrelas) + '☆'.repeat(3 - estrelas);
+  // Só chega aqui depois de acertar 100% da rodada (a última, após as
+  // revisões necessárias) — por isso sempre fecha com as 3 estrelas.
+  const total = estado.totalOriginal || questoes.length;
+  document.getElementById('resultadoEmoji').textContent    = '🎉';
+  document.getElementById('resultadoTitulo').textContent   = 'Excelente!';
+  document.getElementById('resultadoDesc').textContent     = `Você completou as ${total} questões da aula com 100% de acerto!`;
+  document.getElementById('resultadoEstrelas').textContent = '★★★';
   document.getElementById('resultadoOverlay').classList.add('show');
 
   // Passa resultado para index.html via sessionStorage
   sessionStorage.setItem(`aula${aulaId}_resultado`, JSON.stringify({
-    aulaId:  parseInt(aulaId),
-    estrelas,
-    acertos,
-    total: questoes.length,
+    aulaId:   parseInt(aulaId),
+    estrelas: 3,
+    acertos:  total,
+    total,
   }));
 }
 
@@ -558,19 +661,42 @@ function abrirLicao(aula) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.resolve(null)]).then(([aulaOriginal, notebook]) => {
+Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.resolve(null), getCartoesMarcados()]).then(([aulaOriginal, notebook, cartoesMarcados]) => {
   let aula = aulaOriginal;
+  let modoErrosChecagem     = false;
+  let checagemErrosIniciais = [];
+  cartaoMarcadoSet = new Set(cartoesMarcados[String(aulaId)] || []);
 
   if (modoErros) {
-    const errIdxs = (notebook[String(aulaId)] || []).slice().sort((a, b) => a - b);
-    if (errIdxs.length === 0) {
+    const todosErros = notebook[String(aulaId)] || [];
+    const errIdxs = todosErros
+      .filter(i => Number.isInteger(i) && i >= 0 && i < aulaOriginal.questoes.length)
+      .slice().sort((a, b) => a - b);
+    // Erros de checagem ficam guardados como "checagemN" — extrai o índice.
+    const checagemErrIdxs = todosErros
+      .filter(x => typeof x === 'string' && /^checagem\d+$/.test(x))
+      .map(x => parseInt(x.slice('checagem'.length), 10))
+      .filter(i => aulaOriginal.checagem && i >= 0 && i < aulaOriginal.checagem.length)
+      .sort((a, b) => a - b);
+
+    if (errIdxs.length === 0 && checagemErrIdxs.length === 0) {
       window.location.href = 'index.html?view=erros';
       return;
     }
-    aula = { ...aulaOriginal, titulo: `Caderno de Erros — ${aulaOriginal.titulo}`, questoes: errIdxs.map(i => aulaOriginal.questoes[i]) };
-    estado.origIdx = errIdxs;
+    if (errIdxs.length === 0) {
+      // Só tem erros de checagem — pratica direto só essas, sem passar
+      // pela aula inteira (introdução, exemplos etc.).
+      aula = { ...aulaOriginal, titulo: `Caderno de Erros — ${aulaOriginal.titulo}` };
+      modoErrosChecagem     = true;
+      checagemErrosIniciais = checagemErrIdxs.map(i => ({ dados: aulaOriginal.checagem[i], i }));
+    } else {
+      aula = { ...aulaOriginal, titulo: `Caderno de Erros — ${aulaOriginal.titulo}`, questoes: errIdxs.map(i => aulaOriginal.questoes[i]) };
+      estado.origIdx = errIdxs;
+    }
   } else {
+    if (!QUESTOES_ATIVAS) aula = { ...aula, questoes: [] };
     estado.origIdx = aula.questoes.map((_, i) => i);
+    estado.totalOriginal = aula.questoes.length;
   }
 
   // Inicializa estado com o número correto de questões
@@ -589,17 +715,79 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   (aula.checagem || []).forEach((dados, i) => {
     const chave = `checagem${i}`;
     introScreens.push(chave);
-    introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados);
+    introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
   });
-  // Tela de resumo desativada por enquanto (dado da aula mantido para uso futuro)
-  // if (aula.resumo)     introScreens.push('resumo');
-  if (aula.infinitivo)    introScreens.push('infinitivo');
-  if (aula.identificacao) introScreens.push('identificacao');
-  if (aula.sentido)        introScreens.push('sentido');
+  // Telas de resumo, infinitivo, identificação e sentido desativadas por
+  // enquanto (dados da aula mantidos para uso futuro)
+  // if (aula.resumo)        introScreens.push('resumo');
+  // if (aula.infinitivo)    introScreens.push('infinitivo');
+  // if (aula.identificacao) introScreens.push('identificacao');
+  // if (aula.sentido)       introScreens.push('sentido');
   introTotal = introScreens.length - 1;
   let introIdx = 0;
   let introAtiva = !modoErros;
-  if (introAtiva) {
+
+  // ── Revisão/reinício das checagens (mesma regra das questões) ──
+  // Enquanto QUESTOES_ATIVAS estiver desligado, as checagens são "as
+  // questões" da aula, então repetem-se as erradas até fechar 100% —
+  // ou reinicia a aula inteira se todas saírem erradas.
+  let revisandoChecagem = false;
+  let checagemFila       = [];
+  let checagemPos        = 0;
+  let introTotalSalvo    = 0;
+
+  function itensChecagemErrados(itens) {
+    return itens.filter(({ dados }) => dados._escolhida !== dados.correta);
+  }
+
+  function avaliarChecagens(itens) {
+    const erradas = itensChecagemErrados(itens);
+    if (erradas.length > 0 && erradas.length === itens.length) {
+      mostrarReinicio();
+    } else if (erradas.length > 0) {
+      mostrarRevisaoChecagem(erradas);
+    } else if (modoErros) {
+      // Só terminou de praticar os erros do caderno — não é a aula
+      // completa, então não dá estrelas nem desbloqueia a próxima.
+      mostrarPraticaConcluidaChecagem();
+    } else if (aula.questoes.length === 0) {
+      mostrarFinalizadoChecagem();
+    } else {
+      introAtiva = false;
+      sairIntro();
+      renderQuestao(aula);
+    }
+  }
+
+  function finalizarChecagens() {
+    avaliarChecagens((aula.checagem || []).map((dados, i) => ({ dados, i })));
+  }
+
+  function mostrarChecagemRevisaoAtual() {
+    const { dados, i } = checagemFila[checagemPos];
+    mostrarChecagem(aula, checagemPos, dados, i);
+    btnAnterior.disabled = checagemPos === 0;
+  }
+
+  function iniciarRevisaoChecagem(itens) {
+    revisandoChecagem = true;
+    checagemFila       = itens;
+    checagemPos        = 0;
+    checagemFila.forEach(({ dados }) => { delete dados._escolhida; });
+    introTotalSalvo = introTotal;
+    introTotal      = checagemFila.length;
+    mostrarChecagemRevisaoAtual();
+  }
+
+  function finalizarRevisaoChecagem() {
+    revisandoChecagem = false;
+    introTotal = introTotalSalvo;
+    avaliarChecagens(checagemFila);
+  }
+
+  if (modoErrosChecagem) {
+    iniciarRevisaoChecagem(checagemErrosIniciais);
+  } else if (introAtiva) {
     introFns[introScreens[0]](aula, 0);
   } else {
     sairIntro();
@@ -608,6 +796,10 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
 
   // Navegação
   btnAnterior.addEventListener('click', () => {
+    if (revisandoChecagem) {
+      if (checagemPos > 0) { checagemPos--; mostrarChecagemRevisaoAtual(); }
+      return;
+    }
     if (introAtiva) {
       if (introIdx > 0) {
         introIdx--;
@@ -619,20 +811,42 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   });
 
   btnProxima.addEventListener('click', () => {
+    if (revisandoChecagem) {
+      checagemPos++;
+      if (checagemPos < checagemFila.length) {
+        mostrarChecagemRevisaoAtual();
+      } else {
+        finalizarRevisaoChecagem();
+      }
+      return;
+    }
     if (introAtiva) {
       introIdx++;
       if (introIdx < introScreens.length) {
         introFns[introScreens[introIdx]](aula, introIdx);
       } else {
-        introAtiva = false;
-        sairIntro();
-        renderQuestao(aula);
+        finalizarChecagens();
       }
       return;
     }
     if (estado.atual < aula.questoes.length - 1) {
       estado.atual++;
       renderQuestao(aula);
+      return;
+    }
+    if (modoErros) {
+      mostrarResultado(aula);
+      return;
+    }
+    // Fim da rodada — se errou alguma, repete só as erradas até fechar 100%.
+    // Se errou todas, a aula inteira não ficou clara: volta pro começo dela.
+    const idxsErrados = aula.questoes
+      .map((q, i) => (estado.respostas[i] !== q.correta ? estado.origIdx[i] : null))
+      .filter(i => i !== null);
+    if (idxsErrados.length === aula.questoes.length) {
+      mostrarReinicio();
+    } else if (idxsErrados.length > 0) {
+      mostrarRevisao(idxsErrados);
     } else {
       mostrarResultado(aula);
     }
@@ -648,8 +862,31 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
     window.location.href = destinoVoltar;
   });
 
-  // Voltar ao início após resultado
+  // Voltar ao início após resultado — ou começar a rodada de revisão/reinício
   document.getElementById('resultadoBtnContinuar').addEventListener('click', () => {
+    if (aguardandoReinicio) {
+      // Recarrega a aula do zero (telas de introdução, checagens, tudo).
+      window.location.href = `estudo.html?aula=${aulaId}`;
+      return;
+    }
+    if (aguardandoRevisao) {
+      aguardandoRevisao = false;
+      document.getElementById('resultadoOverlay').classList.remove('show');
+      document.getElementById('resultadoBtnContinuar').textContent = 'Voltar ao início';
+      aula = { ...aulaOriginal, questoes: idxsRevisaoPendente.map(i => aulaOriginal.questoes[i]) };
+      estado.origIdx   = idxsRevisaoPendente;
+      estado.atual     = 0;
+      estado.respostas = new Array(aula.questoes.length).fill(null);
+      renderQuestao(aula);
+      return;
+    }
+    if (aguardandoRevisaoChecagem) {
+      aguardandoRevisaoChecagem = false;
+      document.getElementById('resultadoOverlay').classList.remove('show');
+      document.getElementById('resultadoBtnContinuar').textContent = 'Voltar ao início';
+      iniciarRevisaoChecagem(checagemRevisaoPendente);
+      return;
+    }
     window.location.href = destinoVoltar;
   });
 

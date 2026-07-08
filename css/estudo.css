@@ -255,6 +255,47 @@ body {
   gap: 24px;
   padding: 32px 20px;
   text-align: center;
+  position: relative;
+}
+
+/* ETIQUETA "MARCAR PARA REVISÃO" — marca-página no lado esquerdo das
+   telas de conteúdo (definição, contexto, exemplo). */
+.btn-marcar-cartao {
+  position: absolute;
+  top: -6px;
+  right: 10px;
+  width: 26px;
+  height: 32px;
+  padding: 0;
+  background: #ffffff;
+  border: 2px solid #dbe4fb;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #b9c6f0;
+  z-index: 2;
+  transition: color 0.2s, transform 0.15s;
+}
+
+.btn-marcar-cartao:hover {
+  color: #4A80F0;
+  transform: translateY(1px);
+}
+
+.btn-marcar-cartao svg {
+  width: 13px;
+  height: 13px;
+}
+
+.btn-marcar-cartao.marcada {
+  color: #4A80F0;
+}
+
+.btn-marcar-cartao.marcada svg {
+  fill: #4A80F0;
 }
 
 .definicao-icone-wrap {
@@ -285,6 +326,7 @@ body {
   flex-direction: column;
   gap: 20px;
   padding: 8px 4px;
+  position: relative;
 }
 
 .contexto-icone-wrap {
@@ -332,6 +374,7 @@ body {
   flex-direction: column;
   gap: 20px;
   padding: 8px 4px;
+  position: relative;
 }
 
 .exemplo-icone-wrap {

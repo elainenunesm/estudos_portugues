@@ -1,6 +1,7 @@
 ﻿'use strict';
 
-// IndexedDB (openIDB/idbGet/idbSet/getErrorNotebook/addErro) vem de js/idb.js
+// IndexedDB (openIDB/idbGet/idbSet) e o caderno de erros baseado em arquivo
+// (getErrorNotebook/addErro, gravado em gramix-progresso.json) vêm de js/idb.js
 
 // ── ESTADO ───────────────────────────────────────────────────
 const PROGRESS_VERSION = 2; // incrementar para invalidar saves antigos
@@ -21,7 +22,10 @@ const state = {
 async function saveProgress() {
   if (!state.dirHandle) return;
   try {
-    const data = { version: PROGRESS_VERSION, aulas: state.aulas, savedAt: new Date().toISOString() };
+    // Preserva o caderno de erros já salvo no arquivo (gravado por
+    // estudo.js) — essa tela só conhece/atualiza o progresso das aulas.
+    const notebook = await getErrorNotebook();
+    const data = { version: PROGRESS_VERSION, aulas: state.aulas, errosNotebook: notebook, savedAt: new Date().toISOString() };
     const fh = await state.dirHandle.getFileHandle('gramix-progresso.json', { create: true });
     const wr = await fh.createWritable();
     await wr.write(JSON.stringify(data, null, 2));
@@ -206,7 +210,7 @@ async function renderErrosView() {
       <div class="erro-card">
         <div class="erro-card-info">
           <h3>${aula.titulo}</h3>
-          <p>${idxs.length} questão${idxs.length !== 1 ? 'ões' : ''} para revisar</p>
+          <p>${idxs.length} ${idxs.length !== 1 ? 'questões' : 'questão'} para revisar</p>
         </div>
         <button type="button" class="btn-praticar" data-aula="${aula.id}">Praticar</button>
       </div>`;
@@ -294,7 +298,7 @@ function setupAulaEvents(pathContainer) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', async function () {
 
   // Colapso do hero card
   const nivelSelector = document.getElementById('nivelSelector');
@@ -391,6 +395,12 @@ document.addEventListener('DOMContentLoaded', function () {
     node.style.pointerEvents = 'auto';
   });
 
+  // Tenta reconectar à pasta salva PRIMEIRO — precisa terminar antes de
+  // aplicar o resultado da aula recém-concluída, senão o loadProgress()
+  // (que lê o arquivo do disco) sobrescreve esse resultado com o estado
+  // antigo salvo antes da aula ser concluída.
+  await tryReconnect();
+
   // Verifica resultado ao voltar da tela de estudos (qualquer aula)
   for (let i = 1; i <= 10; i++) {
     const key       = `aula${i}_resultado`;
@@ -410,10 +420,7 @@ document.addEventListener('DOMContentLoaded', function () {
       state.aulas[aulaIdx] = { id: aulaId, status: 'active', progress: Math.round((acertos / total) * 100), stars: estrelas };
     }
     renderAulas();
-    saveProgress();
+    await saveProgress();
     break;
   }
-
-  // Tenta reconectar à pasta salva
-  tryReconnect();
 });
