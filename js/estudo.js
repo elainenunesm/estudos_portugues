@@ -155,6 +155,41 @@ function mostrarExemplo(aula, introIdx) {
   btnProxima.disabled  = false;
 }
 
+// ── ÍCONES DO RESUMO ─────────────────────────────────────────
+const RESUMO_ICONES = {
+  acao:     cor => `<path fill="${cor}" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>`,
+  estado:   cor => `<circle cx="12" cy="5" r="2.5" fill="${cor}"/><path fill="${cor}" d="M12 9c-3 0-5 2-5 4.5V17h3v4h4v-4h3v-3.5C17 11 15 9 12 9z"/>`,
+  mudanca:  cor => `<path fill="none" stroke="${cor}" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/>`,
+  fenomeno: cor => `<path fill="${cor}" d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"/><line x1="8" y1="20" x2="8" y2="23" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"/><line x1="12" y1="20" x2="12" y2="23" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"/><line x1="16" y1="20" x2="16" y2="23" stroke="${cor}" stroke-width="2.2" stroke-linecap="round"/>`,
+};
+
+function mostrarResumo(aula, introIdx) {
+  const res = aula.resumo || {};
+  questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
+  renderIntroSegs(aula, introIdx - 1);
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  opcoesEl.innerHTML = `
+    <div class="resumo-card">
+      <p class="resumo-titulo">${res.titulo || ''}</p>
+      ${(res.itens || []).map(item => `
+      <div class="resumo-item">
+        <div class="resumo-icone" style="background:${item.corFundo}">
+          <svg viewBox="0 0 24 24" width="26" height="26">
+            ${RESUMO_ICONES[item.tipo] ? RESUMO_ICONES[item.tipo](item.cor) : ''}
+          </svg>
+        </div>
+        <div class="resumo-item-info">
+          <span class="resumo-item-titulo" style="color:${item.cor}">${item.titulo}</span>
+          <span class="resumo-item-exemplos">${item.exemplos}</span>
+        </div>
+      </div>`).join('')}
+    </div>`;
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = false;
+}
+
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
 function renderQuestao(aula) {
   const questoes = aula.questoes;
@@ -287,7 +322,8 @@ carregarAula(aulaId).then(aula => {
   if (aula.definicao) introScreens.push('definicao');
   if (aula.contexto)  introScreens.push('contexto');
   if (aula.exemplo)   introScreens.push('exemplo');
-  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo };
+  if (aula.resumo)    introScreens.push('resumo');
+  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, resumo: mostrarResumo };
   let introIdx = 0;
   let introAtiva = true;
   mostrarIntro(aula);

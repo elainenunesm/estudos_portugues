@@ -28,6 +28,16 @@ window.AULA_DATA = {
     conclusao: 'Isso representa uma <span class="destaque">ação</span>.',
   },
 
+  resumo: {
+    titulo: 'Os verbos podem indicar:',
+    itens: [
+      { tipo: 'acao',     cor: '#16a34a', corFundo: '#dcfce7', titulo: 'Ação',                 exemplos: 'correr, cantar' },
+      { tipo: 'estado',   cor: '#7c3aed', corFundo: '#ede9fe', titulo: 'Estado',               exemplos: 'ser, estar' },
+      { tipo: 'mudanca',  cor: '#ea580c', corFundo: '#ffedd5', titulo: 'Mudança de estado',    exemplos: 'ficar, tornar-se' },
+      { tipo: 'fenomeno', cor: '#2563eb', corFundo: '#dbeafe', titulo: 'Fenômeno da natureza', exemplos: 'chover, amanhecer' },
+    ],
+  },
+
   licao: {
     titulo: '📖 Lição: O Verbo',
     html: `

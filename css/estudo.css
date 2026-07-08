@@ -265,6 +265,56 @@ body {
   line-height: 1.5;
 }
 
+/* TELA DE RESUMO */
+.resumo-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resumo-titulo {
+  font-size: 17px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.resumo-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fafafa;
+  border: 1px solid #f0eaff;
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+
+.resumo-icone {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.resumo-item-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.resumo-item-titulo {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.resumo-item-exemplos {
+  font-size: 13px;
+  color: #64748b;
+}
+
 /* OPÇÕES */
 .opcoes {
   display: flex;
