@@ -56,7 +56,7 @@ body {
 
 .questao-info {
   color: rgba(255,255,255,0.9);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 500;
 }
 
@@ -89,7 +89,7 @@ body {
   gap: 5px;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
 }
@@ -136,7 +136,7 @@ body {
 }
 
 .questao-titulo {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 6px;
@@ -144,7 +144,7 @@ body {
 }
 
 .questao-subtitulo {
-  font-size: 14px;
+  font-size: 15px;
   color: #6b7280;
   margin-bottom: 24px;
 }
@@ -152,16 +152,16 @@ body {
 /* TELA DE INTRODUÇÃO (Antes de começar) */
 .intro-label {
   display: block;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #5B2BCB;
+  color: #4A80F0;
   margin-bottom: 8px;
 }
 
 .intro-titulo {
-  font-size: 30px;
+  font-size: 32px;
   font-weight: 800;
   color: #1a1a2e;
   line-height: 1.25;
@@ -169,15 +169,16 @@ body {
 }
 
 .intro-desc {
-  font-size: 15.5px;
+  font-size: 16px;
   color: #4b5563;
   line-height: 1.6;
   margin-bottom: 28px;
+  text-align: justify;
 }
 
 .intro-info {
-  background: #faf9ff;
-  border: 1.5px solid #e6dffa;
+  background: #f5f8ff;
+  border: 1.5px solid #d9e6fc;
   border-radius: 18px;
   padding: 22px 20px;
 }
@@ -191,14 +192,14 @@ body {
 .intro-info-item + .intro-info-item {
   margin-top: 20px;
   padding-top: 20px;
-  border-top: 1px solid #e6dffa;
+  border-top: 1px solid #d9e6fc;
 }
 
 .intro-info-icone-wrap {
   width: 52px;
   height: 52px;
   border-radius: 50%;
-  background: #f0eaff;
+  background: #eef2ff;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -206,16 +207,17 @@ body {
 }
 
 .intro-info-texto h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
-  color: #5B2BCB;
+  color: #4A80F0;
   margin-bottom: 6px;
 }
 
 .intro-info-texto p {
-  font-size: 14.5px;
+  font-size: 16px;
   color: #374151;
   line-height: 1.6;
+  text-align: justify;
 }
 
 /* TELA DE DEFINIÇÃO */
@@ -239,7 +241,7 @@ body {
 }
 
 .definicao-texto {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 600;
   color: #1a1a2e;
   line-height: 1.6;
@@ -270,10 +272,11 @@ body {
 }
 
 .contexto-texto {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 500;
   color: #1a1a2e;
   line-height: 1.65;
+  text-align: justify;
 }
 
 .contexto-texto strong { font-weight: 700; }
@@ -290,9 +293,10 @@ body {
 .contexto-nota svg { flex-shrink: 0; margin-top: 1px; }
 
 .contexto-nota span {
-  font-size: 14px;
+  font-size: 15px;
   color: #475569;
   line-height: 1.5;
+  text-align: justify;
 }
 
 /* TELA DE EXEMPLO */
@@ -318,6 +322,7 @@ body {
   font-size: 16px;
   color: #1a1a2e;
   line-height: 1.65;
+  text-align: justify;
 }
 
 .exemplo-conclusao {
@@ -325,6 +330,7 @@ body {
   font-weight: 700;
   color: #1a1a2e;
   line-height: 1.5;
+  text-align: justify;
 }
 
 /* TELA DE INFINITIVO */
@@ -356,22 +362,22 @@ body {
 }
 
 .infinitivo-descricao {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #1a1a2e;
   line-height: 1.5;
-  text-align: left;
+  text-align: justify;
 }
 
 .infinitivo-nota {
-  font-size: 15px;
+  font-size: 16px;
   color: #374151;
   line-height: 1.5;
-  text-align: left;
+  text-align: justify;
 }
 
 .infinitivo-conj-titulo {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #1a1a2e;
   text-align: center;
@@ -397,13 +403,13 @@ body {
 }
 
 .infinitivo-conj-sufixo {
-  font-size: 26px;
+  font-size: 27px;
   font-weight: 700;
   color: #2563eb;
 }
 
 .infinitivo-conj-label {
-  font-size: 13px;
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -412,7 +418,7 @@ body {
   font-weight: 600;
   color: #1a1a2e;
   line-height: 1.6;
-  text-align: left;
+  text-align: justify;
   background: #eff6ff;
   border-left: 3px solid #2563eb;
   border-radius: 10px;
@@ -427,7 +433,7 @@ body {
 }
 
 .resumo-titulo {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 4px;
@@ -460,12 +466,12 @@ body {
 }
 
 .resumo-item-titulo {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 
 .resumo-item-exemplos {
-  font-size: 13px;
+  font-size: 14px;
   color: #64748b;
 }
 
@@ -494,7 +500,7 @@ body {
 }
 
 .idf-titulo {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #1a1a2e;
   line-height: 1.4;
@@ -502,9 +508,10 @@ body {
 }
 
 .idf-intro {
-  font-size: 15px;
+  font-size: 16px;
   color: #374151;
   line-height: 1.5;
+  text-align: justify;
 }
 
 .idf-exemplos {
@@ -525,20 +532,21 @@ body {
 }
 
 .idf-palavra {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: #2563eb;
 }
 
 .idf-linha {
-  font-size: 13px;
+  font-size: 14px;
   color: #64748b;
 }
 
 .idf-rodape {
-  font-size: 14px;
+  font-size: 16px;
   color: #374151;
   line-height: 1.6;
+  text-align: justify;
 }
 
 /* TELA DE SENTIDO */
@@ -556,10 +564,11 @@ body {
   border: 1.5px solid #fde68a;
   border-radius: 14px;
   padding: 12px 14px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
   color: #1a1a2e;
   line-height: 1.5;
+  text-align: justify;
 }
 
 .sentido-dica-icone {
@@ -569,13 +578,14 @@ body {
 }
 
 .sentido-texto {
-  font-size: 15px;
+  font-size: 16px;
   color: #374151;
   line-height: 1.6;
+  text-align: justify;
 }
 
 .sentido-exemplos-titulo {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   color: #1a1a2e;
   margin-top: 4px;
@@ -600,13 +610,13 @@ body {
 }
 
 .sentido-item-frase {
-  font-size: 14px;
+  font-size: 15px;
   color: #1a1a2e;
   line-height: 1.4;
 }
 
 .sentido-item-cadeia {
-  font-size: 13px;
+  font-size: 14px;
   color: #64748b;
   line-height: 1.4;
 }
@@ -663,7 +673,7 @@ body {
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: #5B2BCB;
   flex-shrink: 0;
   transition: all 0.2s;
@@ -688,7 +698,7 @@ body {
 }
 
 .opcao-texto {
-  font-size: 15px;
+  font-size: 16px;
   color: #1a1a2e;
   font-weight: 500;
   line-height: 1.4;
@@ -719,9 +729,10 @@ body {
 .feedback-icon { font-size: 22px; }
 
 .feedback-texto {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.4;
+  text-align: justify;
 }
 
 .feedback-bar.acerto .feedback-texto { color: #16a34a; }
@@ -748,7 +759,7 @@ body {
   border-radius: 14px;
   color: #5B2BCB;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -767,7 +778,7 @@ body {
   border-radius: 14px;
   color: white;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -809,7 +820,7 @@ body {
   align-items: center;
   margin-bottom: 16px;
 }
-.licao-header h3 { font-size: 18px; font-weight: 700; color: #1a1a2e; }
+.licao-header h3 { font-size: 19px; font-weight: 700; color: #1a1a2e; }
 
 .licao-fechar {
   background: #f3f4f6;
@@ -817,18 +828,19 @@ body {
   border-radius: 50%;
   width: 32px;
   height: 32px;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   color: #6b7280;
 }
 
 .licao-corpo {
-  font-size: 15px;
+  font-size: 16px;
   color: #374151;
   line-height: 1.7;
 }
 .licao-corpo ul { padding-left: 20px; margin: 10px 0; }
-.licao-corpo p  { margin-bottom: 8px; }
+.licao-corpo p  { margin-bottom: 8px; text-align: justify; }
+.licao-corpo li { text-align: justify; }
 
 .licao-btn-fechar {
   margin-top: 20px;
@@ -839,7 +851,7 @@ body {
   border: none;
   border-radius: 14px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
 }
 
@@ -875,8 +887,8 @@ body {
 .resultado-overlay.show .resultado-card { transform: scale(1); }
 
 .resultado-emoji { font-size: 56px; margin-bottom: 16px; }
-.resultado-titulo { font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
-.resultado-desc   { font-size: 14px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
+.resultado-titulo { font-size: 23px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px; }
+.resultado-desc   { font-size: 15px; color: #6b7280; margin-bottom: 20px; line-height: 1.6; }
 
 .resultado-estrelas { font-size: 32px; margin-bottom: 24px; }
 
@@ -888,7 +900,7 @@ body {
   border: none;
   border-radius: 14px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: background 0.2s;
 }
@@ -896,4 +908,24 @@ body {
 
 @media (min-width: 768px) {
   body { background: #f4f0ff; }
+}
+
+/* Ajuste fino em telas bem estreitas, para o texto justificado não ficar apertado */
+@media (max-width: 380px) {
+  .intro-titulo             { font-size: 27px; }
+  .intro-desc,
+  .intro-info-texto p,
+  .contexto-texto,
+  .exemplo-texto,
+  .exemplo-conclusao,
+  .infinitivo-nota,
+  .infinitivo-extra,
+  .idf-intro,
+  .idf-rodape,
+  .sentido-texto,
+  .sentido-dica,
+  .licao-corpo,
+  .opcao-texto               { font-size: 15px; }
+  .infinitivo-descricao      { font-size: 17px; }
+  .idf-titulo                { font-size: 17px; }
 }

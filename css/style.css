@@ -41,14 +41,14 @@ body {
 }
 
 .header-title h1 {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #1a1a2e;
   line-height: 1.2;
 }
 
 .header-title p {
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
   margin-top: 2px;
 }
@@ -63,7 +63,7 @@ body {
   border-radius: 24px;
   color: #5B2BCB;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -100,7 +100,7 @@ body {
   gap: 6px;
   color: #5B2BCB;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 8px;
 }
 
@@ -129,7 +129,7 @@ body {
 
 .hero-title {
   text-align: center;
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 18px;
@@ -247,7 +247,7 @@ body {
 
 .aula-card h3 {
   text-align: center;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 6px;
@@ -255,7 +255,7 @@ body {
 
 .aula-card .status {
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
   margin-bottom: 14px;
 }
@@ -283,7 +283,7 @@ body {
   border: none;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -326,7 +326,7 @@ body {
   border: none;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: not-allowed;
 }
 
@@ -340,7 +340,7 @@ body {
   color: white;
   padding: 12px 20px;
   border-radius: 12px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   opacity: 0;
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -366,7 +366,7 @@ body {
   gap: 5px;
   padding: 6px 10px;
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -435,14 +435,14 @@ body {
 }
 
 .modal-title {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 10px;
 }
 
 .modal-desc {
-  font-size: 14px;
+  font-size: 15px;
   color: #6b7280;
   line-height: 1.6;
   margin-bottom: 24px;
@@ -460,7 +460,7 @@ body {
   border: none;
   border-radius: 14px;
   font-weight: 600;
-  font-size: 15px;
+  font-size: 16px;
   cursor: pointer;
   transition: all 0.2s;
   margin-bottom: 10px;
@@ -476,7 +476,7 @@ body {
   background: transparent;
   color: #9ca3af;
   border: none;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 500;
   cursor: pointer;
   transition: color 0.2s;
@@ -513,14 +513,14 @@ body {
 }
 
 .erros-header h2 {
-  font-size: 20px;
+  font-size: 21px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 6px;
 }
 
 .erros-header p {
-  font-size: 13px;
+  font-size: 14px;
   color: #6b7280;
   line-height: 1.5;
 }
@@ -544,14 +544,14 @@ body {
 }
 
 .erro-card-info h3 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
   color: #1a1a2e;
   margin-bottom: 4px;
 }
 
 .erro-card-info p {
-  font-size: 13px;
+  font-size: 14px;
   color: #ef4444;
   font-weight: 600;
 }
@@ -564,7 +564,7 @@ body {
   border: none;
   border-radius: 12px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 15px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -586,12 +586,12 @@ body {
 }
 
 .erros-empty p {
-  font-size: 14px;
+  font-size: 15px;
   margin-bottom: 4px;
 }
 
 .erros-empty-sub {
-  font-size: 13px;
+  font-size: 14px;
   color: #9ca3af;
   max-width: 280px;
   margin: 6px auto 0;
@@ -643,7 +643,7 @@ body {
 }
 
 .nav-item span {
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   color: #9ca3af;
   transition: color 0.2s;
@@ -671,16 +671,16 @@ body {
   border-radius: 8px;
   background: #ef4444;
   color: white;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   line-height: 1;
 }
 
 @media (max-width: 380px) {
-  .header-title h1 { font-size: 16px; }
-  .btn-continuar { padding: 8px 12px; font-size: 13px; }
-  .hero-title { font-size: 18px; }
-  .aula-card h3 { font-size: 15px; }
+  .header-title h1 { font-size: 17px; }
+  .btn-continuar { padding: 8px 12px; font-size: 14px; }
+  .hero-title { font-size: 19px; }
+  .aula-card h3 { font-size: 16px; }
 }
 
 @media (min-width: 768px) {
