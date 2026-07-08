@@ -353,34 +353,35 @@ body {
 .estudo-footer {
   padding: 14px 20px 24px;
   display: flex;
-  gap: 12px;
+  gap: 10px;
 }
 
 .btn-anterior {
+  flex: 1;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 14px 20px;
+  padding: 14px 16px;
   background: white;
-  border: 2px solid #e9dffb;
+  border: 1.5px solid #d4c4f0;
   border-radius: 14px;
   color: #5B2BCB;
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
+  transition: background 0.2s;
 }
 .btn-anterior:hover { background: #faf7ff; }
-.btn-anterior:disabled { opacity: 0.4; cursor: default; }
+.btn-anterior:disabled { opacity: 0.35; cursor: default; }
 
 .btn-proxima {
+  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  flex: 1;
-  padding: 14px 20px;
+  padding: 14px 16px;
   background: #5B2BCB;
   border: none;
   border-radius: 14px;
@@ -388,7 +389,7 @@ body {
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: background 0.2s;
 }
 .btn-proxima:hover { background: #4a22a8; }
 .btn-proxima:disabled { background: #d4c4f0; cursor: default; }
