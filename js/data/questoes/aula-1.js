@@ -50,6 +50,23 @@ window.AULA_DATA = {
     rodape: 'Você pode fazer isso com qualquer palavra que suspeite ser um verbo. Assim, fica mais fácil praticar e reconhecer cada caso.',
   },
 
+  sentido: {
+    dica: 'Depois de localizar o verbo, observe o sentido que ele transmite na oração.',
+    textos: [
+      'Ele pode indicar ação, estado, mudança de estado ou fenômeno da natureza.',
+      'Porém, o significado depende do contexto, já que um mesmo verbo pode assumir sentidos diferentes em frases diferentes.',
+    ],
+    exemplos: {
+      titulo: 'Exemplos:',
+      itens: [
+        { tipo: 'acao',     cor: '#16a34a', corFundo: '#dcfce7', frase: 'João <strong>correu</strong> no parque.',    cadeia: 'correu → correr → <strong>ação</strong>' },
+        { tipo: 'estado',   cor: '#7c3aed', corFundo: '#ede9fe', frase: 'Maria <strong>estava</strong> cansada.',     cadeia: 'estava → estar → <strong>estado</strong>' },
+        { tipo: 'mudanca',  cor: '#ea580c', corFundo: '#ffedd5', frase: 'O leite <strong>ficou</strong> azedo.',      cadeia: 'ficou → ficar → <strong>mudança de estado</strong>' },
+        { tipo: 'fenomeno', cor: '#2563eb', corFundo: '#dbeafe', frase: 'Amanheceu muito cedo hoje.',                 cadeia: 'amanheceu → amanhecer → <strong>fenômeno da natureza</strong>' },
+      ],
+    },
+  },
+
   resumo: {
     titulo: 'Os verbos podem indicar:',
     itens: [

@@ -276,6 +276,42 @@ function mostrarIdentificacao(aula, introIdx) {
   atualizarScrollFade();
 }
 
+function mostrarSentido(aula, introIdx) {
+  const s = aula.sentido || {};
+  questaoInfo.textContent      = aula.titulo;
+  btnAnterior.style.display    = '';
+  renderIntroSegs(introIdx - 1);
+  questaoTitulo.innerHTML      = '';
+  questaoSubtitulo.textContent = '';
+  opcoesEl.innerHTML = `
+    <div class="sentido-card">
+      <div class="sentido-dica">
+        <span class="sentido-dica-icone">💡</span>
+        <p>${s.dica || ''}</p>
+      </div>
+      ${(s.textos || []).map(t => `<p class="sentido-texto">${t}</p>`).join('')}
+      <p class="sentido-exemplos-titulo">${s.exemplos?.titulo || ''}</p>
+      <div class="sentido-exemplos">
+        ${(s.exemplos?.itens || []).map(item => `
+        <div class="sentido-item">
+          <div class="resumo-icone" style="background:${item.corFundo}">
+            <svg viewBox="0 0 24 24" width="26" height="26">
+              ${RESUMO_ICONES[item.tipo] ? RESUMO_ICONES[item.tipo](item.cor) : ''}
+            </svg>
+          </div>
+          <div class="sentido-item-texto">
+            <p class="sentido-item-frase">${item.frase}</p>
+            <p class="sentido-item-cadeia">${item.cadeia}</p>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
+  btnProxima.disabled  = false;
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
+}
+
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
 function renderQuestao(aula) {
   const questoes = aula.questoes;
@@ -409,8 +445,9 @@ carregarAula(aulaId).then(aula => {
   if (aula.resumo)        introScreens.push('resumo');
   if (aula.infinitivo)    introScreens.push('infinitivo');
   if (aula.identificacao) introScreens.push('identificacao');
+  if (aula.sentido)        introScreens.push('sentido');
   introTotal = introScreens.length - 1;
-  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao };
+  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido };
   let introIdx = 0;
   let introAtiva = true;
   introFns[introScreens[0]](aula, 0);

@@ -504,6 +504,76 @@ body {
   line-height: 1.6;
 }
 
+/* TELA DE SENTIDO */
+.sentido-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.sentido-dica {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: #fefce8;
+  border: 1.5px solid #fde68a;
+  border-radius: 14px;
+  padding: 12px 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+  line-height: 1.5;
+}
+
+.sentido-dica-icone {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.sentido-texto {
+  font-size: 15px;
+  color: #374151;
+  line-height: 1.6;
+}
+
+.sentido-exemplos-titulo {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-top: 4px;
+}
+
+.sentido-exemplos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sentido-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.sentido-item-texto {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sentido-item-frase {
+  font-size: 14px;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+.sentido-item-cadeia {
+  font-size: 13px;
+  color: #64748b;
+  line-height: 1.4;
+}
+
 /* OPÇÕES */
 .opcoes {
   display: flex;
