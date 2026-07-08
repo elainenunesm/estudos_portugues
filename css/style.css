@@ -297,7 +297,6 @@ body {
 /* ESTADOS: BLOQUEADO */
 .aula-node.locked {
   opacity: 0.6;
-  pointer-events: none;
 }
 
 .icon-circle.locked {

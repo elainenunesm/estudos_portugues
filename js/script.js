@@ -168,7 +168,7 @@ function renderAulas() {
 
     if (aula.status === 'locked') {
       node.classList.add('locked');
-      node.style.pointerEvents = '';
+      node.style.pointerEvents = 'auto';
       iconCircle.className = 'icon-circle locked';
       card.classList.add('locked');
       statusEl.textContent = 'Bloqueada';
@@ -180,7 +180,6 @@ function renderAulas() {
 
     } else if (aula.status === 'active') {
       node.classList.remove('locked');
-      node.style.pointerEvents = 'auto';
       iconCircle.className = 'icon-circle active';
       card.classList.remove('locked');
       statusEl.textContent = aula.progress > 0 ? 'Em andamento' : 'Não iniciada';
@@ -192,7 +191,6 @@ function renderAulas() {
 
     } else if (aula.status === 'completed') {
       node.classList.remove('locked');
-      node.style.pointerEvents = 'auto';
       iconCircle.className = 'icon-circle active';
       card.classList.remove('locked');
       statusEl.textContent = 'Concluída';
@@ -204,8 +202,7 @@ function renderAulas() {
     }
   });
 
-  // Rebind dos botões após renderização
-  bindAulaButtons();
+  // Rebind dos botões após renderização — não é mais necessário (delegação)
 }
 
 // ── TOAST ────────────────────────────────────────────────────
@@ -235,33 +232,29 @@ function hideModal() {
   if (overlay) overlay.classList.remove('show');
 }
 
-// ── BIND BOTÕES DE AULA ──────────────────────────────────────
-function bindAulaButtons() {
-  document.querySelectorAll('.btn-recomecar').forEach(btn => {
-    btn.replaceWith(btn.cloneNode(true)); // remove listeners antigos
-  });
-  document.querySelectorAll('.btn-recomecar').forEach(btn => {
-    btn.addEventListener('click', function(e) {
+// ── DELEGAÇÃO DE EVENTOS DAS AULAS ─────────────────────────
+// Configurado uma única vez no DOMContentLoaded — não quebra IntersectionObserver
+function setupAulaEvents(pathContainer) {
+  pathContainer.addEventListener('click', function(e) {
+    // Aula bloqueada
+    const lockedNode = e.target.closest('.aula-node.locked');
+    if (lockedNode) {
+      showToast('🔒 Conclua a aula anterior para desbloquear');
+      return;
+    }
+    // Botão Começar / Continuar / Recomeçar
+    const btn = e.target.closest('.btn-recomecar');
+    if (btn) {
       e.stopPropagation();
-      const originalText = this.textContent.trim();
-      const label = originalText === 'Continuar' ? 'Carregando...' : 'Reiniciando...';
-      this.textContent = label;
-      this.style.background = '#4a22a8';
+      const originalText = btn.textContent.trim();
+      const label = originalText === 'Continuar' ? 'Carregando...' : originalText === 'Começar' ? 'Iniciando...' : 'Reiniciando...';
+      btn.textContent = label;
+      btn.style.background = '#4a22a8';
       setTimeout(() => {
-        this.textContent = originalText;
-        this.style.background = '#5B2BCB';
+        btn.textContent = originalText;
+        btn.style.background = '';
       }, 1200);
-    });
-  });
-
-  // Clique em aulas bloqueadas
-  document.querySelectorAll('.aula-node.locked').forEach(node => {
-    node.style.pointerEvents = 'auto';
-    node.replaceWith(node.cloneNode(true));
-  });
-  document.querySelectorAll('.aula-node.locked').forEach(node => {
-    node.style.pointerEvents = 'auto';
-    node.addEventListener('click', () => showToast('🔒 Conclua a aula anterior para desbloquear'));
+    }
   });
 }
 
@@ -334,8 +327,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
-        entry.target.style.opacity = '1';
-        entry.target.style.transform = 'translateY(0)';
+        const node = entry.target;
+        const isLocked = node.classList.contains('locked');
+        node.style.opacity   = isLocked ? '0.6' : '1';
+        node.style.transform = 'translateY(0)';
       }
     });
   }, { threshold: 0.1 });
@@ -347,8 +342,13 @@ document.addEventListener('DOMContentLoaded', function () {
     observer.observe(node);
   });
 
-  // Bind inicial dos botões
-  bindAulaButtons();
+  // Delegação de eventos (uma única vez)
+  setupAulaEvents(pathContainer);
+
+  // Também permite clique em aulas bloqueadas (pointer-events é none no CSS)
+  document.querySelectorAll('.aula-node.locked').forEach(node => {
+    node.style.pointerEvents = 'auto';
+  });
 
   // Tenta reconectar à pasta salva
   tryReconnect();
