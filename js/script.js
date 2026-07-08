@@ -346,20 +346,27 @@ document.addEventListener('DOMContentLoaded', function () {
     node.style.pointerEvents = 'auto';
   });
 
-  // Verifica resultado ao voltar da tela de estudos
-  const resultado = sessionStorage.getItem('aula1_resultado');
-  if (resultado) {
-    sessionStorage.removeItem('aula1_resultado');
-    const { estrelas, acertos, total } = JSON.parse(resultado);
+  // Verifica resultado ao voltar da tela de estudos (qualquer aula)
+  for (let i = 1; i <= 10; i++) {
+    const key       = `aula${i}_resultado`;
+    const resultRaw = sessionStorage.getItem(key);
+    if (!resultRaw) continue;
+    sessionStorage.removeItem(key);
+    const { aulaId, estrelas, acertos, total } = JSON.parse(resultRaw);
+    const aulaIdx  = aulaId - 1;
     const concluida = acertos >= Math.ceil(total * 0.5);
     if (concluida) {
-      state.aulas[0] = { id: 1, status: 'completed', progress: 100, stars: estrelas };
-      state.aulas[1] = { id: 2, status: 'active',    progress: 0,   stars: 0 };
+      state.aulas[aulaIdx] = { id: aulaId, status: 'completed', progress: 100, stars: estrelas };
+      // Desbloqueia a próxima aula, se existir
+      if (aulaIdx + 1 < state.aulas.length) {
+        state.aulas[aulaIdx + 1] = { ...state.aulas[aulaIdx + 1], status: 'active', progress: 0 };
+      }
     } else {
-      state.aulas[0] = { id: 1, status: 'active', progress: Math.round((acertos / total) * 100), stars: estrelas };
+      state.aulas[aulaIdx] = { id: aulaId, status: 'active', progress: Math.round((acertos / total) * 100), stars: estrelas };
     }
     renderAulas();
     saveProgress();
+    break;
   }
 
   // Tenta reconectar à pasta salva

@@ -1,61 +1,30 @@
-'use strict';
+﻿'use strict';
 
-// ── QUESTÕES — AULA 1: IDENTIFIQUE O VERBO ──────────────────
-const questoes = [
-  {
-    dificuldade: 'Fácil',
-    titulo: 'Qual é o verbo na frase?',
-    subtitulo: '"O menino correu no parque."',
-    opcoes: ['menino', 'correu', 'parque', 'no'],
-    correta: 1,
-    feedback: '"Correu" é o verbo — indica a ação do menino. Infinitivo: correr.',
-  },
-  {
-    dificuldade: 'Fácil',
-    titulo: 'Identifique o verbo:',
-    subtitulo: '"Maria estuda todos os dias."',
-    opcoes: ['Maria', 'todos', 'estuda', 'dias'],
-    correta: 2,
-    feedback: '"Estuda" é o verbo — indica o que Maria faz. Infinitivo: estudar.',
-  },
-  {
-    dificuldade: 'Fácil',
-    titulo: 'Qual palavra é um verbo?',
-    subtitulo: 'Escolha a alternativa correta.',
-    opcoes: ['casa', 'bonito', 'rapidamente', 'cantar'],
-    correta: 3,
-    feedback: '"Cantar" é o verbo no infinitivo. As outras palavras são: substantivo, adjetivo e advérbio.',
-  },
-  {
-    dificuldade: 'Médio',
-    titulo: 'Qual é o verbo na frase?',
-    subtitulo: '"Ela comprou um livro novo na livraria."',
-    opcoes: ['livro', 'novo', 'livraria', 'comprou'],
-    correta: 3,
-    feedback: '"Comprou" é o verbo — indica a ação de Ela. Infinitivo: comprar.',
-  },
-  {
-    dificuldade: 'Médio',
-    titulo: 'Qual frase contém um verbo de estado?',
-    subtitulo: 'Escolha a alternativa correta.',
-    opcoes: [
-      'O cachorro latiu alto.',
-      'Ana ficou triste com a notícia.',
-      'Pedro comprou um carro.',
-      'A chuva caiu forte.',
-    ],
-    correta: 1,
-    feedback: '"Ficou" é um verbo de estado — indica mudança de estado de Ana. Os outros são verbos de ação ou fenômeno.',
-  },
-];
+/**
+ * ESTUDO.JS — Controller genérico da tela de estudos.
+ * Carrega dinamicamente o arquivo de questões da aula via URL: ?aula=N
+ * Para criar uma nova aula, basta criar js/data/questoes/aula-N.js
+ */
+
+const LETRAS = ['A', 'B', 'C', 'D'];
+const aulaId = new URLSearchParams(window.location.search).get('aula') || '1';
 
 // ── ESTADO ───────────────────────────────────────────────────
 const estado = {
   atual:     0,
-  respostas: new Array(questoes.length).fill(null), // null = não respondida
+  respostas: [],   // preenchido após carregar as questões
 };
 
-const LETRAS = ['A', 'B', 'C', 'D'];
+// ── CARREGAR QUESTÕES DINAMICAMENTE ─────────────────────────
+function carregarAula(id) {
+  return new Promise((resolve, reject) => {
+    const script  = document.createElement('script');
+    script.src    = `js/data/questoes/aula-${id}.js`;
+    script.onload = () => resolve(window.AULA_DATA);
+    script.onerror = () => reject(new Error(`Aula ${id} não encontrada.`));
+    document.head.appendChild(script);
+  });
+}
 
 // ── ELEMENTOS ────────────────────────────────────────────────
 const questaoInfo      = document.getElementById('questaoInfo');
@@ -71,16 +40,18 @@ const btnAnterior      = document.getElementById('btnAnterior');
 const btnProxima       = document.getElementById('btnProxima');
 
 // ── RENDERIZAR QUESTÃO ───────────────────────────────────────
-function renderQuestao() {
-  const q   = questoes[estado.atual];
-  const idx = estado.atual;
-  const total = questoes.length;
+function renderQuestao(aula) {
+  const questoes = aula.questoes;
+  const q        = questoes[estado.atual];
+  const idx      = estado.atual;
+  const total    = questoes.length;
 
   // Header
-  questaoInfo.textContent = `Questão ${idx + 1} de ${total} • Aula 1: Identifique o verbo`;
+  questaoInfo.textContent = `Questão ${idx + 1} de ${total} • ${aula.titulo}`;
   tagDificuldade.innerHTML = `
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-    ${q.dificuldade}`;
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="13" height="13">
+      <line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line>
+    </svg> ${q.dificuldade}`;
 
   // Segmentos de progresso
   progressSegs.innerHTML = '';
@@ -92,38 +63,38 @@ function renderQuestao() {
     progressSegs.appendChild(seg);
   });
 
-  // Questão
-  questaoTitulo.textContent   = q.titulo;
+  // Enunciado
+  questaoTitulo.textContent    = q.titulo;
   questaoSubtitulo.textContent = q.subtitulo;
 
   // Opções
   opcoesEl.innerHTML = '';
+  const respostaDada = estado.respostas[idx];
+
   q.opcoes.forEach((texto, i) => {
     const btn = document.createElement('button');
     btn.className = 'opcao';
 
-    const respostaDada = estado.respostas[idx];
     if (respostaDada !== null) {
       btn.disabled = true;
-      if (i === q.correta)                         btn.classList.add('correta');
-      else if (i === respostaDada && i !== q.correta) btn.classList.add('errada');
+      if (i === q.correta)                              btn.classList.add('correta');
+      else if (i === respostaDada && i !== q.correta)   btn.classList.add('errada');
     }
 
-    btn.innerHTML = `
-      <span class="letra">${LETRAS[i]}</span>
-      <span class="opcao-texto">${texto}</span>`;
+    btn.innerHTML = `<span class="letra">${LETRAS[i]}</span><span class="opcao-texto">${texto}</span>`;
 
     if (respostaDada === null) {
-      btn.addEventListener('click', () => responder(i));
+      btn.addEventListener('click', () => {
+        responder(i, aula);
+      });
     }
     opcoesEl.appendChild(btn);
   });
 
   // Feedback
-  const resp = estado.respostas[idx];
-  if (resp !== null) {
-    const acertou = resp === q.correta;
-    feedbackBar.className = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
+  if (respostaDada !== null) {
+    const acertou = respostaDada === q.correta;
+    feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
     feedbackIcon.textContent  = acertou ? '✅' : '❌';
     feedbackTexto.textContent = acertou ? `Correto! ${q.feedback}` : `Incorreto. ${q.feedback}`;
   } else {
@@ -132,80 +103,104 @@ function renderQuestao() {
 
   // Botões de navegação
   btnAnterior.disabled = idx === 0;
+
   const todasRespondidas = estado.respostas.every(r => r !== null);
   if (idx === total - 1) {
-    btnProxima.textContent = 'Concluir';
-    btnProxima.innerHTML   = 'Concluir ✓';
-    btnProxima.disabled    = !todasRespondidas;
+    btnProxima.innerHTML  = 'Concluir ✓';
+    btnProxima.disabled   = !todasRespondidas;
   } else {
-    btnProxima.innerHTML = `Próxima <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
-    btnProxima.disabled  = resp === null;
+    btnProxima.innerHTML  = `Próxima <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>`;
+    btnProxima.disabled   = respostaDada === null;
   }
 }
 
 // ── RESPONDER ────────────────────────────────────────────────
-function responder(opcaoIdx) {
+function responder(opcaoIdx, aula) {
   if (estado.respostas[estado.atual] !== null) return;
   estado.respostas[estado.atual] = opcaoIdx;
-  renderQuestao();
+  renderQuestao(aula);
 }
 
-// ── CALCULAR RESULTADO ───────────────────────────────────────
-function calcularEstrelas() {
-  const acertos = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
-  const pct = acertos / questoes.length;
-  if (pct >= 0.8) return { estrelas: 3, emoji: '🎉', titulo: 'Excelente!', desc: `Você acertou ${acertos} de ${questoes.length} questões. Parabéns!` };
-  if (pct >= 0.5) return { estrelas: 2, emoji: '👍', titulo: 'Bom trabalho!', desc: `Você acertou ${acertos} de ${questoes.length} questões. Continue praticando!` };
-  return       { estrelas: 1, emoji: '💪', titulo: 'Continue tentando!', desc: `Você acertou ${acertos} de ${questoes.length} questões. Revise a lição e tente novamente.` };
+// ── RESULTADO ────────────────────────────────────────────────
+function calcularEstrelas(aula) {
+  const questoes = aula.questoes;
+  const acertos  = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
+  const pct      = acertos / questoes.length;
+
+  if (pct >= 0.8) return { estrelas: 3, emoji: '🎉', titulo: 'Excelente!',        desc: `Você acertou ${acertos} de ${questoes.length} questões. Parabéns!` };
+  if (pct >= 0.5) return { estrelas: 2, emoji: '👍', titulo: 'Bom trabalho!',      desc: `Você acertou ${acertos} de ${questoes.length} questões. Continue praticando!` };
+  return           { estrelas: 1, emoji: '💪', titulo: 'Continue tentando!', desc: `Você acertou ${acertos} de ${questoes.length} questões. Revise a lição e tente novamente.` };
 }
 
-function mostrarResultado() {
-  const { estrelas, emoji, titulo, desc } = calcularEstrelas();
+function mostrarResultado(aula) {
+  const questoes         = aula.questoes;
+  const acertos          = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
+  const { estrelas, emoji, titulo, desc } = calcularEstrelas(aula);
+
   document.getElementById('resultadoEmoji').textContent   = emoji;
   document.getElementById('resultadoTitulo').textContent  = titulo;
   document.getElementById('resultadoDesc').textContent    = desc;
   document.getElementById('resultadoEstrelas').textContent = '★'.repeat(estrelas) + '☆'.repeat(3 - estrelas);
   document.getElementById('resultadoOverlay').classList.add('show');
 
-  // Salva estado no sessionStorage para a tela principal atualizar
-  const acertos = estado.respostas.filter((r, i) => r === questoes[i].correta).length;
-  sessionStorage.setItem('aula1_resultado', JSON.stringify({ estrelas, acertos, total: questoes.length }));
+  // Passa resultado para index.html via sessionStorage
+  sessionStorage.setItem(`aula${aulaId}_resultado`, JSON.stringify({
+    aulaId:  parseInt(aulaId),
+    estrelas,
+    acertos,
+    total: questoes.length,
+  }));
 }
 
-// ── EVENTOS ──────────────────────────────────────────────────
-btnAnterior.addEventListener('click', () => {
-  if (estado.atual > 0) {
-    estado.atual--;
-    renderQuestao();
-  }
-});
-
-btnProxima.addEventListener('click', () => {
-  if (estado.atual < questoes.length - 1) {
-    estado.atual++;
-    renderQuestao();
-  } else {
-    mostrarResultado();
-  }
-});
-
-document.getElementById('btnFechar').addEventListener('click', () => {
-  window.location.href = 'index.html';
-});
-
-document.getElementById('btnConsultar').addEventListener('click', () => {
+// ── LIÇÃO (modal) ────────────────────────────────────────────
+function abrirLicao(aula) {
+  const el = document.getElementById('licaoHeader');
+  if (el) el.textContent = aula.licao.titulo;
+  const corpo = document.getElementById('licaoCorpo');
+  if (corpo) corpo.innerHTML = aula.licao.html;
   document.getElementById('licaoOverlay').classList.add('show');
-});
-document.getElementById('licaoFechar').addEventListener('click', () => {
-  document.getElementById('licaoOverlay').classList.remove('show');
-});
-document.getElementById('licaoBtnFechar').addEventListener('click', () => {
-  document.getElementById('licaoOverlay').classList.remove('show');
-});
-
-document.getElementById('resultadoBtnContinuar').addEventListener('click', () => {
-  window.location.href = 'index.html';
-});
+}
 
 // ── INIT ─────────────────────────────────────────────────────
-renderQuestao();
+carregarAula(aulaId).then(aula => {
+  // Inicializa estado com o número correto de questões
+  estado.respostas = new Array(aula.questoes.length).fill(null);
+
+  // Renderiza a primeira questão
+  renderQuestao(aula);
+
+  // Navegação
+  btnAnterior.addEventListener('click', () => {
+    if (estado.atual > 0) { estado.atual--; renderQuestao(aula); }
+  });
+
+  btnProxima.addEventListener('click', () => {
+    if (estado.atual < aula.questoes.length - 1) {
+      estado.atual++;
+      renderQuestao(aula);
+    } else {
+      mostrarResultado(aula);
+    }
+  });
+
+  // Consultar lição
+  document.getElementById('btnConsultar').addEventListener('click', () => abrirLicao(aula));
+
+  // Fechar lição
+  document.getElementById('licaoFechar').addEventListener('click',    () => document.getElementById('licaoOverlay').classList.remove('show'));
+  document.getElementById('licaoBtnFechar').addEventListener('click', () => document.getElementById('licaoOverlay').classList.remove('show'));
+
+  // Fechar / voltar
+  document.getElementById('btnFechar').addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+
+  // Voltar ao início após resultado
+  document.getElementById('resultadoBtnContinuar').addEventListener('click', () => {
+    window.location.href = 'index.html';
+  });
+
+}).catch(err => {
+  console.error(err);
+  document.getElementById('questaoTitulo').textContent = 'Aula não encontrada.';
+});
