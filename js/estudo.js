@@ -178,13 +178,24 @@ function mostrarContexto(aula, introIdx) {
   atualizarScrollFade();
 }
 
-function mostrarExemplo(aula, introIdx) {
-  const ex = aula.exemplo || {};
+// Tela de exemplo do fenômeno da natureza usa um nascer do sol
+// (em vez da chuva do resumo), para casar com a palavra "Amanheceu".
+const EXEMPLO_ICONE_FENOMENO = `
+  <path fill="none" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round" d="M13 2v2M8.5 4.9l1 1M17.5 4.9l-1 1"/>
+  <path fill="#4A80F0" d="M8 12a5 5 0 0 1 10 0z"/>
+  <line x1="6" y1="12" x2="20" y2="12" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round"/>
+  <path fill="none" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round" d="M8 16h4M15 16h3M10 19h3"/>`;
+
+function mostrarExemplo(aula, introIdx, i) {
+  const ex = (aula.exemplo || [])[i] || {};
   questaoInfo.textContent      = aula.titulo;
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
   questaoSubtitulo.textContent = '';
+  const icone = ex.tipo === 'fenomeno'
+    ? EXEMPLO_ICONE_FENOMENO
+    : (RESUMO_ICONES[ex.tipo] ? RESUMO_ICONES[ex.tipo]('#4A80F0') : RESUMO_ICONES.acao('#4A80F0'));
   opcoesEl.innerHTML = `
     <div class="exemplo-card">
       <div class="exemplo-icone-wrap">
@@ -192,7 +203,7 @@ function mostrarExemplo(aula, introIdx) {
           <line x1="-5" y1="8"  x2="0" y2="8"  stroke="#b8ccf4" stroke-width="2.2" stroke-linecap="round"/>
           <line x1="-5" y1="12" x2="1" y2="12" stroke="#b8ccf4" stroke-width="2.2" stroke-linecap="round"/>
           <line x1="-5" y1="16" x2="0" y2="16" stroke="#b8ccf4" stroke-width="2.2" stroke-linecap="round"/>
-          <path fill="#4A80F0" d="M13.49 5.48c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm-3.6 13.9l1-4.4 2.1 2v6h2v-7.5l-2.1-2 .6-3c1.3 1.5 3.3 2.5 5.5 2.5v-2c-1.9 0-3.5-1-4.3-2.4l-1-1.6c-.4-.6-1-1-1.7-1-.3 0-.5.1-.8.1l-5.2 2.2v4.7h2v-3.4l1.8-.7-1.6 8.1-4.9-1-.4 2 7 1.4z"/>
+          ${icone}
         </svg>
       </div>
       <p class="exemplo-texto">${ex.texto || ''}</p>
@@ -499,15 +510,20 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
 
   // Telas de intro em ordem (dinâmico, baseado nos campos da aula) — puladas no modo caderno de erros
   const introScreens = ['justificativa'];
+  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido };
   if (aula.definicao)     introScreens.push('definicao');
   if (aula.contexto)      introScreens.push('contexto');
-  if (aula.exemplo)       introScreens.push('exemplo');
-  if (aula.resumo)        introScreens.push('resumo');
+  (aula.exemplo || []).forEach((_, i) => {
+    const chave = `exemplo${i}`;
+    introScreens.push(chave);
+    introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
+  });
+  // Tela de resumo desativada por enquanto (dado da aula mantido para uso futuro)
+  // if (aula.resumo)     introScreens.push('resumo');
   if (aula.infinitivo)    introScreens.push('infinitivo');
   if (aula.identificacao) introScreens.push('identificacao');
   if (aula.sentido)        introScreens.push('sentido');
   introTotal = introScreens.length - 1;
-  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, exemplo: mostrarExemplo, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido };
   let introIdx = 0;
   let introAtiva = !modoErros;
   if (introAtiva) {

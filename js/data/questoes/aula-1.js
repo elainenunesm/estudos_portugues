@@ -21,14 +21,32 @@ window.AULA_DATA = {
   },
 
   contexto: {
-    texto: 'Ao ler uma frase ou texto, uma das primeiras coisas que devemos procurar é o <strong>verbo</strong>, pois ele dá movimento e sentido à oração.',
+    texto: 'Ao ler uma frase ou texto, uma das primeiras coisas que devemos procurar é o <strong>verbo</strong>, pois é ele quem dá movimento e sentido à oração.',
     nota: 'Oração é toda frase que possui um verbo.',
   },
 
-  exemplo: {
-    texto: 'Por exemplo, ao ouvir a palavra <span class="destaque">correr</span>, imaginamos alguém se movimentando rapidamente de um lugar para outro.',
-    conclusao: 'Isso representa uma <span class="destaque">ação</span>.',
-  },
+  exemplo: [
+    {
+      tipo:      'acao',
+      texto:     'Por exemplo, ao ouvir a palavra <strong class="destaque">correr</strong>, imaginamos alguém se movimentando rapidamente de um lugar para outro.',
+      conclusao: 'Isso representa uma <span class="destaque">ação</span>.',
+    },
+    {
+      tipo:      'estado',
+      texto:     'Ao ouvir a palavra <strong class="destaque">Estou</strong>, imaginamos alguém que permanece de uma determinada forma e <strong class="destaque">não ouve mudança</strong>.',
+      conclusao: 'Isso representa um <span class="destaque">estado</span>.',
+    },
+    {
+      tipo:      'mudanca',
+      texto:     'Ao ouvir a palavra <strong class="destaque">Ficou</strong>, imaginamos alguém que alterou o seu estado original.',
+      conclusao: 'Isso representa uma <span class="destaque">mudança de estado</span>.',
+    },
+    {
+      tipo:      'fenomeno',
+      texto:     'Ao ouvir a palavra <strong class="destaque">Amanheceu</strong>, imaginamos um fenômeno que independe de ação humana, simplesmente acontece.',
+      conclusao: 'Isso representa um <span class="destaque">fenômeno da natureza</span>.',
+    },
+  ],
 
   infinitivo: {
     descricao: 'Os verbos no infinitivo aparecem em sua forma original, sem indicar tempo, pessoa ou número.',
