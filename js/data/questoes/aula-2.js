@@ -1,19 +1,30 @@
 'use strict';
 
 /**
- * AULA-2.JS — Aula 2: Sujeito simples
+ * AULA-2.JS — Aula 2: Como reconhecer o verbo na oração?
  * Para adicionar/editar questões, edite apenas este arquivo.
  */
 window.AULA_DATA = {
   id:     2,
   modulo: 'Etapa 1: Fundamentos',
-  titulo: 'Aula 2: Sujeito simples',
+  titulo: 'Aula 2: Como reconhecer o verbo na oração?',
 
   antesComecar: {
     titulo:      'Sujeito simples',
     descricao:   'Nesta aula você vai aprender a encontrar o sujeito das orações e entender sua relação com o verbo.',
     aprender:    'Nesta aula você aprenderá a identificar o sujeito simples, composto e oculto em frases.',
     importancia: 'Reconhecer o sujeito é essencial para a interpretação de textos e para a concordância verbal.',
+  },
+
+  infinitivo: {
+    descricao: 'Os verbos no infinitivo aparecem em sua forma original, sem indicar tempo, pessoa ou número.',
+    nota: 'Essa é a forma considerada <span class="destaque">“padrão”</span> da palavra.',
+    conjugacoes: [
+      { sufixo: '-ar', label: '1ª conjugação' },
+      { sufixo: '-er', label: '2ª conjugação' },
+      { sufixo: '-ir', label: '3ª conjugação' },
+    ],
+    extra: 'Existe também o verbo <span class="destaque">pôr</span>, que antigamente era escrito como <span class="destaque">poer</span>. Por isso, ele pertence à <span class="destaque">2ª conjugação</span>.',
   },
 
   licao: {

@@ -17,7 +17,7 @@ const MODULOS = [
       },
       {
         id:        2,
-        titulo:    'Aula 2: Sujeito simples',
+        titulo:    'Aula 2: Como reconhecer o verbo na oração?',
         arquivo:   'aula-2',
         icone:     'pessoa',
       },

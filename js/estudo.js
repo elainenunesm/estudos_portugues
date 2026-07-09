@@ -772,6 +772,7 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   } else {
     introScreens.push('justificativa');
     Object.assign(introFns, { justificativa: mostrarIntro, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido });
+    if (aula.infinitivo)    introScreens.push('infinitivo');
     if (aula.definicao)     introScreens.push('definicao');
     if (aula.contexto)      introScreens.push('contexto');
     introFns.definicao = mostrarDefinicao;
