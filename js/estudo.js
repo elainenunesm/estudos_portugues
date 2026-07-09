@@ -191,6 +191,7 @@ function ativarBotaoMarcar() {
 function mostrarDefinicao(aula, introIdx) {
   const def = aula.definicao || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -216,6 +217,7 @@ function mostrarDefinicao(aula, introIdx) {
 function mostrarContexto(aula, introIdx) {
   const ctx = aula.contexto || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = introIdx > 0 ? '' : 'none';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -254,6 +256,7 @@ const EXEMPLO_ICONE_FENOMENO = `
 function mostrarExemplo(aula, introIdx, i) {
   const ex = (aula.exemplo || [])[i] || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -293,6 +296,7 @@ const RESUMO_ICONES = {
 function mostrarInfinitivo(aula, introIdx) {
   const inf = aula.infinitivo || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -323,6 +327,7 @@ function mostrarInfinitivo(aula, introIdx) {
 function mostrarResumo(aula, introIdx) {
   const res = aula.resumo || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -352,6 +357,7 @@ function mostrarResumo(aula, introIdx) {
 function mostrarIdentificacao(aula, introIdx) {
   const idf = aula.identificacao || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -449,6 +455,7 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
 function mostrarSentido(aula, introIdx) {
   const s = aula.sentido || {};
   questaoInfo.textContent      = aula.titulo;
+  feedbackBar.style.display    = 'none';
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   questaoTitulo.innerHTML      = '';
@@ -922,11 +929,15 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   document.getElementById('licaoFechar').addEventListener('click',    () => document.getElementById('licaoOverlay').classList.remove('show'));
   document.getElementById('licaoBtnFechar').addEventListener('click', () => document.getElementById('licaoOverlay').classList.remove('show'));
 
-  // Fechar / voltar — se errou algo nesta visita, manda direto pro Caderno
-  // de Erros em vez do Início, mesmo que a aula já tivesse sido concluída antes.
-  const destinoVoltar = () => (modoErros || erroNestaSessao) ? 'index.html?view=erros' : 'index.html';
+  // Fechar antes de terminar — se errou algo nesta visita, manda direto pro
+  // Caderno de Erros em vez do Início, pra não perder de vista o que rever.
+  // Terminar a aula de verdade (loop de revisão já fechou com 100%) sempre
+  // volta pro Início — só a prática vinda do Caderno (modoErros) retorna
+  // pra lá, pra continuar revisando outras questões erradas.
+  const destinoVoltarCedo = () => (modoErros || erroNestaSessao) ? 'index.html?view=erros' : 'index.html';
+  const destinoVoltarFinal = () => modoErros ? 'index.html?view=erros' : 'index.html';
   document.getElementById('btnFechar').addEventListener('click', () => {
-    window.location.href = destinoVoltar();
+    window.location.href = destinoVoltarCedo();
   });
 
   // Voltar ao início após resultado — ou começar a rodada de revisão/reinício
@@ -954,7 +965,7 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
       iniciarRevisaoChecagem(checagemRevisaoPendente);
       return;
     }
-    window.location.href = destinoVoltar();
+    window.location.href = destinoVoltarFinal();
   });
 
 }).catch(err => {
