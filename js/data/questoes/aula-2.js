@@ -27,6 +27,13 @@ window.AULA_DATA = {
     extra: 'Existe também o verbo <span class="destaque">pôr</span>, que antigamente era escrito como <span class="destaque">poer</span>. Por isso, ele pertence à <span class="destaque">2ª conjugação</span>.',
   },
 
+  exemplo: [
+    {
+      tipo:  'infinito',
+      texto: 'Uma maneira de transformar a palavra em <strong class="destaque">verbo</strong> é ele no <strong class="destaque">infinitivo</strong>.',
+    },
+  ],
+
   identificacao: {
     titulo: 'Como identificar um verbo na oração?',
     intro: 'Uma maneira simples é transformar a palavra em infinitivo:',
