@@ -614,6 +614,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   showView(viewParam === 'erros' ? 'erros' : 'inicio');
   updateErrosBadge();
 
+  // ?view=erros é só um sinal de redirecionamento único — limpa da barra de
+  // endereço para que um F5/Ctrl+L depois disso volte para o Início normal,
+  // em vez de reabrir os Cadernos toda vez.
+  if (viewParam) {
+    history.replaceState(null, '', window.location.pathname);
+  }
+
   // Animação de entrada das aulas
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
