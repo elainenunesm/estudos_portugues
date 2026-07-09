@@ -463,31 +463,6 @@ document.addEventListener('DOMContentLoaded', async function () {
     toggleLevel();
   });
 
-  // Botão Continuar do header
-  document.getElementById('btnContinuar').addEventListener('click', async function () {
-    // Pede permissão se necessário
-    if (state.dirHandle && !state.dirHandle._permissionGranted) {
-      try {
-        const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
-        if (perm === 'granted') {
-          state.dirHandle._permissionGranted = true;
-          await loadProgress();
-          updateFolderBadge();
-        }
-      } catch (e) {}
-    }
-
-    // Salva progresso
-    await saveProgress();
-
-    // Rola até a aula ativa
-    const aulaAtiva = state.aulas.find(a => a.status === 'active');
-    const target = aulaAtiva
-      ? document.querySelector(`[data-aula="${aulaAtiva.id}"]`)
-      : document.querySelector('.aula-node');
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  });
-
   // Badge de pasta → clique reabre seleção
   document.getElementById('folderBadge').addEventListener('click', () => showModal());
 
