@@ -42,6 +42,11 @@ window.AULA_DATA = {
       texto:     'Exemplo: a palavra <strong class="destaque">bebeu</strong>.',
       conclusao: '<strong class="destaque">Bebeu</strong> --&gt; Beb + <strong class="destaque">er</strong> (Terminação <strong class="destaque">er</strong> indica infinitivo) <strong class="destaque">2º conjugação.</strong>',
     },
+    {
+      tipo:      'foguete',
+      texto:     'Exemplo: a palavra <strong class="destaque">partiu</strong>.',
+      conclusao: '<strong class="destaque">Partiu</strong> --&gt; Part + <strong class="destaque">ir</strong> (Terminação <strong class="destaque">ir</strong> indica infinitivo) <strong class="destaque">3º conjugação.</strong>',
+    },
   ],
 
   identificacao: {
