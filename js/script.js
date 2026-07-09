@@ -16,6 +16,7 @@ const state = {
   dirHandle:  null,
   folderName: null,
   aulas: DEFAULT_AULAS(),
+  precisaPermissao: false, // handle conhecido, mas o navegador "esqueceu" a permissão (comum após F5)
 };
 
 // ── ÍCONES DAS AULAS ─────────────────────────────────────────
@@ -30,7 +31,10 @@ const ICONES_AULA = {
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
 async function saveProgress() {
-  if (!state.dirHandle) return;
+  if (!state.dirHandle) {
+    showToast('⚠️ Conecte uma pasta para salvar — sem isso, seu progresso se perde ao fechar a página.', 'warning');
+    return;
+  }
   try {
     // Preserva o caderno de erros já salvo no arquivo (gravado por
     // estudo.js) — essa tela só conhece/atualiza o progresso das aulas.
@@ -43,6 +47,7 @@ async function saveProgress() {
     showToast('💾 Progresso salvo com sucesso!', 'success');
   } catch (e) {
     console.warn('Erro ao salvar progresso:', e);
+    showToast('⚠️ Não foi possível salvar — clique na pasta no topo para reconectar.', 'warning');
   }
 }
 
@@ -101,13 +106,16 @@ async function tryReconnect() {
         updateFolderBadge();
         return;
       }
-      // Pasta conhecida mas precisa de permissão (solicitada ao clicar)
-      if (folderName) {
-        state.dirHandle  = handle;   // guarda handle para pedir permissão depois
-        state.folderName = folderName;
-        updateFolderBadge();
-        return;
-      }
+      // Pasta já escolhida antes, mas o navegador "esqueceu" a permissão
+      // nesta sessão (comum após F5/atualizar a página). Guarda o mesmo
+      // handle e tenta pedir a permissão de novo na primeira interação do
+      // usuário — sem reabrir o seletor de pastas do sistema operacional.
+      state.dirHandle        = handle;
+      state.folderName       = folderName || handle.name;
+      state.precisaPermissao = true;
+      updateFolderBadge();
+      aguardarGestoParaReconectar();
+      return;
     }
 
     if (folderName) {
@@ -123,13 +131,39 @@ async function tryReconnect() {
   }
 }
 
+// Pede a permissão de novo assim que o usuário interagir com a página. O
+// navegador exige um gesto do usuário para reconceder acesso, mas como já é
+// uma pasta conhecida, isso acontece sem reabrir o seletor do sistema.
+function aguardarGestoParaReconectar() {
+  const tentar = async () => {
+    document.removeEventListener('click', tentar, true);
+    if (!state.precisaPermissao || !state.dirHandle) return;
+    try {
+      const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
+      if (perm === 'granted') {
+        state.precisaPermissao = false;
+        await loadProgress();
+        updateFolderBadge();
+      }
+    } catch (e) {
+      // Usuário negou ou o handle não é mais válido — o badge da pasta
+      // continua disponível para reconectar manualmente.
+    }
+  };
+  document.addEventListener('click', tentar, true);
+}
+
 // ── BADGE DA PASTA ───────────────────────────────────────────
 function updateFolderBadge() {
   const badge = document.getElementById('folderBadge');
   const name  = document.getElementById('folderName');
   if (!badge || !name) return;
 
-  if (state.folderName) {
+  if (state.precisaPermissao && state.folderName) {
+    name.textContent = `${state.folderName} (reconectar)`;
+    badge.classList.remove('connected');
+    badge.title = `Clique para reconectar à pasta "${state.folderName}" e voltar a salvar o progresso`;
+  } else if (state.folderName) {
     name.textContent = state.folderName;
     badge.classList.add('connected');
     badge.title = `Pasta: ${state.folderName} — clique para alterar`;
@@ -197,9 +231,55 @@ function renderAulas() {
       btn.className   = 'btn-recomecar';
       stars.forEach((s, i) => { s.style.color = i < aula.stars ? '#FFD700' : '#e5e7eb'; });
     }
+
+    // Garante a opacidade correta mesmo se a animação de entrada (observer)
+    // já tiver disparado antes do progresso salvo terminar de carregar —
+    // sem isso, um card que estava "bloqueado" no HTML padrão podia ficar
+    // preso com opacidade reduzida mesmo depois de desbloqueado/concluído.
+    node.style.opacity = aula.status === 'locked' ? '0.6' : '1';
   });
 
+  atualizarTrilha();
+
   // Rebind dos botões após renderização — não é mais necessário (delegação)
+}
+
+// Acende a trilha (linha tracejada) até a aula concluída mais recente,
+// igual as estrelas — a linha "enche" de dourado conforme o progresso.
+function atualizarTrilha() {
+  const container = document.getElementById('pathContainer');
+  const lit = document.getElementById('pathLineLit');
+  if (!container || !lit) return;
+
+  const circulos = state.aulas
+    .map(aula => document.querySelector(`[data-aula="${aula.id}"] .icon-circle`))
+    .filter(Boolean);
+
+  let ultimoCompletoIdx = -1;
+  for (let i = 0; i < state.aulas.length; i++) {
+    if (state.aulas[i].status === 'completed') ultimoCompletoIdx = i;
+    else break;
+  }
+
+  if (ultimoCompletoIdx === -1 || !circulos[ultimoCompletoIdx]) {
+    lit.style.height = '0px';
+    return;
+  }
+
+  const containerTop = container.getBoundingClientRect().top;
+  const centro = (el) => el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2;
+  const proximoCirculo = circulos[ultimoCompletoIdx + 1];
+  const altura = (proximoCirculo ? centro(proximoCirculo) : centro(circulos[ultimoCompletoIdx])) - containerTop;
+
+  lit.style.height = `${Math.max(0, altura)}px`;
+}
+
+// Posiciona a tela na aula ativa (a que precisa continuar), pra abrir/atualizar
+// a página sempre já mostrando de onde partir, sem precisar rolar procurando.
+function scrollParaAulaAtiva(smooth) {
+  const aulaAtiva = state.aulas.find(a => a.status === 'active');
+  const node = aulaAtiva ? document.querySelector(`[data-aula="${aulaAtiva.id}"]`) : null;
+  if (node) node.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
 }
 
 // ── CADERNO DE ERROS ─────────────────────────────────────────
@@ -260,7 +340,7 @@ function renderFavoritosView() {
   let html = '';
   listaAulas().forEach(aulaInfo => {
     const aula = state.aulas.find(a => a.id === aulaInfo.id);
-    if (!aula || !aula.favorita) return;
+    if (!aula || !aula.favorita || aula.status === 'locked') return;
     html += `
       <div class="erro-card">
         <div class="erro-card-info">
@@ -387,7 +467,7 @@ function showToast(msg, type = 'default') {
     document.body.appendChild(toast);
   }
   toast.textContent = msg;
-  toast.style.background = type === 'success' ? '#16a34a' : '#1a1a2e';
+  toast.style.background = type === 'success' ? '#16a34a' : (type === 'warning' ? '#d97706' : '#1a1a2e');
   clearTimeout(toastTimer);
   toast.classList.add('show');
   toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
@@ -407,18 +487,27 @@ function hideModal() {
 // Configurado uma única vez no DOMContentLoaded — não quebra IntersectionObserver
 function setupAulaEvents(pathContainer) {
   pathContainer.addEventListener('click', function(e) {
-    // Marcar/desmarcar como favorita — funciona mesmo em aula bloqueada
+    // Marcar/desmarcar como favorita — bloqueada não pode, pois o caderno
+    // de Favoritos abre a aula direto, ignorando o bloqueio.
     const btnFavoritar = e.target.closest('.btn-favoritar');
     if (btnFavoritar) {
       e.stopPropagation();
       const node   = btnFavoritar.closest('[data-aula]');
       const aulaId = node ? parseInt(node.dataset.aula, 10) : null;
       const aula   = state.aulas.find(a => a.id === aulaId);
+      if (aula && aula.status === 'locked') {
+        showToast('🔒 Conclua a aula anterior para poder favoritar esta.');
+        return;
+      }
       if (aula) {
         aula.favorita = !aula.favorita;
         renderAulas();
+        // Se não há pasta conectada, saveProgress() já avisa que não foi
+        // salvo — não sobrescreve esse aviso com o toast de sucesso abaixo.
+        if (state.dirHandle) {
+          showToast(aula.favorita ? '❤️ Aula marcada como favorita!' : 'Aula removida dos favoritos', 'success');
+        }
         saveProgress();
-        showToast(aula.favorita ? '❤️ Aula marcada como favorita!' : 'Aula removida dos favoritos', 'success');
       }
       return;
     }
@@ -463,14 +552,33 @@ document.addEventListener('DOMContentLoaded', async function () {
     toggleLevel();
   });
 
-  // Badge de pasta → clique reabre seleção
-  document.getElementById('folderBadge').addEventListener('click', () => showModal());
+  // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
+  // faltando permissão); senão reabre a seleção de pasta
+  document.getElementById('folderBadge').addEventListener('click', async () => {
+    if (state.precisaPermissao && state.dirHandle) {
+      try {
+        const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
+        if (perm === 'granted') {
+          state.precisaPermissao = false;
+          await loadProgress();
+          updateFolderBadge();
+          return;
+        }
+      } catch (e) {
+        // cai para o modal de seleção de pasta abaixo
+      }
+    }
+    showModal();
+  });
 
   // Modal — Escolher pasta
   document.getElementById('btnEscolherPasta').addEventListener('click', selectFolder);
 
   // Modal — Agora não
-  document.getElementById('btnSemPasta').addEventListener('click', hideModal);
+  document.getElementById('btnSemPasta').addEventListener('click', () => {
+    hideModal();
+    showToast('⚠️ Sem pasta conectada, seu progresso não será salvo.', 'warning');
+  });
 
   // Clique no nome/logo do app volta para o Início
   document.getElementById('headerLogo').addEventListener('click', () => showView('inicio'));
@@ -533,6 +641,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   await tryReconnect();
 
   // Verifica resultado ao voltar da tela de estudos (qualquer aula)
+  let acabouDeConcluir = false;
   for (let i = 1; i <= 10; i++) {
     const key       = `aula${i}_resultado`;
     const resultRaw = sessionStorage.getItem(key);
@@ -547,6 +656,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       if (aulaIdx + 1 < state.aulas.length) {
         state.aulas[aulaIdx + 1] = { ...state.aulas[aulaIdx + 1], status: 'active', progress: 0 };
       }
+      acabouDeConcluir = true;
     } else {
       state.aulas[aulaIdx] = { id: aulaId, status: 'active', progress: Math.round((acertos / total) * 100), stars: estrelas };
     }
@@ -554,4 +664,8 @@ document.addEventListener('DOMContentLoaded', async function () {
     await saveProgress();
     break;
   }
+
+  // Leva a tela até a aula ativa (a que precisa continuar) — suave se acabou
+  // de concluir algo agora, direto se for só abrindo/atualizando a página.
+  setTimeout(() => scrollParaAulaAtiva(acabouDeConcluir), acabouDeConcluir ? 400 : 0);
 });
