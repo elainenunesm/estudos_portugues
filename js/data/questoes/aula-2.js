@@ -10,10 +10,10 @@ window.AULA_DATA = {
   titulo: 'Aula 2: Como reconhecer o verbo na oração?',
 
   antesComecar: {
-    titulo:      'Sujeito simples',
-    descricao:   'Nesta aula você vai aprender a encontrar o sujeito das orações e entender sua relação com o verbo.',
-    aprender:    'Nesta aula você aprenderá a identificar o sujeito simples, composto e oculto em frases.',
-    importancia: 'Reconhecer o sujeito é essencial para a interpretação de textos e para a concordância verbal.',
+    titulo:      'Como reconhecer o verbo na oração?',
+    descricao:   'Nesta aula você vai aprender técnicas simples para encontrar o verbo em qualquer frase.',
+    aprender:    'Nesta aula você aprenderá a reconhecer o verbo colocando a palavra no infinitivo e observando o sentido que ela transmite na oração.',
+    importancia: 'Encontrar o verbo é o primeiro passo para entender a estrutura da frase e identificar sujeito e predicado.',
   },
 
   infinitivo: {
@@ -25,6 +25,34 @@ window.AULA_DATA = {
       { sufixo: '-ir', label: '3ª conjugação' },
     ],
     extra: 'Existe também o verbo <span class="destaque">pôr</span>, que antigamente era escrito como <span class="destaque">poer</span>. Por isso, ele pertence à <span class="destaque">2ª conjugação</span>.',
+  },
+
+  identificacao: {
+    titulo: 'Como identificar um verbo na oração?',
+    intro: 'Uma maneira simples é transformar a palavra em infinitivo:',
+    exemplos: [
+      { palavra: 'cantou', infinitivo: 'cantar', terminacao: '-ar', conjugacao: '1ª conjugação' },
+      { palavra: 'bebeu',  infinitivo: 'beber',  terminacao: '-er', conjugacao: '2ª conjugação' },
+      { palavra: 'partiu', infinitivo: 'partir', terminacao: '-ir', conjugacao: '3ª conjugação' },
+    ],
+    rodape: 'Você pode fazer isso com qualquer palavra que suspeite ser um verbo. Assim, fica mais fácil praticar e reconhecer cada caso.',
+  },
+
+  sentido: {
+    dica: 'Depois de localizar o verbo, observe o sentido que ele transmite na oração.',
+    textos: [
+      'Ele pode indicar ação, estado, mudança de estado ou fenômeno da natureza.',
+      'Porém, o significado depende do contexto, já que um mesmo verbo pode assumir sentidos diferentes em frases diferentes.',
+    ],
+    exemplos: {
+      titulo: 'Exemplos:',
+      itens: [
+        { tipo: 'acao',     cor: '#16a34a', corFundo: '#dcfce7', frase: 'João <strong>correu</strong> no parque.',    cadeia: 'correu → correr → <strong>ação</strong>' },
+        { tipo: 'estado',   cor: '#7c3aed', corFundo: '#ede9fe', frase: 'Maria <strong>estava</strong> cansada.',     cadeia: 'estava → estar → <strong>estado</strong>' },
+        { tipo: 'mudanca',  cor: '#ea580c', corFundo: '#ffedd5', frase: 'O leite <strong>ficou</strong> azedo.',      cadeia: 'ficou → ficar → <strong>mudança de estado</strong>' },
+        { tipo: 'fenomeno', cor: '#2563eb', corFundo: '#dbeafe', frase: 'Amanheceu muito cedo hoje.',                 cadeia: 'amanheceu → amanhecer → <strong>fenômeno da natureza</strong>' },
+      ],
+    },
   },
 
   licao: {

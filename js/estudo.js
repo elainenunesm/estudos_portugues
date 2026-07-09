@@ -773,6 +773,8 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
     introScreens.push('justificativa');
     Object.assign(introFns, { justificativa: mostrarIntro, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido });
     if (aula.infinitivo)    introScreens.push('infinitivo');
+    if (aula.identificacao) introScreens.push('identificacao');
+    if (aula.sentido)       introScreens.push('sentido');
     if (aula.definicao)     introScreens.push('definicao');
     if (aula.contexto)      introScreens.push('contexto');
     introFns.definicao = mostrarDefinicao;
@@ -787,12 +789,8 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
       introScreens.push(chave);
       introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
     });
-    // Telas de resumo, infinitivo, identificação e sentido desativadas por
-    // enquanto (dados da aula mantidos para uso futuro)
-    // if (aula.resumo)        introScreens.push('resumo');
-    // if (aula.infinitivo)    introScreens.push('infinitivo');
-    // if (aula.identificacao) introScreens.push('identificacao');
-    // if (aula.sentido)       introScreens.push('sentido');
+    // Tela de resumo desativada por enquanto (dados mantidos para uso futuro)
+    // if (aula.resumo) introScreens.push('resumo');
   }
   introTotal = introScreens.length - 1;
   let introIdx = 0;
