@@ -420,7 +420,10 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
     } else {
       btn.addEventListener('click', () => {
         dados._escolhida = i;
-        if (i !== dados.correta) addErro(aulaId, `checagem${checagemIdx}`);
+        if (i !== dados.correta) {
+          addErro(aulaId, `checagem${checagemIdx}`);
+          erroNestaSessao = true;
+        }
         mostrarChecagem(aula, introIdx, dados, checagemIdx);
       });
     }
@@ -561,6 +564,7 @@ function responder(opcaoIdx, aula) {
   const q = aula.questoes[estado.atual];
   if (opcaoIdx !== q.correta) {
     addErro(aulaId, estado.origIdx[estado.atual]);
+    erroNestaSessao = true;
   }
 
   renderQuestao(aula);
@@ -572,6 +576,10 @@ function responder(opcaoIdx, aula) {
 let aguardandoRevisao   = false;
 let idxsRevisaoPendente = [];
 let aguardandoReinicio  = false;
+
+// Marca se errou algo nesta visita à aula (mesmo já tendo concluído antes) —
+// usado para mandar direto pro Caderno de Erros ao sair, em vez do Início.
+let erroNestaSessao = false;
 
 function mostrarRevisao(idxsErrados) {
   aguardandoRevisao   = true;
@@ -914,10 +922,11 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   document.getElementById('licaoFechar').addEventListener('click',    () => document.getElementById('licaoOverlay').classList.remove('show'));
   document.getElementById('licaoBtnFechar').addEventListener('click', () => document.getElementById('licaoOverlay').classList.remove('show'));
 
-  // Fechar / voltar
-  const destinoVoltar = modoErros ? 'index.html?view=erros' : 'index.html';
+  // Fechar / voltar — se errou algo nesta visita, manda direto pro Caderno
+  // de Erros em vez do Início, mesmo que a aula já tivesse sido concluída antes.
+  const destinoVoltar = () => (modoErros || erroNestaSessao) ? 'index.html?view=erros' : 'index.html';
   document.getElementById('btnFechar').addEventListener('click', () => {
-    window.location.href = destinoVoltar;
+    window.location.href = destinoVoltar();
   });
 
   // Voltar ao início após resultado — ou começar a rodada de revisão/reinício
@@ -945,7 +954,7 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
       iniciarRevisaoChecagem(checagemRevisaoPendente);
       return;
     }
-    window.location.href = destinoVoltar;
+    window.location.href = destinoVoltar();
   });
 
 }).catch(err => {
