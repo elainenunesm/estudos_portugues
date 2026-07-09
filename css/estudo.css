@@ -267,13 +267,13 @@ body {
   position: absolute;
   top: -6px;
   right: 10px;
-  width: 26px;
-  height: 32px;
+  width: 36px;
+  height: 44px;
   padding: 0;
   background: #ffffff;
   border: 2px solid #dbe4fb;
   border-top: none;
-  border-radius: 0 0 6px 6px;
+  border-radius: 0 0 8px 8px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -289,8 +289,8 @@ body {
 }
 
 .btn-marcar-cartao svg {
-  width: 13px;
-  height: 13px;
+  width: 19px;
+  height: 19px;
 }
 
 .btn-marcar-cartao.marcada {
@@ -312,7 +312,7 @@ body {
 }
 
 .definicao-texto {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
   color: #1a1a2e;
   line-height: 1.6;
@@ -831,6 +831,73 @@ body {
   padding: 10px 2px;
   cursor: default;
   color: #1a1a2e;
+}
+
+/* RESULTADO DE CADA PALAVRA (depois de responder a checagem de "clique na palavra") */
+.checagem-resultado-itens {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px solid #efe9fb;
+}
+
+.checagem-resultado-titulo {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 6px 10px;
+  background: #f4f0ff;
+  border-radius: 6px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+
+.checagem-resultado-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.checagem-resultado-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  padding: 6px 4px;
+}
+
+.checagem-resultado-item.errada-selecionada {
+  background: #fef2f2;
+  border-radius: 8px;
+  padding: 6px 8px;
+}
+
+.cri-palavra {
+  font-size: 15px;
+  font-weight: 800;
+  min-width: 90px;
+  color: #1a1a2e;
+}
+
+.cri-palavra.correta { color: #16a34a; }
+.cri-palavra.errada  { color: #dc2626; }
+
+.cri-seta {
+  color: #9ca3af;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.cri-classe { font-weight: 500; color: #6b7280; }
+.cri-classe.correta { color: #16a34a; font-weight: 600; }
+.cri-classe.errada  { color: #dc2626; font-weight: 700; }
+
+.cri-icone {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  font-size: 15px;
 }
 
 /* FEEDBACK */

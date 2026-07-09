@@ -452,6 +452,32 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
       }
       wrap.appendChild(btn);
     });
+
+    // Depois de responder, mostra a classe gramatical de cada palavra da
+    // frase (o verbo em verde, a escolha errada em vermelho, se houver).
+    if (respondida && dados.classes) {
+      const acertou = dados._escolhida === dados.correta;
+      const linhas = dados.sentenca.map((palavra, i) => {
+        if (PONTUACAO.test(palavra)) return '';
+        const info = dados.classes[i] || {};
+        const ehVerbo   = i === dados.correta;
+        const ehErrada  = !acertou && i === dados._escolhida;
+        const classe    = ehVerbo ? 'correta' : (ehErrada ? 'errada' : '');
+        return `
+          <div class="checagem-resultado-item${ehErrada ? ' errada-selecionada' : ''}">
+            <span class="cri-palavra ${classe}">${palavra}</span>
+            <span class="cri-seta">→</span>
+            <span class="cri-classe ${classe}">${info.classe || ''}</span>
+            ${ehVerbo  ? '<span class="cri-icone" style="color:#16a34a">✓</span>' : ''}
+            ${ehErrada ? '<span class="cri-icone" style="color:#dc2626">✕</span>' : ''}
+          </div>`;
+      }).join('');
+      opcoesEl.insertAdjacentHTML('beforeend', `
+        <div class="checagem-resultado-itens">
+          <p class="checagem-resultado-titulo">Resposta de cada item:</p>
+          <div class="checagem-resultado-lista">${linhas}</div>
+        </div>`);
+    }
   } else {
     (dados.opcoes || []).forEach((texto, i) => {
       const btn = document.createElement('button');
