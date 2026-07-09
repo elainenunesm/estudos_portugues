@@ -14,8 +14,11 @@ body {
   max-width: 600px;
   margin: 0 auto;
   background: #ffffff;
-  height: 100vh;
-  height: 100dvh;
+  height: 100vh;   /* fallback para navegadores antigos */
+  height: 100dvh;  /* viewport dinâmico */
+  height: 100svh;  /* viewport "pequeno" garantido — evita que a barra de
+                       gestos do sistema (comum no PWA instalado) corte o
+                       rodapé com os botões Anterior/Próxima */
   display: flex;
   flex-direction: column;
   box-shadow: 0 0 60px rgba(91, 43, 203, 0.15);
@@ -828,7 +831,7 @@ body {
 /* FOOTER */
 .estudo-footer {
   flex-shrink: 0;
-  padding: 14px 20px 24px;
+  padding: 14px 20px calc(24px + env(safe-area-inset-bottom, 0px));
   display: flex;
   gap: 10px;
   background: #ffffff;

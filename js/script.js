@@ -111,26 +111,33 @@ async function tryReconnect() {
         return;
       }
       // Pasta já escolhida antes, mas o navegador "esqueceu" a permissão
-      // nesta sessão (comum após F5/atualizar a página). Guarda o mesmo
-      // handle e tenta pedir a permissão de novo na primeira interação do
-      // usuário — sem reabrir o seletor de pastas do sistema operacional.
+      // nesta sessão (comum após F5/atualizar a página, ou ao abrir o PWA
+      // instalado numa janela nova). Guarda o mesmo handle e tenta pedir a
+      // permissão de novo na primeira interação do usuário — sem reabrir o
+      // seletor de pastas do sistema operacional. Um toast avisa também,
+      // já que o texto do badge sozinho passa despercebido.
       state.dirHandle        = handle;
       state.folderName       = folderName || handle.name;
       state.precisaPermissao = true;
       updateFolderBadge();
+      showToast(`📂 Toque em qualquer lugar da tela para reconectar a pasta "${state.folderName}"`, 'warning', 5000);
       aguardarGestoParaReconectar();
       return;
     }
 
     if (folderName) {
+      // Só o nome ficou salvo (sem o handle real) — não dá pra ler/gravar
+      // nada até o usuário escolher a pasta de novo.
       state.folderName = folderName;
       updateFolderBadge();
+      showToast(`⚠️ Reconecte a pasta "${folderName}" para continuar salvando seu progresso.`, 'warning', 5000);
       return;
     }
 
     // Primeira visita — mostra modal
     showModal();
   } catch (e) {
+    console.error('Erro ao reconectar a pasta:', e);
     showModal();
   }
 }
@@ -477,7 +484,7 @@ function showView(view) {
 
 // ── TOAST ────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg, type = 'default') {
+function showToast(msg, type = 'default', duracao = 2500) {
   let toast = document.getElementById('toastMsg');
   if (!toast) {
     toast = document.createElement('div');
@@ -489,7 +496,7 @@ function showToast(msg, type = 'default') {
   toast.style.background = type === 'success' ? '#16a34a' : (type === 'warning' ? '#d97706' : '#1a1a2e');
   clearTimeout(toastTimer);
   toast.classList.add('show');
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2500);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), duracao);
 }
 
 // ── MODAL ────────────────────────────────────────────────────
