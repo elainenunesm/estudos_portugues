@@ -17,6 +17,7 @@ const state = {
   folderName: null,
   aulas: DEFAULT_AULAS(),
   precisaPermissao: false, // handle conhecido, mas o navegador "esqueceu" a permissão (comum após F5)
+  progressoNaoSalvo: false, // state.aulas tem mudança que ainda não foi gravada no disco com sucesso
 };
 
 // ── ÍCONES DAS AULAS ─────────────────────────────────────────
@@ -32,9 +33,11 @@ const ICONES_AULA = {
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
 async function saveProgress() {
   if (!state.dirHandle) {
+    state.progressoNaoSalvo = true;
     showToast('⚠️ Conecte uma pasta para salvar — sem isso, seu progresso se perde ao fechar a página.', 'warning');
     return;
   }
+  state.progressoNaoSalvo = true;
   try {
     // Preserva o caderno de erros já salvo no arquivo (gravado por
     // estudo.js) — essa tela só conhece/atualiza o progresso das aulas.
@@ -44,6 +47,7 @@ async function saveProgress() {
     const wr = await fh.createWritable();
     await wr.write(JSON.stringify(data, null, 2));
     await wr.close();
+    state.progressoNaoSalvo = false;
     showToast('💾 Progresso salvo com sucesso!', 'success');
   } catch (e) {
     console.warn('Erro ao salvar progresso:', e);
@@ -131,24 +135,39 @@ async function tryReconnect() {
   }
 }
 
-// Pede a permissão de novo assim que o usuário interagir com a página. O
-// navegador exige um gesto do usuário para reconceder acesso, mas como já é
-// uma pasta conhecida, isso acontece sem reabrir o seletor do sistema.
+// Repede a permissão na mesma pasta já conhecida (sem reabrir o seletor do
+// sistema). Se havia uma mudança em memória que não deu para salvar por
+// falta de permissão (ex: aula recém concluída ao voltar de estudo.html),
+// grava ela agora — em vez de recarregar o disco, que estaria desatualizado
+// e faria a tela "voltar" para o estado salvo antes da conclusão.
+async function tentarReconectarPermissao() {
+  if (!state.precisaPermissao || !state.dirHandle) return false;
+  try {
+    const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
+    if (perm !== 'granted') return false;
+    state.precisaPermissao = false;
+    if (state.progressoNaoSalvo) {
+      await saveProgress();
+    } else {
+      await loadProgress();
+      scrollParaAulaAtiva(false);
+    }
+    updateFolderBadge();
+    return true;
+  } catch (e) {
+    // Usuário negou ou o handle não é mais válido — o badge da pasta
+    // continua disponível para reconectar manualmente.
+    return false;
+  }
+}
+
+// Pede a permissão de novo assim que o usuário interagir com a página pela
+// primeira vez. O navegador exige um gesto do usuário para reconceder
+// acesso a uma pasta já conhecida.
 function aguardarGestoParaReconectar() {
   const tentar = async () => {
     document.removeEventListener('click', tentar, true);
-    if (!state.precisaPermissao || !state.dirHandle) return;
-    try {
-      const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
-      if (perm === 'granted') {
-        state.precisaPermissao = false;
-        await loadProgress();
-        updateFolderBadge();
-      }
-    } catch (e) {
-      // Usuário negou ou o handle não é mais válido — o badge da pasta
-      // continua disponível para reconectar manualmente.
-    }
+    await tentarReconectarPermissao();
   };
   document.addEventListener('click', tentar, true);
 }
@@ -555,19 +574,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
   // faltando permissão); senão reabre a seleção de pasta
   document.getElementById('folderBadge').addEventListener('click', async () => {
-    if (state.precisaPermissao && state.dirHandle) {
-      try {
-        const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
-        if (perm === 'granted') {
-          state.precisaPermissao = false;
-          await loadProgress();
-          updateFolderBadge();
-          return;
-        }
-      } catch (e) {
-        // cai para o modal de seleção de pasta abaixo
-      }
-    }
+    if (state.precisaPermissao && await tentarReconectarPermissao()) return;
     showModal();
   });
 
