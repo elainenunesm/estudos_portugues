@@ -30,7 +30,12 @@ window.AULA_DATA = {
   exemplo: [
     {
       tipo:  'infinito',
-      texto: 'Uma maneira de transformar a palavra em <strong class="destaque">verbo</strong> é ele no <strong class="destaque">infinitivo</strong>.',
+      texto: 'Uma maneira de identificar o verbo na oração é transformar a palavra em <strong class="destaque">verbo</strong> é transformar ele no <strong class="destaque">infinitivo</strong>.',
+    },
+    {
+      tipo:      'conjugar',
+      texto:     'Exemplo: a palavra <strong class="destaque">cantou</strong>.',
+      conclusao: '<strong class="destaque">Cantou</strong> --&gt; Cant + <strong class="destaque">ar</strong> (indica infinitivo terminação ar) <strong class="destaque">1º conjugação</strong>',
     },
   ],
 
