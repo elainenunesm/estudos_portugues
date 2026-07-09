@@ -416,38 +416,71 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
   // Só a primeira checagem ("O que é um verbo?") usa a ordem invertida
   // (pergunta curta em negrito antes do título grande). As demais seguem
   // o layout padrão das questões, com o verbo em destaque no subtítulo.
+  // Checagens com "sentenca" (clicar na palavra) não repetem a frase como
+  // subtítulo — ela já aparece como as palavras clicáveis logo abaixo.
   opcoesEl.innerHTML = marcarCartaoHtml(`checagem${checagemIdx}`) + (dados.invertido
     ? `<p class="questao-subtitulo checagem-pergunta">${dados.subtitulo || ''}</p>
        <h2 class="questao-titulo checagem-titulo">${dados.titulo || ''}</h2>`
-    : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>
-       <p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`);
+    : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>` +
+      (dados.sentenca ? '' : `<p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`)) +
+    (dados.sentenca ? '<div class="sentence-display" id="sentenceDisplay"></div>' : '');
   ativarBotaoMarcar();
-  (dados.opcoes || []).forEach((texto, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'opcao';
-    if (respondida) {
-      btn.disabled = true;
-      if (i === dados.correta)                                btn.classList.add('correta');
-      else if (i === dados._escolhida && i !== dados.correta) btn.classList.add('errada');
-    } else {
-      btn.addEventListener('click', () => {
-        dados._escolhida = i;
-        if (i !== dados.correta) {
-          addErro(aulaId, `checagem${checagemIdx}`);
-          erroNestaSessao = true;
-        }
-        mostrarChecagem(aula, introIdx, dados, checagemIdx);
-      });
-    }
-    btn.innerHTML = `<span class="letra">${LETRAS[i]}</span><span class="opcao-texto">${texto}</span>`;
-    opcoesEl.appendChild(btn);
-  });
+
+  if (dados.sentenca) {
+    const wrap = document.getElementById('sentenceDisplay');
+    const PONTUACAO = /^[.,!?;:]+$/;
+    dados.sentenca.forEach((palavra, i) => {
+      const ehPontuacao = PONTUACAO.test(palavra);
+      const btn = document.createElement('button');
+      btn.className = 'word-chip' + (ehPontuacao ? ' pontuacao' : '');
+      btn.textContent = palavra;
+      if (ehPontuacao) {
+        btn.disabled = true;
+      } else if (respondida) {
+        btn.disabled = true;
+        if (i === dados.correta)                                btn.classList.add('correta');
+        else if (i === dados._escolhida && i !== dados.correta) btn.classList.add('errada');
+      } else {
+        btn.addEventListener('click', () => {
+          dados._escolhida = i;
+          if (i !== dados.correta) {
+            addErro(aulaId, `checagem${checagemIdx}`);
+            erroNestaSessao = true;
+          }
+          mostrarChecagem(aula, introIdx, dados, checagemIdx);
+        });
+      }
+      wrap.appendChild(btn);
+    });
+  } else {
+    (dados.opcoes || []).forEach((texto, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opcao';
+      if (respondida) {
+        btn.disabled = true;
+        if (i === dados.correta)                                btn.classList.add('correta');
+        else if (i === dados._escolhida && i !== dados.correta) btn.classList.add('errada');
+      } else {
+        btn.addEventListener('click', () => {
+          dados._escolhida = i;
+          if (i !== dados.correta) {
+            addErro(aulaId, `checagem${checagemIdx}`);
+            erroNestaSessao = true;
+          }
+          mostrarChecagem(aula, introIdx, dados, checagemIdx);
+        });
+      }
+      btn.innerHTML = `<span class="letra">${LETRAS[i]}</span><span class="opcao-texto">${texto}</span>`;
+      opcoesEl.appendChild(btn);
+    });
+  }
 
   if (respondida) {
     const acertou = dados._escolhida === dados.correta;
     feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
     feedbackIcon.textContent  = acertou ? '✅' : '❌';
-    feedbackTexto.innerHTML   = montarFeedbackHtml(acertou, dados.feedback, LETRAS[dados.correta]);
+    const letraCorreta        = dados.sentenca ? null : LETRAS[dados.correta];
+    feedbackTexto.innerHTML   = montarFeedbackHtml(acertou, dados.feedback, letraCorreta);
   } else {
     feedbackBar.className = 'feedback-bar';
   }

@@ -778,6 +778,61 @@ body {
   line-height: 1.4;
 }
 
+/* CHECAGEM DO TIPO "CLIQUE NA PALAVRA" */
+.sentence-display {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.word-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  border: 2px solid #e9dffb;
+  border-radius: 12px;
+  background: #ffffff;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1a1a2e;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  user-select: none;
+}
+
+.word-chip:hover:not(:disabled):not(.pontuacao) {
+  border-color: #5B2BCB;
+  background: #faf7ff;
+  color: #5B2BCB;
+}
+
+.word-chip.correta {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.word-chip.errada {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.word-chip:disabled:not(.correta):not(.errada) {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.word-chip.pontuacao {
+  border: none;
+  background: transparent;
+  padding: 10px 2px;
+  cursor: default;
+  color: #1a1a2e;
+}
+
 /* FEEDBACK */
 .feedback-bar {
   margin: 12px 20px;

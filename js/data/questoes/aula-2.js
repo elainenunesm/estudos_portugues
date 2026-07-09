@@ -44,6 +44,34 @@ window.AULA_DATA = {
     },
   ],
 
+  // Checagens do tipo "clique na palavra" — clicar no verbo da frase.
+  checagem: [
+    {
+      titulo:   'Clique no verbo da frase:',
+      sentenca: ['A', 'Maria', 'cantou', 'no', 'coral', '.'],
+      correta:  2,
+      feedback: '"Cantou" é o verbo — vem de cantar, infinitivo terminado em -ar (1ª conjugação).',
+    },
+    {
+      titulo:   'Clique no verbo da frase:',
+      sentenca: ['O', 'gato', 'dormiu', 'na', 'cama', '.'],
+      correta:  2,
+      feedback: '"Dormiu" é o verbo — vem de dormir, infinitivo terminado em -ir (3ª conjugação).',
+    },
+    {
+      titulo:   'Clique no verbo da frase:',
+      sentenca: ['O', 'Pedro', 'comeu', 'o', 'bolo', '.'],
+      correta:  2,
+      feedback: '"Comeu" é o verbo — vem de comer, infinitivo terminado em -er (2ª conjugação).',
+    },
+    {
+      titulo:   'Clique no verbo da frase:',
+      sentenca: ['O', 'menino', 'sorriu', 'feliz', '.'],
+      correta:  2,
+      feedback: '"Sorriu" é o verbo — vem de sorrir, infinitivo terminado em -ir (3ª conjugação).',
+    },
+  ],
+
   licao: {
     titulo: '📖 Lição: O Sujeito',
     html: `
