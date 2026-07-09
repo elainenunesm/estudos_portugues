@@ -97,6 +97,21 @@ window.AULA_DATA = {
       ],
       feedback: '"Sorriu" é o verbo — vem de sorrir, infinitivo terminado em -ir (3ª conjugação).',
     },
+    {
+      titulo:   'Clique no verbo da frase:',
+      sentenca: ['A', 'professora', 'pôs', 'o', 'livro', 'na', 'mesa', '.'],
+      correta:  2,
+      classes: [
+        { classe: 'Artigo definido' },
+        { classe: 'Substantivo' },
+        { classe: 'Verbo — pretérito perfeito de pôr (irregular)' },
+        { classe: 'Artigo definido' },
+        { classe: 'Substantivo' },
+        { classe: 'Preposição + Artigo (em + a)' },
+        { classe: 'Substantivo' },
+      ],
+      feedback: '"Pôs" é o verbo — vem de pôr, um verbo irregular (antigamente escrito "poer", por isso é da 2ª conjugação).',
+    },
   ],
 
   licao: {
