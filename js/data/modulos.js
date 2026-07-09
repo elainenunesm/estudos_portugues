@@ -7,7 +7,7 @@
 const MODULOS = [
   {
     id:     1,
-    titulo: 'Etapa 1: Fundamentos',
+    titulo: 'Etapa 1: Fundamentos do verbo',
     aulas: [
       {
         id:        1,

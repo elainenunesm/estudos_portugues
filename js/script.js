@@ -7,15 +7,25 @@
 const PROGRESS_VERSION = 2; // incrementar para invalidar saves antigos
 
 const DEFAULT_AULAS = () => [
-  { id: 1, status: 'active',  progress: 0, stars: 0 },
-  { id: 2, status: 'locked',  progress: 0, stars: 0 },
-  { id: 3, status: 'locked',  progress: 0, stars: 0 },
+  { id: 1, status: 'active',  progress: 0, stars: 0, favorita: false },
+  { id: 2, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 3, status: 'locked',  progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
   dirHandle:  null,
   folderName: null,
   aulas: DEFAULT_AULAS(),
+};
+
+// ── ÍCONES DAS AULAS ─────────────────────────────────────────
+// Trocados pelo cadeado enquanto a aula está bloqueada; ao desbloquear,
+// mostra o ícone do próprio tema da aula (definido em js/data/modulos.js).
+const ICONE_CADEADO = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+const ICONES_AULA = {
+  busca:  '<circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line>',
+  pessoa: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path>',
+  balao:  '<path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"></path>',
 };
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
@@ -136,12 +146,22 @@ function renderAulas() {
     const node = document.querySelector(`[data-aula="${aula.id}"]`);
     if (!node) return;
 
-    const iconCircle = node.querySelector('.icon-circle');
-    const card       = node.querySelector('.aula-card');
-    const statusEl   = node.querySelector('.status');
-    const barFill    = node.querySelector('.progress-bar-fill');
-    const btn        = node.querySelector('button');
-    const stars      = node.querySelectorAll('.star');
+    const iconCircle  = node.querySelector('.icon-circle');
+    const iconSvg     = iconCircle.querySelector('svg');
+    const card        = node.querySelector('.aula-card');
+    const statusEl    = node.querySelector('.status');
+    const barFill     = node.querySelector('.progress-bar-fill');
+    const btn         = node.querySelector('button:not(.btn-favoritar)');
+    const stars       = node.querySelectorAll('.star');
+    const btnFavoritar = node.querySelector('.btn-favoritar');
+    if (btnFavoritar) btnFavoritar.classList.toggle('favorita', !!aula.favorita);
+
+    const infoAula = listaAulas().find(a => a.id === aula.id);
+    if (iconSvg) {
+      iconSvg.innerHTML = aula.status === 'locked'
+        ? ICONE_CADEADO
+        : (ICONES_AULA[infoAula?.icone] || ICONE_CADEADO);
+    }
 
     if (aula.status === 'locked') {
       node.classList.add('locked');
@@ -232,7 +252,115 @@ async function renderErrosView() {
   updateErrosBadge();
 }
 
-// ── TROCA DE VIEW (Início / Caderno de erros) ────────────────
+// ── CADERNO FAVORITOS ──────────────────────────────────────
+function renderFavoritosView() {
+  const list = document.getElementById('errosList');
+  if (!list) return;
+
+  let html = '';
+  listaAulas().forEach(aulaInfo => {
+    const aula = state.aulas.find(a => a.id === aulaInfo.id);
+    if (!aula || !aula.favorita) return;
+    html += `
+      <div class="erro-card">
+        <div class="erro-card-info">
+          <h3>${aulaInfo.titulo}</h3>
+          <p class="cor-favorito">Aula favorita</p>
+        </div>
+        <button type="button" class="btn-praticar" data-aula="${aulaInfo.id}">Abrir</button>
+      </div>`;
+  });
+
+  list.innerHTML = html || `
+    <div class="erros-empty">
+      <p class="erros-empty-emoji">🤍</p>
+      <p>Nenhuma aula favoritada ainda.</p>
+      <p class="erros-empty-sub">Toque no coraçãozinho no card da aula para marcá-la como favorita.</p>
+    </div>`;
+
+  list.querySelectorAll('.btn-praticar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.location.href = `estudo.html?aula=${btn.dataset.aula}`;
+    });
+  });
+}
+
+// ── CADERNO DE REVISÃO ─────────────────────────────────────
+// "Telas" = definição/contexto/exemplo. "Perguntas" = checagens (e, quando
+// reativadas, as questões normais) marcadas com a mesma etiqueta.
+function ehPergunta(chave) {
+  return chave.startsWith('checagem') || chave.startsWith('questao');
+}
+
+async function renderRevisaoView() {
+  const list     = document.getElementById('errosList');
+  if (!list) return;
+  const marcados = await getCartoesMarcados();
+  const mostrarPerguntas = subCadernoAtivo === 'perguntas';
+
+  let html = '';
+  listaAulas().forEach(aula => {
+    const chaves = (marcados[String(aula.id)] || []).filter(c => ehPergunta(c) === mostrarPerguntas);
+    if (chaves.length === 0) return;
+    const rotulo = mostrarPerguntas ? 'pergunta' : 'tela';
+    html += `
+      <div class="erro-card">
+        <div class="erro-card-info">
+          <h3>${aula.titulo}</h3>
+          <p class="cor-revisao">${chaves.length} ${rotulo}${chaves.length !== 1 ? 's' : ''} para revisar</p>
+        </div>
+        <button type="button" class="btn-praticar" data-aula="${aula.id}">Ver</button>
+      </div>`;
+  });
+
+  list.innerHTML = html || (mostrarPerguntas ? `
+    <div class="erros-empty">
+      <p class="erros-empty-emoji">🔖</p>
+      <p>Nenhuma pergunta marcada ainda.</p>
+      <p class="erros-empty-sub">Toque na etiqueta no canto das perguntas da aula para marcá-las.</p>
+    </div>` : `
+    <div class="erros-empty">
+      <p class="erros-empty-emoji">🔖</p>
+      <p>Nenhuma tela marcada ainda.</p>
+      <p class="erros-empty-sub">Toque na etiqueta no canto das telas de definição, contexto e exemplo para marcá-las.</p>
+    </div>`);
+
+  list.querySelectorAll('.btn-praticar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.location.href = `estudo.html?aula=${btn.dataset.aula}&modo=revisao`;
+    });
+  });
+}
+
+// ── ABAS DOS CADERNOS (Erros / Favoritos / Revisão) ────────
+let cadernoAtivo    = 'erros';
+let subCadernoAtivo = 'telas';
+
+function renderCadernoAtivo() {
+  if (cadernoAtivo === 'favoritos')     renderFavoritosView();
+  else if (cadernoAtivo === 'revisao')  renderRevisaoView();
+  else                                   renderErrosView();
+}
+
+function trocarCadernoTab(tab) {
+  cadernoAtivo = tab;
+  document.querySelectorAll('.caderno-tab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === tab);
+  });
+  const subtabs = document.getElementById('cadernosSubtabs');
+  if (subtabs) subtabs.style.display = tab === 'revisao' ? 'flex' : 'none';
+  renderCadernoAtivo();
+}
+
+function trocarCadernoSubTab(sub) {
+  subCadernoAtivo = sub;
+  document.querySelectorAll('.caderno-subtab').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.subtab === sub);
+  });
+  renderCadernoAtivo();
+}
+
+// ── TROCA DE VIEW (Início / Cadernos) ──────────────────────
 function showView(view) {
   const viewInicio = document.getElementById('viewInicio');
   const viewErros  = document.getElementById('viewErros');
@@ -245,7 +373,7 @@ function showView(view) {
   if (navInicio)  navInicio.classList.toggle('active', !isErros);
   if (navErros)   navErros.classList.toggle('active', isErros);
 
-  if (isErros) renderErrosView();
+  if (isErros) renderCadernoAtivo();
 }
 
 // ── TOAST ────────────────────────────────────────────────────
@@ -279,6 +407,21 @@ function hideModal() {
 // Configurado uma única vez no DOMContentLoaded — não quebra IntersectionObserver
 function setupAulaEvents(pathContainer) {
   pathContainer.addEventListener('click', function(e) {
+    // Marcar/desmarcar como favorita — funciona mesmo em aula bloqueada
+    const btnFavoritar = e.target.closest('.btn-favoritar');
+    if (btnFavoritar) {
+      e.stopPropagation();
+      const node   = btnFavoritar.closest('[data-aula]');
+      const aulaId = node ? parseInt(node.dataset.aula, 10) : null;
+      const aula   = state.aulas.find(a => a.id === aulaId);
+      if (aula) {
+        aula.favorita = !aula.favorita;
+        renderAulas();
+        saveProgress();
+        showToast(aula.favorita ? '❤️ Aula marcada como favorita!' : 'Aula removida dos favoritos', 'success');
+      }
+      return;
+    }
     // Aula bloqueada
     const lockedNode = e.target.closest('.aula-node.locked');
     if (lockedNode) {
@@ -354,6 +497,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Modal — Agora não
   document.getElementById('btnSemPasta').addEventListener('click', hideModal);
 
+  // Clique no nome/logo do app volta para o Início
+  document.getElementById('headerLogo').addEventListener('click', () => showView('inicio'));
+
   // Navegação inferior
   document.querySelectorAll('.nav-item').forEach(item => {
     item.addEventListener('click', function () {
@@ -361,6 +507,16 @@ document.addEventListener('DOMContentLoaded', async function () {
       if (!view) { showToast('🚧 Em breve'); return; }
       showView(view);
     });
+  });
+
+  // Abas dos cadernos (Erros / Favoritos / Revisão)
+  document.querySelectorAll('.caderno-tab').forEach(btn => {
+    btn.addEventListener('click', () => trocarCadernoTab(btn.dataset.tab));
+  });
+
+  // Sub-abas do caderno de Revisão (Telas / Perguntas)
+  document.querySelectorAll('.caderno-subtab').forEach(btn => {
+    btn.addEventListener('click', () => trocarCadernoSubTab(btn.dataset.subtab));
   });
 
   // Abre direto no Caderno de Erros se veio de estudo.html?modo=erros

@@ -243,6 +243,46 @@ body {
   padding: 36px 20px 18px;
   box-shadow: 0 6px 20px rgba(91, 43, 203, 0.08);
   margin-top: 0;
+  position: relative;
+}
+
+.btn-favoritar {
+  position: absolute;
+  top: -3px;
+  right: 22px;
+  width: 30px;
+  height: 38px;
+  padding: 0;
+  background: #ffffff;
+  border: 2px solid #e9dffb;
+  border-top: none;
+  border-radius: 0 0 7px 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #f3b6c9;
+  z-index: 3;
+  box-shadow: 0 3px 6px rgba(91, 43, 203, 0.1);
+  transition: color 0.2s, transform 0.15s;
+}
+
+.btn-favoritar:hover {
+  color: #ec4899;
+  transform: translateY(1px);
+}
+
+.btn-favoritar svg {
+  width: 15px;
+  height: 15px;
+}
+
+.btn-favoritar.favorita {
+  color: #ec4899;
+}
+
+.btn-favoritar.favorita svg {
+  fill: #ec4899;
 }
 
 .aula-card h3 {
@@ -525,6 +565,68 @@ body {
   line-height: 1.5;
 }
 
+.cadernos-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.caderno-tab {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1.5px solid #e9dffb;
+  background: #ffffff;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.caderno-tab:hover {
+  background: #f5f0ff;
+}
+
+.caderno-tab.active {
+  background: #5B2BCB;
+  border-color: #5B2BCB;
+  color: #ffffff;
+}
+
+.cadernos-subtabs {
+  display: flex;
+  gap: 16px;
+  margin: -6px 0 16px;
+  padding-bottom: 10px;
+  border-bottom: 1.5px solid #f0eaff;
+}
+
+.caderno-subtab {
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  color: #9ca3af;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+}
+
+.caderno-subtab.active {
+  color: #5B2BCB;
+}
+
+.caderno-subtab.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -11px;
+  height: 2px;
+  background: #5B2BCB;
+}
+
 .erros-list {
   display: flex;
   flex-direction: column;
@@ -554,6 +656,14 @@ body {
   font-size: 14px;
   color: #ef4444;
   font-weight: 600;
+}
+
+.erro-card-info p.cor-favorito {
+  color: #ec4899;
+}
+
+.erro-card-info p.cor-revisao {
+  color: #4A80F0;
 }
 
 .btn-praticar {

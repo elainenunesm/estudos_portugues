@@ -12,7 +12,7 @@
 <div class="app-wrapper">
 
 <header class="header">
-  <div class="header-left">
+  <div class="header-left" id="headerLogo" style="cursor:pointer">
     <div class="logo">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="24" height="24">
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
@@ -48,7 +48,7 @@
     </svg>
   </div>
   <div class="hero-content" id="heroContent">
-    <h2 class="hero-title">Etapa 1: Fundamentos</h2>
+    <h2 class="hero-title">Etapa 1: Fundamentos do verbo</h2>
     <div class="progress-segments">
       <div class="segment filled"></div>
       <div class="segment"></div>
@@ -74,6 +74,11 @@
       </svg>
     </div>
     <div class="aula-card">
+      <button class="btn-favoritar" title="Marcar como favorita">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path>
+        </svg>
+      </button>
       <h3>Aula 1: Aprenda o que é o verbo</h3>
       <p class="status">Não iniciada</p>
       <div class="progress-bar">
@@ -102,6 +107,11 @@
       </svg>
     </div>
     <div class="aula-card locked">
+      <button class="btn-favoritar" title="Marcar como favorita">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path>
+        </svg>
+      </button>
       <h3>Aula 2: Sc</h3>
       <p class="status">Bloqueada</p>
       <div class="progress-bar">
@@ -130,6 +140,11 @@
       </svg>
     </div>
     <div class="aula-card locked">
+      <button class="btn-favoritar" title="Marcar como favorita">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1.1L12 21l7.8-7.5 1-1.1a5.5 5.5 0 0 0 0-7.8z"></path>
+        </svg>
+      </button>
       <h3>Aula 3: Predicado</h3>
       <p class="status">Bloqueada</p>
       <div class="progress-bar">
@@ -144,8 +159,17 @@
 
 <div class="view-erros" id="viewErros" style="display:none">
   <div class="erros-header">
-    <h2>Caderno de Erros</h2>
-    <p>As questões que você errar ficam aqui até você dominá-las de vez.</p>
+    <h2>Cadernos</h2>
+    <p>Suas questões erradas, aulas favoritas e telas marcadas para revisão.</p>
+  </div>
+  <div class="cadernos-tabs" id="cadernosTabs">
+    <button type="button" class="caderno-tab active" data-tab="erros">Erros</button>
+    <button type="button" class="caderno-tab" data-tab="favoritos">Favoritos</button>
+    <button type="button" class="caderno-tab" data-tab="revisao">Revisão</button>
+  </div>
+  <div class="cadernos-subtabs" id="cadernosSubtabs" style="display:none">
+    <button type="button" class="caderno-subtab active" data-subtab="telas">Aulas</button>
+    <button type="button" class="caderno-subtab" data-subtab="perguntas">Perguntas</button>
   </div>
   <div class="erros-list" id="errosList"></div>
 </div>
@@ -163,9 +187,8 @@
         <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
         <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
       </svg>
-      <span class="nav-badge" id="errosBadge">0</span>
     </div>
-    <span>Caderno de erros</span>
+    <span>Cadernos</span>
   </div>
   <div class="nav-item">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

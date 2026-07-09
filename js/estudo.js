@@ -9,7 +9,8 @@
 const LETRAS = ['A', 'B', 'C', 'D'];
 const params   = new URLSearchParams(window.location.search);
 const aulaId   = params.get('aula') || '1';
-const modoErros = params.get('modo') === 'erros';
+const modoErros   = params.get('modo') === 'erros';
+const modoRevisao = params.get('modo') === 'revisao';
 
 // Questões pontuadas desativadas por enquanto (dado da aula mantido em
 // js/data/questoes/aula-N.js para reativar depois — é só voltar para true).
@@ -47,6 +48,22 @@ const btnAnterior      = document.getElementById('btnAnterior');
 const btnProxima       = document.getElementById('btnProxima');
 const questaoArea      = document.getElementById('questaoArea');
 const scrollFade       = document.getElementById('scrollFade');
+
+// ── TOAST ────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  let toast = document.getElementById('toastMsg');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toastMsg';
+    toast.className = 'toast';
+    document.body.appendChild(toast);
+  }
+  toast.textContent = msg;
+  clearTimeout(toastTimer);
+  toast.classList.add('show');
+  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+}
 
 // Monta o texto da barra de feedback com o "Correto!"/"Incorreto." em
 // uma linha e a explicação em outra, separados por um espaço maior.
@@ -167,6 +184,7 @@ function ativarBotaoMarcar() {
     if (marcando) cartaoMarcadoSet.add(chave); else cartaoMarcadoSet.delete(chave);
     btn.classList.toggle('marcada', marcando);
     alternarCartaoMarcado(aulaId, chave);
+    showToast(marcando ? '🔖 Marcada para revisão!' : 'Removida da revisão');
   });
 }
 
@@ -386,11 +404,12 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
   // Só a primeira checagem ("O que é um verbo?") usa a ordem invertida
   // (pergunta curta em negrito antes do título grande). As demais seguem
   // o layout padrão das questões, com o verbo em destaque no subtítulo.
-  opcoesEl.innerHTML = dados.invertido
+  opcoesEl.innerHTML = marcarCartaoHtml(`checagem${checagemIdx}`) + (dados.invertido
     ? `<p class="questao-subtitulo checagem-pergunta">${dados.subtitulo || ''}</p>
        <h2 class="questao-titulo checagem-titulo">${dados.titulo || ''}</h2>`
     : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>
-       <p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`;
+       <p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`);
+  ativarBotaoMarcar();
   (dados.opcoes || []).forEach((texto, i) => {
     const btn = document.createElement('button');
     btn.className = 'opcao';
@@ -693,6 +712,8 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
       aula = { ...aulaOriginal, titulo: `Caderno de Erros — ${aulaOriginal.titulo}`, questoes: errIdxs.map(i => aulaOriginal.questoes[i]) };
       estado.origIdx = errIdxs;
     }
+  } else if (modoRevisao) {
+    aula = { ...aulaOriginal, titulo: `Revisão — ${aulaOriginal.titulo}`, questoes: [] };
   } else {
     if (!QUESTOES_ATIVAS) aula = { ...aula, questoes: [] };
     estado.origIdx = aula.questoes.map((_, i) => i);
@@ -702,27 +723,61 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   // Inicializa estado com o número correto de questões
   estado.respostas = new Array(aula.questoes.length).fill(null);
 
-  // Telas de intro em ordem (dinâmico, baseado nos campos da aula) — puladas no modo caderno de erros
-  const introScreens = ['justificativa'];
-  const introFns = { justificativa: mostrarIntro, definicao: mostrarDefinicao, contexto: mostrarContexto, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido };
-  if (aula.definicao)     introScreens.push('definicao');
-  if (aula.contexto)      introScreens.push('contexto');
-  (aula.exemplo || []).forEach((_, i) => {
-    const chave = `exemplo${i}`;
-    introScreens.push(chave);
-    introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
-  });
-  (aula.checagem || []).forEach((dados, i) => {
-    const chave = `checagem${i}`;
-    introScreens.push(chave);
-    introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
-  });
-  // Telas de resumo, infinitivo, identificação e sentido desativadas por
-  // enquanto (dados da aula mantidos para uso futuro)
-  // if (aula.resumo)        introScreens.push('resumo');
-  // if (aula.infinitivo)    introScreens.push('infinitivo');
-  // if (aula.identificacao) introScreens.push('identificacao');
-  // if (aula.sentido)       introScreens.push('sentido');
+  // Telas de intro em ordem (dinâmico, baseado nos campos da aula) — puladas
+  // no modo caderno de erros. No modo revisão, mostra só as telas marcadas.
+  const introScreens = [];
+  const introFns = {};
+  if (modoRevisao) {
+    if (cartaoMarcadoSet.has('definicao') && aula.definicao) {
+      introScreens.push('definicao');
+      introFns.definicao = mostrarDefinicao;
+    }
+    if (cartaoMarcadoSet.has('contexto') && aula.contexto) {
+      introScreens.push('contexto');
+      introFns.contexto = mostrarContexto;
+    }
+    (aula.exemplo || []).forEach((_, i) => {
+      const chave = `exemplo${i}`;
+      if (cartaoMarcadoSet.has(chave)) {
+        introScreens.push(chave);
+        introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
+      }
+    });
+    (aula.checagem || []).forEach((dados, i) => {
+      const chave = `checagem${i}`;
+      if (cartaoMarcadoSet.has(chave)) {
+        introScreens.push(chave);
+        introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
+      }
+    });
+    if (introScreens.length === 0) {
+      window.location.href = 'index.html?view=erros';
+      return;
+    }
+  } else {
+    introScreens.push('justificativa');
+    Object.assign(introFns, { justificativa: mostrarIntro, infinitivo: mostrarInfinitivo, resumo: mostrarResumo, identificacao: mostrarIdentificacao, sentido: mostrarSentido });
+    if (aula.definicao)     introScreens.push('definicao');
+    if (aula.contexto)      introScreens.push('contexto');
+    introFns.definicao = mostrarDefinicao;
+    introFns.contexto  = mostrarContexto;
+    (aula.exemplo || []).forEach((_, i) => {
+      const chave = `exemplo${i}`;
+      introScreens.push(chave);
+      introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
+    });
+    (aula.checagem || []).forEach((dados, i) => {
+      const chave = `checagem${i}`;
+      introScreens.push(chave);
+      introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
+    });
+    // Telas de resumo, infinitivo, identificação e sentido desativadas por
+    // enquanto (dados da aula mantidos para uso futuro)
+    // if (aula.resumo)        introScreens.push('resumo');
+    // if (aula.infinitivo)    introScreens.push('infinitivo');
+    // if (aula.identificacao) introScreens.push('identificacao');
+    // if (aula.sentido)       introScreens.push('sentido');
+  }
   introTotal = introScreens.length - 1;
   let introIdx = 0;
   let introAtiva = !modoErros;
@@ -789,6 +844,7 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
     iniciarRevisaoChecagem(checagemErrosIniciais);
   } else if (introAtiva) {
     introFns[introScreens[0]](aula, 0);
+    btnAnterior.style.display = 'none'; // nunca mostra "Anterior" na 1ª tela
   } else {
     sairIntro();
     renderQuestao(aula);
@@ -824,6 +880,8 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
       introIdx++;
       if (introIdx < introScreens.length) {
         introFns[introScreens[introIdx]](aula, introIdx);
+      } else if (modoRevisao) {
+        window.location.href = 'index.html?view=erros';
       } else {
         finalizarChecagens();
       }
