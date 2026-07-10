@@ -324,7 +324,7 @@ function mostrarExemplo(aula, introIdx, i) {
             : ex.caixa.inline
               ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong> ${ex.caixa.exemplo}</p>`
               : `<div class="passo-caixa-corpo">
-                   <p class="passo-caixa-titulo">Exemplo:</p>
+                   <p class="passo-caixa-titulo">${ex.caixa.titulo || 'Exemplo:'}</p>
                    <p class="passo-caixa-texto">${ex.caixa.exemplo}</p>
                  </div>`}
         </div>
