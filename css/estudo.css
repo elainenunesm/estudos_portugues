@@ -436,6 +436,111 @@ body {
   text-align: left;
 }
 
+/* TELA DE "PASSO" (numerado) — Como encontrar o sujeito, etc. */
+.passo-linha {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.passo-numero {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #eef2ff;
+  color: #4A80F0;
+  font-weight: 700;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.passo-instrucao {
+  font-size: 16px;
+  color: #1a1a2e;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.passo-caixa {
+  background: #f5f7ff;
+  border-radius: 16px;
+  padding: 16px;
+}
+
+.passo-caixa-cabecalho {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.passo-caixa-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e6ebff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.passo-caixa-inline {
+  font-size: 15px;
+  color: #1a1a2e;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.passo-caixa-corpo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.passo-caixa-titulo {
+  font-size: 14px;
+  font-weight: 700;
+  color: #4A80F0;
+}
+
+.passo-caixa-texto {
+  font-size: 15px;
+  color: #1a1a2e;
+  line-height: 1.4;
+}
+
+.passo-caixa-divisor {
+  height: 1px;
+  background: #dde3f5;
+  margin: 12px 0;
+}
+
+.passo-caixa-perguntas {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.passo-caixa-seta {
+  font-size: 15px;
+  color: #1a1a2e;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.passo-caixa-resposta {
+  font-size: 15px;
+  color: #1a1a2e;
+  text-align: left;
+}
+
+.passo-caixa-resposta strong {
+  color: #4A80F0;
+}
+
 /* TELA DE INFINITIVO */
 .infinitivo-card {
   display: flex;

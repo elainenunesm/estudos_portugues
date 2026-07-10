@@ -30,6 +30,52 @@ window.AULA_DATA = {
         },
       ],
     },
+    {
+      tipo:  'busca',
+      texto: 'Para encontrar o <strong class="destaque">sujeito</strong>:',
+      passo: {
+        numero:    '1º',
+        instrucao: 'Encontre o <strong class="destaque">verbo</strong> da frase',
+      },
+      caixa: {
+        tipo:   'tarefa',
+        inline: true,
+        exemplo: 'Maria <strong class="destaque">estudou</strong> ontem',
+      },
+    },
+    {
+      tipo:  'busca',
+      texto: 'Para encontrar o <strong class="destaque">sujeito</strong>:',
+      passo: {
+        numero:    '2º',
+        instrucao: 'Faça a pergunta: <strong class="destaque">Quem + verbo</strong>? Ou <strong class="destaque">o quê + verbo</strong>?',
+      },
+      caixa: {
+        tipo:    'pergunta',
+        exemplo: 'Maria <strong class="destaque">estudou</strong> ontem.',
+        perguntas: [
+          '<strong class="destaque">Quem estudou</strong>? Ou...',
+          '<strong class="destaque">O que estudou</strong>?',
+        ],
+      },
+    },
+    {
+      tipo:  'busca',
+      texto: 'Para encontrar o <strong class="destaque">sujeito</strong>:',
+      passo: {
+        numero:    '3º',
+        instrucao: 'A resposta da pergunta anterior será o <strong class="destaque">sujeito</strong>.',
+      },
+      caixa: {
+        tipo:    'dica',
+        exemplo: 'Maria <strong class="destaque">estudou</strong> ontem.',
+        perguntas: [
+          '<strong class="destaque">Quem estudou</strong>? Ou...',
+          '<strong class="destaque">O que estudou</strong>?',
+        ],
+        resposta: 'Maria',
+      },
+    },
   ],
 
   licao: {
