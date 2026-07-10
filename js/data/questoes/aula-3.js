@@ -72,13 +72,13 @@ window.AULA_DATA = {
         nota:      'Nesse caso quem se encaixa mais é <strong class="destaque">quem estudou?</strong>.',
       },
       caixa: {
-        tipo:    'dica',
-        exemplo: 'Maria <strong class="destaque">estudou</strong> ontem.',
-        perguntas: [
-          '<strong class="destaque">Quem estudou</strong>? Ou...',
-          '<strong class="destaque">O que estudou</strong>?',
-        ],
-        resposta: 'Maria',
+        tipo:   'tarefa',
+        inline: true,
+        rotulo: 'Responda a pergunta, Quem estudou?',
+        interativo: {
+          palavras: ['Maria', 'estudou', 'ontem'],
+          correta:  0,
+        },
       },
     },
   ],
