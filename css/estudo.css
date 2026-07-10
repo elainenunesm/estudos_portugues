@@ -531,13 +531,13 @@ body {
   text-align: left;
 }
 
-.passo-caixa-nota {
+.passo-nota {
   font-size: 14px;
   color: #5c6280;
   line-height: 1.4;
   text-align: left;
   font-style: italic;
-  margin-top: 8px;
+  margin: 4px 0 0 54px;
 }
 
 .passo-caixa-resposta {

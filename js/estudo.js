@@ -312,7 +312,8 @@ function mostrarExemplo(aula, introIdx, i) {
       <div class="passo-linha">
         <div class="passo-numero">${ex.passo.numero}</div>
         <p class="passo-instrucao">– ${ex.passo.instrucao}</p>
-      </div>` : ''}
+      </div>
+      ${ex.passo.nota ? `<p class="passo-nota">${ex.passo.nota}</p>` : ''}` : ''}
       ${ex.caixa ? `
       <div class="passo-caixa">
         <div class="passo-caixa-cabecalho">
@@ -337,8 +338,6 @@ function mostrarExemplo(aula, introIdx, i) {
         ${ex.caixa.resposta ? `
         <div class="passo-caixa-divisor"></div>
         <p class="passo-caixa-resposta"><strong>Resposta:</strong> ${ex.caixa.resposta}</p>` : ''}
-        ${ex.caixa.nota ? `
-        <p class="passo-caixa-nota">${ex.caixa.nota}</p>` : ''}
       </div>` : ''}
     </div>`;
   ativarBotaoMarcar();
