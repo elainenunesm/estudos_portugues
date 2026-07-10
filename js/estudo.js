@@ -11,6 +11,10 @@ const params   = new URLSearchParams(window.location.search);
 const aulaId   = params.get('aula') || '1';
 const modoErros   = params.get('modo') === 'erros';
 const modoRevisao = params.get('modo') === 'revisao';
+// Sub-tipo do caderno de Revisão: 'perguntas' mostra só checagem*/questao*
+// marcadas, 'telas' mostra só definicao/contexto/exemplo* marcadas. Sem o
+// parâmetro (links antigos), mostra tudo que estiver marcado, como antes.
+const tipoRevisao = params.get('tipo');
 
 // Questões pontuadas desativadas por enquanto (dado da aula mantido em
 // js/data/questoes/aula-N.js para reativar depois — é só voltar para true).
@@ -808,28 +812,36 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   const introScreens = [];
   const introFns = {};
   if (modoRevisao) {
-    if (cartaoMarcadoSet.has('definicao') && aula.definicao) {
+    // "tipo=telas" mostra só definição/contexto/exemplo marcados; "tipo=perguntas"
+    // mostra só checagens marcadas. Sem o parâmetro, mostra tudo (compatibilidade).
+    const mostrarTelas     = tipoRevisao !== 'perguntas';
+    const mostrarPerguntas = tipoRevisao !== 'telas';
+    if (mostrarTelas && cartaoMarcadoSet.has('definicao') && aula.definicao) {
       introScreens.push('definicao');
       introFns.definicao = mostrarDefinicao;
     }
-    if (cartaoMarcadoSet.has('contexto') && aula.contexto) {
+    if (mostrarTelas && cartaoMarcadoSet.has('contexto') && aula.contexto) {
       introScreens.push('contexto');
       introFns.contexto = mostrarContexto;
     }
-    (aula.exemplo || []).forEach((_, i) => {
-      const chave = `exemplo${i}`;
-      if (cartaoMarcadoSet.has(chave)) {
-        introScreens.push(chave);
-        introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
-      }
-    });
-    (aula.checagem || []).forEach((dados, i) => {
-      const chave = `checagem${i}`;
-      if (cartaoMarcadoSet.has(chave)) {
-        introScreens.push(chave);
-        introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
-      }
-    });
+    if (mostrarTelas) {
+      (aula.exemplo || []).forEach((_, i) => {
+        const chave = `exemplo${i}`;
+        if (cartaoMarcadoSet.has(chave)) {
+          introScreens.push(chave);
+          introFns[chave] = (a, idx) => mostrarExemplo(a, idx, i);
+        }
+      });
+    }
+    if (mostrarPerguntas) {
+      (aula.checagem || []).forEach((dados, i) => {
+        const chave = `checagem${i}`;
+        if (cartaoMarcadoSet.has(chave)) {
+          introScreens.push(chave);
+          introFns[chave] = (a, idx) => mostrarChecagem(a, idx, dados, i);
+        }
+      });
+    }
     if (introScreens.length === 0) {
       window.location.href = 'index.html?view=erros';
       return;

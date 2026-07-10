@@ -434,7 +434,8 @@ async function renderRevisaoView() {
 
   list.querySelectorAll('.btn-praticar').forEach(btn => {
     btn.addEventListener('click', () => {
-      window.location.href = `estudo.html?aula=${btn.dataset.aula}&modo=revisao`;
+      const tipo = mostrarPerguntas ? 'perguntas' : 'telas';
+      window.location.href = `estudo.html?aula=${btn.dataset.aula}&modo=revisao&tipo=${tipo}`;
     });
   });
 }
