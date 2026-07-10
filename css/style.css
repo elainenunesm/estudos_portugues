@@ -114,46 +114,6 @@ body {
   transform: rotate(180deg);
 }
 
-.nivel-dropdown {
-  position: absolute;
-  top: 44px;
-  left: 50%;
-  transform: translateX(-50%);
-  background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 8px 30px rgba(91, 43, 203, 0.18);
-  padding: 6px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  z-index: 20;
-  width: max-content;
-  max-width: 260px;
-}
-
-.nivel-opcao {
-  background: none;
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #4b5563;
-  text-align: left;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-
-.nivel-opcao:hover {
-  background: #f5f0ff;
-  color: #5B2BCB;
-}
-
-.nivel-opcao.ativo {
-  background: #5B2BCB;
-  color: #ffffff;
-}
-
 .hero-content {
   display: block;
   overflow: hidden;

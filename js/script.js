@@ -266,56 +266,8 @@ function renderAulas() {
   });
 
   atualizarTrilha();
-  mostrarEtapaAtiva();
 
   // Rebind dos botões após renderização — não é mais necessário (delegação)
-}
-
-function etapaDaAula(aulaId) {
-  return (MODULOS || []).find(m => m.aulas.some(a => a.id === aulaId));
-}
-
-// Nível 2 fica sempre navegável pelo dropdown, mesmo sem ter concluído o
-// Nível 1 — uma escolha manual (clicando em "Nível X ^") vale até a
-// próxima atualização da página, sem ser sobrescrita a cada render.
-let etapaSelecionadaManualmente = null;
-
-function mostrarEtapaPorId(etapaId) {
-  const etapa = (MODULOS || []).find(m => m.id === etapaId);
-  if (!etapa) return;
-  const heroTitle = document.getElementById('heroTitle');
-  const nivelLabel = document.getElementById('nivelLabel');
-  if (heroTitle)  heroTitle.textContent  = etapa.titulo;
-  if (nivelLabel) nivelLabel.textContent = `Nível ${etapaId}`;
-  document.querySelectorAll('.nivel-opcao').forEach(btn => {
-    btn.classList.toggle('ativo', parseInt(btn.dataset.etapa, 10) === etapaId);
-  });
-  document.querySelectorAll('.etapa-view').forEach(el => {
-    el.style.display = el.dataset.etapa === String(etapaId) ? '' : 'none';
-  });
-
-  // Corrige a opacidade dos cards que acabaram de ficar visíveis — um card
-  // que estava escondido (display:none) podia ficar preso na opacidade da
-  // animação de entrada (0), parecendo "lavado" ao trocar de nível.
-  etapa.aulas.forEach(aulaInfo => {
-    const node = document.querySelector(`[data-aula="${aulaInfo.id}"]`);
-    const aulaEstado = state.aulas.find(a => a.id === aulaInfo.id);
-    if (node && aulaEstado) node.style.opacity = aulaEstado.status === 'locked' ? '0.6' : '1';
-  });
-}
-
-// Mostra a Etapa escolhida manualmente (se houver) ou a que contém a aula
-// ativa (ou a última, se tudo estiver concluído) — assim o app avança pra
-// próxima etapa sozinho conforme o aluno progride, mas sem travar o
-// dropdown se o aluno quiser só dar uma olhada em um nível mais à frente.
-function mostrarEtapaAtiva() {
-  if (etapaSelecionadaManualmente !== null) {
-    mostrarEtapaPorId(etapaSelecionadaManualmente);
-    return;
-  }
-  const aulaAtiva = state.aulas.find(a => a.status === 'active') || state.aulas[state.aulas.length - 1];
-  const etapa     = aulaAtiva ? etapaDaAula(aulaAtiva.id) : null;
-  if (etapa) mostrarEtapaPorId(etapa.id);
 }
 
 // Acende a trilha (linha tracejada) até a aula concluída mais recente,
@@ -683,43 +635,35 @@ function setupAulaEvents(pathContainer) {
 // ── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function () {
 
-  // Colapso do hero card — recolhe a aula da etapa que estiver visível no
-  // momento (só uma por vez), clicando no card fora da área de texto.
-  const nivelSelector = document.getElementById('nivelSelector');
-  const nivelDropdown = document.getElementById('nivelDropdown');
-  const heroCard       = document.getElementById('heroCard');
+  // Colapso do hero card — cada Etapa é um bloco independente na página
+  // (sempre visível, um embaixo do outro), com seu próprio recolher/expandir.
+  function configurarColapsoHero(nivelSelector, heroCard, pathContainer) {
+    if (!nivelSelector || !heroCard || !pathContainer) return;
+    let isCollapsed = false;
+    function toggleLevel() {
+      isCollapsed = !isCollapsed;
+      [nivelSelector, heroCard, pathContainer].forEach(el => {
+        el.classList.toggle('collapsed', isCollapsed);
+      });
+    }
+    nivelSelector.addEventListener('click', e => { e.stopPropagation(); toggleLevel(); });
+    heroCard.addEventListener('click', e => {
+      if (e.target.closest('.hero-content')) return;
+      toggleLevel();
+    });
+  }
+  configurarColapsoHero(
+    document.getElementById('nivelSelector'),
+    document.getElementById('heroCard'),
+    document.getElementById('pathContainer'),
+  );
+  configurarColapsoHero(
+    document.getElementById('nivelSelector2'),
+    document.getElementById('heroCard2'),
+    document.getElementById('pathContainer2'),
+  );
   const pathContainer  = document.getElementById('pathContainer');
   const pathContainer2 = document.getElementById('pathContainer2');
-  let isCollapsed = false;
-  function toggleLevel() {
-    isCollapsed = !isCollapsed;
-    [nivelSelector, heroCard, pathContainer, pathContainer2].forEach(el => {
-      if (el) el.classList.toggle('collapsed', isCollapsed);
-    });
-  }
-  heroCard.addEventListener('click', e => {
-    if (e.target.closest('.hero-content') || e.target.closest('.nivel-selector') || e.target.closest('.nivel-dropdown')) return;
-    toggleLevel();
-  });
-
-  // "Nível X ^" agora abre um menu pra escolher qual Etapa ver — o Nível 2
-  // fica sempre navegável, mesmo sem ter concluído o Nível 1 ainda.
-  function toggleDropdown(mostrar) {
-    if (!nivelDropdown) return;
-    const deveMostrar = mostrar !== undefined ? mostrar : nivelDropdown.style.display === 'none';
-    nivelDropdown.style.display = deveMostrar ? 'flex' : 'none';
-    nivelSelector.classList.toggle('collapsed', deveMostrar);
-  }
-  nivelSelector.addEventListener('click', e => { e.stopPropagation(); toggleDropdown(); });
-  document.querySelectorAll('.nivel-opcao').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      etapaSelecionadaManualmente = parseInt(btn.dataset.etapa, 10);
-      mostrarEtapaPorId(etapaSelecionadaManualmente);
-      toggleDropdown(false);
-    });
-  });
-  document.addEventListener('click', () => toggleDropdown(false));
 
   // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
   // faltando permissão); senão reabre a seleção de pasta
