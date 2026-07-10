@@ -382,36 +382,19 @@ async function renderErrosGeral() {
   if (!list) return;
   const [notebook, recentes] = await Promise.all([getErrorNotebook(), getErrosRecentes()]);
 
-  // Usa o MESMO conjunto de erros de "Por aula" (notebook) — não só a lista
-  // de horários (errosRecentes), que só existe pra erros registrados depois
-  // dessa funcionalidade. Erros antigos sem horário conhecido entram no fim.
-  const mapaQuando = new Map(recentes.map(r => [`${r.aulaId}:${r.chave}`, r.quando]));
-  const itens = [];
-  Object.keys(notebook).forEach(aulaId => {
-    (notebook[aulaId] || []).forEach(chave => {
-      itens.push({ aulaId, chave, quando: mapaQuando.get(`${aulaId}:${chave}`) || null });
-    });
-  });
-  itens.sort((a, b) => {
-    if (a.quando && b.quando) return new Date(b.quando) - new Date(a.quando);
-    return a.quando ? -1 : (b.quando ? 1 : 0);
-  });
+  const total = Object.values(notebook).reduce((soma, arr) => soma + (arr || []).length, 0);
+  const maisRecente = recentes.reduce((max, r) => (!max || new Date(r.quando) > new Date(max)) ? r.quando : max, null);
+  const subtitulo = `${total} ${total !== 1 ? 'perguntas' : 'pergunta'} de todas as aulas, do mais recente ao mais antigo`
+    + (maisRecente ? ` — último erro ${formatarTempoRelativo(maisRecente)}` : '');
 
-  let html = '';
-  itens.forEach(item => {
-    const aulaInfo = listaAulas().find(a => String(a.id) === item.aulaId);
-    if (!aulaInfo) return;
-    const rotulo      = ehPergunta(String(item.chave)) ? 'Pergunta' : 'Questão';
-    const quandoTexto = item.quando ? ` ${formatarTempoRelativo(item.quando)}` : '';
-    html += `
-      <div class="erro-card">
-        <div class="erro-card-info">
-          <h3>${aulaInfo.titulo}</h3>
-          <p>${rotulo} errada${quandoTexto}</p>
-        </div>
-        <button type="button" class="btn-praticar" data-aula="${item.aulaId}">Praticar</button>
-      </div>`;
-  });
+  const html = total > 0 ? `
+    <div class="erro-card">
+      <div class="erro-card-info">
+        <h3>Todos os erros</h3>
+        <p>${subtitulo}</p>
+      </div>
+      <button type="button" class="btn-praticar" id="btnPraticarGeral">Praticar</button>
+    </div>` : '';
 
   list.innerHTML = html || `
     <div class="erros-empty">
@@ -420,11 +403,12 @@ async function renderErrosGeral() {
       <p class="erros-empty-sub">As questões que você errar aparecem aqui e ficam disponíveis para revisão até você dominá-las.</p>
     </div>`;
 
-  list.querySelectorAll('.btn-praticar').forEach(btn => {
-    btn.addEventListener('click', () => {
-      window.location.href = `estudo.html?aula=${btn.dataset.aula}&modo=erros`;
+  const btnGeral = document.getElementById('btnPraticarGeral');
+  if (btnGeral) {
+    btnGeral.addEventListener('click', () => {
+      window.location.href = 'estudo.html?modo=erros&geral=1';
     });
-  });
+  }
 
   updateErrosBadge();
 }

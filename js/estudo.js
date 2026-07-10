@@ -11,6 +11,9 @@ const params   = new URLSearchParams(window.location.search);
 const aulaId   = params.get('aula') || '1';
 const modoErros   = params.get('modo') === 'erros';
 const modoRevisao = params.get('modo') === 'revisao';
+// "Geral" do Caderno de Erros: junta as checagens erradas de TODAS as aulas
+// numa prática só, do erro mais recente pro mais antigo (sem precisar de ?aula=N).
+const modoErrosGeral = modoErros && params.get('geral') === '1';
 // Sub-tipo do caderno de Revisão: 'perguntas' mostra só checagem*/questao*
 // marcadas, 'telas' mostra só definicao/contexto/exemplo* marcadas. Sem o
 // parâmetro (links antigos), mostra tudo que estiver marcado, como antes.
@@ -417,8 +420,13 @@ function mostrarIdentificacao(aula, introIdx) {
 // Não conta na pontuação da aula — é só um checkpoint de leitura.
 // A resposta escolhida fica guardada em dados._escolhida, então
 // voltar/avançar preserva o estado já respondido.
-function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
-  questaoInfo.textContent      = aula.titulo;
+function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aulaId) {
+  // No modo "Geral", cada item pode vir de uma aula diferente — mostra o
+  // título da aula de origem, não o título genérico "Caderno de Erros — Geral".
+  const origemInfo = modoErrosGeral
+    ? (MODULOS || []).flatMap(m => m.aulas).find(a => String(a.id) === String(origemAulaId))
+    : null;
+  questaoInfo.textContent      = origemInfo ? origemInfo.titulo : aula.titulo;
   btnAnterior.style.display    = '';
   renderIntroSegs(introIdx - 1);
   // Ordem invertida: a pergunta curta vem primeiro (em negrito, no
@@ -461,10 +469,10 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
         btn.addEventListener('click', () => {
           dados._escolhida = i;
           if (i !== dados.correta) {
-            addErro(aulaId, `checagem${checagemIdx}`);
+            addErro(origemAulaId, `checagem${checagemIdx}`);
             erroNestaSessao = true;
           }
-          mostrarChecagem(aula, introIdx, dados, checagemIdx);
+          mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
         });
       }
       wrap.appendChild(btn);
@@ -507,10 +515,10 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx) {
         btn.addEventListener('click', () => {
           dados._escolhida = i;
           if (i !== dados.correta) {
-            addErro(aulaId, `checagem${checagemIdx}`);
+            addErro(origemAulaId, `checagem${checagemIdx}`);
             erroNestaSessao = true;
           }
-          mostrarChecagem(aula, introIdx, dados, checagemIdx);
+          mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
         });
       }
       btn.innerHTML = `<span class="letra">${LETRAS[i]}</span><span class="opcao-texto">${texto}</span>`;
@@ -777,13 +785,68 @@ function abrirLicao(aula) {
 }
 
 // ── INIT ─────────────────────────────────────────────────────
-Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.resolve(null), getCartoesMarcados()]).then(([aulaOriginal, notebook, cartoesMarcados]) => {
+// No modo "Geral" (Caderno de Erros), carrega TODAS as aulas com checagens
+// erradas de uma vez e monta uma aula sintética com os itens já na ordem
+// certa (mais recente primeiro) — o resto do controller nem percebe a
+// diferença, já que só enxerga um objeto "aula" com um array "checagem".
+async function carregarDadosIniciais() {
+  if (modoErrosGeral) {
+    const [notebook, recentes, cartoesMarcados] = await Promise.all([
+      getErrorNotebook(), getErrosRecentes(), getCartoesMarcados(),
+    ]);
+    const aulaIdsComErro = Object.keys(notebook).filter(id =>
+      (notebook[id] || []).some(x => typeof x === 'string' && /^checagem\d+$/.test(x))
+    );
+    if (aulaIdsComErro.length === 0) {
+      window.location.href = 'index.html?view=erros';
+      return null;
+    }
+    const porAula = {};
+    await Promise.all(aulaIdsComErro.map(async id => { porAula[id] = await carregarAula(id); }));
+
+    const mapaQuando = new Map(recentes.map(r => [`${r.aulaId}:${r.chave}`, r.quando]));
+    const itens = [];
+    aulaIdsComErro.forEach(id => {
+      (notebook[id] || [])
+        .filter(x => typeof x === 'string' && /^checagem\d+$/.test(x))
+        .forEach(chave => {
+          const i     = parseInt(chave.slice('checagem'.length), 10);
+          const dados = porAula[id].checagem && porAula[id].checagem[i];
+          if (!dados) return;
+          itens.push({ aulaId: id, i, dados, quando: mapaQuando.get(`${id}:${chave}`) || null });
+        });
+    });
+    // Mais recente primeiro; erros sem horário conhecido (registrados antes
+    // dessa funcionalidade existir) vão pro fim, sem inventar uma ordem.
+    itens.sort((a, b) => {
+      if (a.quando && b.quando) return new Date(b.quando) - new Date(a.quando);
+      return a.quando ? -1 : (b.quando ? 1 : 0);
+    });
+
+    const aulaOriginal = { titulo: 'Caderno de Erros — Geral', checagem: itens.map(it => it.dados), questoes: [] };
+    return { aulaOriginal, notebook, cartoesMarcados, itensGeral: itens };
+  }
+
+  const [aulaOriginal, notebook, cartoesMarcados] = await Promise.all([
+    carregarAula(aulaId),
+    modoErros ? getErrorNotebook() : Promise.resolve(null),
+    getCartoesMarcados(),
+  ]);
+  return { aulaOriginal, notebook, cartoesMarcados, itensGeral: null };
+}
+
+carregarDadosIniciais().then((carregado) => {
+  if (!carregado) return; // modo Geral sem nenhum erro — já redirecionou
+  const { aulaOriginal, notebook, cartoesMarcados, itensGeral } = carregado;
   let aula = aulaOriginal;
   let modoErrosChecagem     = false;
   let checagemErrosIniciais = [];
   cartaoMarcadoSet = new Set(cartoesMarcados[String(aulaId)] || []);
 
-  if (modoErros) {
+  if (modoErrosGeral) {
+    modoErrosChecagem     = true;
+    checagemErrosIniciais = itensGeral.map(it => ({ dados: it.dados, i: it.i, aulaId: it.aulaId }));
+  } else if (modoErros) {
     const todosErros = notebook[String(aulaId)] || [];
     const errIdxs = todosErros
       .filter(i => Number.isInteger(i) && i >= 0 && aulaOriginal.questoes && i < aulaOriginal.questoes.length)
@@ -901,7 +964,9 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
 
   function avaliarChecagens(itens) {
     const erradas = itensChecagemErrados(itens);
-    if (erradas.length > 0 && erradas.length === itens.length) {
+    // No modo "Geral" não existe uma única aula pra "rever desde o início"
+    // — mesmo errando tudo, só continua repetindo os itens errados.
+    if (!modoErrosGeral && erradas.length > 0 && erradas.length === itens.length) {
       mostrarReinicio();
     } else if (erradas.length > 0) {
       mostrarRevisaoChecagem(erradas);
@@ -923,8 +988,8 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   }
 
   function mostrarChecagemRevisaoAtual() {
-    const { dados, i } = checagemFila[checagemPos];
-    mostrarChecagem(aula, checagemPos, dados, i);
+    const { dados, i, aulaId: origemAulaId } = checagemFila[checagemPos];
+    mostrarChecagem(aula, checagemPos, dados, i, origemAulaId || aulaId);
     btnAnterior.disabled = checagemPos === 0;
   }
 
