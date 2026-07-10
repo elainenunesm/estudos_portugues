@@ -1,92 +1,92 @@
 'use strict';
 
 /**
- * AULA-3.JS — Aula 3: Predicado
+ * AULA-3.JS — Aula 3: Aprenda o que é o sujeito
  * Para adicionar/editar questões, edite apenas este arquivo.
  */
 window.AULA_DATA = {
   id:     3,
-  modulo: 'Etapa 1: Fundamentos',
-  titulo: 'Aula 3: Predicado',
+  modulo: 'Etapa 2: Fundamentos do Sujeito',
+  titulo: 'Aula 3: Aprenda o que é o sujeito',
 
   antesComecar: {
-    titulo:      'Predicado',
-    descricao:   'Nesta aula você vai aprender a identificar o predicado e entender o que ele revela sobre o sujeito.',
-    aprender:    'Nesta aula você aprenderá a reconhecer o predicado verbal, nominal e verbo-nominal.',
-    importancia: 'Identificar o tipo de predicado ajuda na análise das frases e na produção de textos mais claros.',
+    titulo:      'Sujeito simples, composto e oculto',
+    descricao:   'Nesta aula você vai aprender a encontrar o sujeito das orações e entender sua relação com o verbo.',
+    aprender:    'Nesta aula você aprenderá a identificar o sujeito simples, composto e oculto em frases.',
+    importancia: 'Reconhecer o sujeito é essencial para a interpretação de textos e para a concordância verbal.',
   },
 
   licao: {
-    titulo: '📖 Lição: O Predicado',
+    titulo: '📖 Lição: O Sujeito',
     html: `
-      <p>O <strong>predicado</strong> é tudo o que se diz sobre o sujeito na oração.</p>
+      <p>O <strong>sujeito</strong> é o termo sobre o qual o predicado faz uma afirmação.</p>
       <ul>
-        <li><strong>Predicado verbal</strong> — verbo de ação ou fenômeno:<br>
-            <em>"O menino correu."</em> → predicado: <strong>correu</strong></li>
-        <li><strong>Predicado nominal</strong> — verbo de ligação + predicativo:<br>
-            <em>"Ana está feliz."</em> → predicado: <strong>está feliz</strong></li>
-        <li><strong>Predicado verbo-nominal</strong> — verbo de ação + predicativo:<br>
-            <em>"Ela chegou cansada."</em> → predicado: <strong>chegou cansada</strong></li>
+        <li><strong>Sujeito simples</strong> — tem um único núcleo:<br>
+            <em>"O menino correu."</em> → sujeito: <strong>O menino</strong></li>
+        <li><strong>Sujeito composto</strong> — tem mais de um núcleo:<br>
+            <em>"Pedro e Ana estudaram."</em> → sujeito: <strong>Pedro e Ana</strong></li>
+        <li><strong>Sujeito oculto</strong> — identificado pela desinência verbal:<br>
+            <em>"Estudamos muito."</em> → sujeito oculto: <strong>nós</strong></li>
       </ul>
-      <p><strong>Verbos de ligação:</strong> ser, estar, parecer, ficar, tornar-se, permanecer.</p>
+      <p>O <strong>núcleo</strong> do sujeito é o substantivo (ou pronome) principal.</p>
     `,
   },
 
   questoes: [
     {
       dificuldade: 'Fácil',
-      titulo:      'Qual é o predicado da frase?',
-      subtitulo:   '"O gato dormiu na cama."',
-      opcoes:      ['O gato', 'dormiu na cama', 'na cama', 'dormiu'],
-      correta:     1,
-      feedback:    'O predicado é "dormiu na cama" — tudo que se diz sobre o sujeito "O gato".',
+      titulo:      'Qual é o sujeito da frase?',
+      subtitulo:   '"Os alunos estudaram a lição."',
+      opcoes:      ['a lição', 'estudaram', 'Os alunos', 'Os'],
+      correta:     2,
+      feedback:    'O sujeito é "Os alunos" — é sobre eles que o verbo faz a afirmação. Núcleo: alunos.',
     },
     {
       dificuldade: 'Fácil',
-      titulo:      'Qual tipo de predicado está na frase?',
-      subtitulo:   '"Pedro está cansado."',
+      titulo:      'Qual é o núcleo do sujeito?',
+      subtitulo:   '"A professora de matemática chegou tarde."',
+      opcoes:      ['matemática', 'professora', 'chegou', 'tarde'],
+      correta:     1,
+      feedback:    'O núcleo do sujeito é "professora". "De matemática" é adjunto adnominal (complemento do núcleo).',
+    },
+    {
+      dificuldade: 'Fácil',
+      titulo:      'Qual frase tem sujeito simples?',
+      subtitulo:   'Escolha a alternativa correta.',
       opcoes: [
-        'Predicado verbal',
-        'Predicado nominal',
-        'Predicado verbo-nominal',
-        'Não tem predicado',
+        'João e Maria chegaram cedo.',
+        'O cachorro late muito.',
+        'Ela e eu estudamos juntos.',
+        'Pedro, Ana e Carlos viajaram.',
       ],
       correta:  1,
-      feedback: '"Está" é verbo de ligação e "cansado" é predicativo do sujeito. Isso caracteriza o predicado nominal.',
-    },
-    {
-      dificuldade: 'Fácil',
-      titulo:      'Qual frase tem predicado verbal?',
-      subtitulo:   'Escolha a alternativa correta.',
-      opcoes: [
-        'Ana parece triste.',
-        'O bebê é lindo.',
-        'O atleta correu 10 km.',
-        'Ela ficou nervosa.',
-      ],
-      correta:  2,
-      feedback: '"Correu" é um verbo de ação, formando predicado verbal. As demais usam verbos de ligação (parece, é, ficou).',
+      feedback: '"O cachorro" é sujeito simples — tem apenas um núcleo (cachorro). As demais têm sujeito composto.',
     },
     {
       dificuldade: 'Médio',
-      titulo:      'Qual frase tem predicado verbo-nominal?',
-      subtitulo:   'Escolha a alternativa correta.',
+      titulo:      'Identifique o sujeito:',
+      subtitulo:   '"Chegaram as encomendas esperadas."',
       opcoes: [
-        'O sol brilha forte.',
-        'Maria é inteligente.',
-        'Ela chegou cansada do trabalho.',
-        'Os alunos estudaram muito.',
+        'Chegaram',
+        'as encomendas esperadas',
+        'esperadas',
+        'as encomendas',
       ],
-      correta:  2,
-      feedback: '"Chegou cansada" — "chegou" é verbo de ação e "cansada" é predicativo do sujeito. Isso é predicado verbo-nominal.',
+      correta:  1,
+      feedback: 'O sujeito é "as encomendas esperadas" — está posposto ao verbo. Sujeito posposto é comum com verbos intransitivos.',
     },
     {
       dificuldade: 'Médio',
-      titulo:      'Identifique o predicativo do sujeito:',
-      subtitulo:   '"Os jogadores ficaram animados com a vitória."',
-      opcoes:      ['Os jogadores', 'ficaram', 'animados', 'com a vitória'],
-      correta:     2,
-      feedback:    '"Animados" é o predicativo do sujeito — qualifica "Os jogadores" por meio do verbo de ligação "ficaram".',
+      titulo:      'Qual frase tem sujeito oculto (desinencial)?',
+      subtitulo:   'Escolha a alternativa correta.',
+      opcoes: [
+        'O vento balançou as árvores.',
+        'Estudamos muito para a prova.',
+        'As crianças brincaram no parque.',
+        'Minha mãe fez um bolo.',
+      ],
+      correta:  1,
+      feedback: '"Estudamos" indica sujeito oculto "nós" — identificado pela desinência verbal "-mos". Não há sujeito expresso na frase.',
     },
   ],
 };

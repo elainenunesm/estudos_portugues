@@ -769,7 +769,7 @@ Promise.all([carregarAula(aulaId), modoErros ? getErrorNotebook() : Promise.reso
   if (modoErros) {
     const todosErros = notebook[String(aulaId)] || [];
     const errIdxs = todosErros
-      .filter(i => Number.isInteger(i) && i >= 0 && i < aulaOriginal.questoes.length)
+      .filter(i => Number.isInteger(i) && i >= 0 && aulaOriginal.questoes && i < aulaOriginal.questoes.length)
       .slice().sort((a, b) => a - b);
     // Erros de checagem ficam guardados como "checagemN" — extrai o índice.
     const checagemErrIdxs = todosErros

@@ -21,9 +21,15 @@ const MODULOS = [
         arquivo:   'aula-2',
         icone:     'pessoa',
       },
+    ],
+  },
+  {
+    id:     2,
+    titulo: 'Etapa 2: Fundamentos do Sujeito',
+    aulas: [
       {
         id:        3,
-        titulo:    'Aula 3: Predicado',
+        titulo:    'Aula 3: Aprenda o que é o sujeito',
         arquivo:   'aula-3',
         icone:     'balao',
       },

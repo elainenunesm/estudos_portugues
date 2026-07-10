@@ -4,12 +4,13 @@
 // (getErrorNotebook/addErro, gravado em gramix-progresso.json) vêm de js/idb.js
 
 // ── ESTADO ───────────────────────────────────────────────────
-const PROGRESS_VERSION = 2; // incrementar para invalidar saves antigos
+const PROGRESS_VERSION = 3; // incrementar para invalidar saves antigos
 
+// Só as aulas da Etapa 1 (visível hoje) entram no progresso salvo — a
+// aula 3 passou a ser a 1ª aula da Etapa 2, que ainda não tem tela própria.
 const DEFAULT_AULAS = () => [
   { id: 1, status: 'active',  progress: 0, stars: 0, favorita: false },
   { id: 2, status: 'locked',  progress: 0, stars: 0, favorita: false },
-  { id: 3, status: 'locked',  progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
