@@ -10,7 +10,7 @@ window.AULA_DATA = {
   titulo: 'Aula 3: Aprenda o que é o sujeito',
 
   antesComecar: {
-    titulo:      'Sujeito simples, composto e oculto',
+    titulo:      'Sujeito',
     descricao:   'Nesta aula você vai aprender a encontrar o sujeito das orações e entender sua relação com o verbo.',
     aprender:    'Nesta aula você aprenderá a identificar o sujeito simples, composto e oculto em frases.',
     importancia: 'Reconhecer o sujeito é essencial para a interpretação de textos e para a concordância verbal.',
