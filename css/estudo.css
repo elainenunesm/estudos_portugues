@@ -406,6 +406,36 @@ body {
   text-align: justify;
 }
 
+.exemplo-pontos {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.exemplo-ponto {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.exemplo-ponto-icone {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.exemplo-ponto-texto {
+  font-size: 16px;
+  color: #1a1a2e;
+  line-height: 1.5;
+  text-align: left;
+}
+
 /* TELA DE INFINITIVO */
 .infinitivo-card {
   display: flex;

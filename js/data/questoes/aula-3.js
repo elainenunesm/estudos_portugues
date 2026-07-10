@@ -16,6 +16,22 @@ window.AULA_DATA = {
     importancia: 'Reconhecer o sujeito é essencial para a interpretação de textos e para a concordância verbal.',
   },
 
+  exemplo: [
+    {
+      tipo: 'sujeito',
+      pontos: [
+        {
+          tipo:  'acao',
+          texto: 'O sujeito é quem <strong class="destaque">pratica a ação</strong>, <strong class="destaque">sofre</strong> a ação.',
+        },
+        {
+          tipo:  'fala',
+          texto: 'O termo sujeito é <strong class="destaque">sobre quem se fala</strong> na frase.',
+        },
+      ],
+    },
+  ],
+
   licao: {
     titulo: '📖 Lição: O Sujeito',
     html: `
