@@ -502,6 +502,13 @@ function mostrarIdentificacao(aula, introIdx) {
 // Não conta na pontuação da aula — é só um checkpoint de leitura.
 // A resposta escolhida fica guardada em dados._escolhida, então
 // voltar/avançar preserva o estado já respondido.
+// Checagens do tipo "duplo-select" (clicar no verbo e no sujeito) guardam
+// a resposta como objeto {verbo, sujeito:[]} em vez de um índice único,
+// então usam dados._correta (booleano) pra saber se acertou.
+function acertouChecagem(dados) {
+  return dados.sujeito ? dados._correta === true : dados._escolhida === dados.correta;
+}
+
 function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aulaId) {
   // No modo "Geral", cada item pode vir de uma aula diferente — mostra o
   // título da aula de origem, não o título genérico "Caderno de Erros — Geral".
@@ -530,10 +537,13 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
        <h2 class="questao-titulo checagem-titulo">${dados.titulo || ''}</h2>`
     : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>` +
       (dados.sentenca ? '' : `<p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`)) +
-    (dados.sentenca ? '<div class="sentence-display" id="sentenceDisplay"></div>' : '');
+    (dados.sujeito ? '<div class="dual-select-wrap" id="dualSelectWrap"></div>'
+      : dados.sentenca ? '<div class="sentence-display" id="sentenceDisplay"></div>' : '');
   ativarBotaoMarcar();
 
-  if (dados.sentenca) {
+  if (dados.sujeito) {
+    mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida);
+  } else if (dados.sentenca) {
     const wrap = document.getElementById('sentenceDisplay');
     const PONTUACAO = /^[.,!?;:]+$/;
     dados.sentenca.forEach((palavra, i) => {
@@ -609,10 +619,10 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
   }
 
   if (respondida) {
-    const acertou = dados._escolhida === dados.correta;
+    const acertou = acertouChecagem(dados);
     feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
     feedbackIcon.textContent  = acertou ? '✅' : '❌';
-    const letraCorreta        = dados.sentenca ? null : LETRAS[dados.correta];
+    const letraCorreta        = (dados.sentenca || dados.sujeito) ? null : LETRAS[dados.correta];
     feedbackTexto.innerHTML   = montarFeedbackHtml(acertou, dados.feedback, letraCorreta);
   } else {
     feedbackBar.className = 'feedback-bar';
@@ -622,6 +632,162 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
   btnProxima.disabled  = !respondida;
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
+}
+
+// Checagem "clique no verbo e no sujeito" — duas seleções (verbo + sujeito,
+// podendo ter mais de uma palavra) antes de confirmar. Não conta como
+// respondida até clicar em "Confirmar resposta".
+const PONTUACAO_RE = /^[.,!?;:]+$/;
+
+function mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida) {
+  const wrap = document.getElementById('dualSelectWrap');
+  const N = dados.sentenca.length;
+
+  if (!respondida) {
+    if (!dados._pendente) dados._pendente = { modo: 'verbo', verboIdx: null, sujeitoIdxs: [] };
+    const { modo, verboIdx, sujeitoIdxs } = dados._pendente;
+    const podeConfirmar = verboIdx !== null && sujeitoIdxs.length > 0;
+
+    wrap.innerHTML = `
+      <div class="modo-toggle">
+        <button type="button" class="modo-btn${modo === 'verbo' ? ' ativo-verbo' : ''}" id="modoVerboBtn">
+          <span class="modo-dot modo-dot-verbo"></span> VERBO
+        </button>
+        <button type="button" class="modo-btn${modo === 'sujeito' ? ' ativo-sujeito' : ''}" id="modoSujeitoBtn">
+          <span class="modo-dot modo-dot-sujeito"></span> SUJEITO
+        </button>
+      </div>
+      <div class="frase-anotada-wrap"><div class="frase-anotada" id="fraseAnotada" style="grid-template-columns:repeat(${N},auto)"></div></div>
+      <button type="button" class="btn-confirmar-duplo" id="btnConfirmarDuplo"${podeConfirmar ? '' : ' disabled'}>Confirmar resposta</button>`;
+
+    const grid = document.getElementById('fraseAnotada');
+    dados.sentenca.forEach((palavra, i) => {
+      const ehPontuacao = PONTUACAO_RE.test(palavra);
+      const btn = document.createElement('button');
+      let cls = 'word-chip';
+      if (ehPontuacao)                     cls += ' pontuacao';
+      else if (i === verboIdx)             cls += ' verbo-pendente';
+      else if (sujeitoIdxs.includes(i))    cls += ' sujeito-pendente';
+      btn.className = cls;
+      btn.textContent = palavra;
+      btn.style.gridColumn = String(i + 1);
+      btn.style.gridRow = '1';
+      if (ehPontuacao) {
+        btn.disabled = true;
+      } else {
+        btn.addEventListener('click', () => {
+          const p = dados._pendente;
+          if (p.modo === 'verbo') {
+            if (p.verboIdx === i) {
+              p.verboIdx = null;
+            } else {
+              p.verboIdx = i;
+              p.sujeitoIdxs = p.sujeitoIdxs.filter(x => x !== i);
+              p.modo = 'sujeito';
+            }
+          } else {
+            if (i === p.verboIdx) return;
+            const idx = p.sujeitoIdxs.indexOf(i);
+            if (idx === -1) p.sujeitoIdxs.push(i); else p.sujeitoIdxs.splice(idx, 1);
+          }
+          mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+        });
+      }
+      grid.appendChild(btn);
+    });
+
+    if (verboIdx !== null) {
+      grid.insertAdjacentHTML('beforeend',
+        `<div class="anotacao-verbo" style="grid-column:${verboIdx + 1};grid-row:2">Verbo</div>`);
+    }
+    if (sujeitoIdxs.length > 0) {
+      const sorted = [...sujeitoIdxs].sort((a, b) => a - b);
+      const col  = sorted[0] + 1;
+      const span = sorted[sorted.length - 1] - sorted[0] + 1;
+      grid.insertAdjacentHTML('beforeend',
+        `<div class="anotacao-sujeito" style="grid-column:${col}/span ${span};grid-row:2">Sujeito</div>`);
+    }
+
+    document.getElementById('modoVerboBtn').addEventListener('click', () => {
+      dados._pendente.modo = 'verbo';
+      mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+    });
+    document.getElementById('modoSujeitoBtn').addEventListener('click', () => {
+      dados._pendente.modo = 'sujeito';
+      mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+    });
+    if (podeConfirmar) {
+      document.getElementById('btnConfirmarDuplo').addEventListener('click', () => {
+        const verboCorreto   = dados._pendente.verboIdx === dados.verbo;
+        const sujeitoCorreto = dados._pendente.sujeitoIdxs.length === dados.sujeito.length &&
+                                dados.sujeito.every(i => dados._pendente.sujeitoIdxs.includes(i));
+        const acertou = verboCorreto && sujeitoCorreto;
+        dados._escolhida = { verbo: dados._pendente.verboIdx, sujeito: [...dados._pendente.sujeitoIdxs] };
+        dados._correta   = acertou;
+        if (!acertou) {
+          addErro(origemAulaId, `checagem${checagemIdx}`);
+          erroNestaSessao = true;
+        }
+        mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
+      });
+    }
+    return;
+  }
+
+  // Já respondida — mostra o resultado com a chave verbo/sujeito.
+  wrap.innerHTML = `<div class="frase-anotada-wrap"><div class="frase-anotada" id="fraseAnotada" style="grid-template-columns:repeat(${N},auto)"></div></div>`;
+  const grid = document.getElementById('fraseAnotada');
+  const escolhida = dados._escolhida;
+  dados.sentenca.forEach((palavra, i) => {
+    const ehPontuacao = PONTUACAO_RE.test(palavra);
+    const btn = document.createElement('button');
+    let cls = 'word-chip';
+    if (ehPontuacao) {
+      cls += ' pontuacao';
+    } else {
+      const ehVerboCorreto   = i === dados.verbo;
+      const ehSujeitoCorreto = dados.sujeito.includes(i);
+      const foiVerbo         = i === escolhida.verbo;
+      const foiSujeito       = escolhida.sujeito.includes(i);
+      if      (ehVerboCorreto)                  cls += ' verbo-correto';
+      else if (ehSujeitoCorreto)                cls += ' sujeito-correto';
+      else if (foiVerbo && !ehVerboCorreto)     cls += ' verbo-errado';
+      else if (foiSujeito && !ehSujeitoCorreto) cls += ' sujeito-errado';
+    }
+    btn.className = cls;
+    btn.textContent = palavra;
+    btn.disabled = true;
+    btn.style.gridColumn = String(i + 1);
+    btn.style.gridRow = '1';
+    grid.appendChild(btn);
+  });
+  grid.insertAdjacentHTML('beforeend',
+    `<div class="anotacao-verbo" style="grid-column:${dados.verbo + 1};grid-row:2">Verbo</div>`);
+  const sorted = [...dados.sujeito].sort((a, b) => a - b);
+  const col  = sorted[0] + 1;
+  const span = sorted[sorted.length - 1] - sorted[0] + 1;
+  grid.insertAdjacentHTML('beforeend',
+    `<div class="anotacao-sujeito" style="grid-column:${col}/span ${span};grid-row:2">Sujeito</div>`);
+
+  const linhas = dados.sentenca.map((palavra, i) => {
+    if (PONTUACAO_RE.test(palavra)) return '';
+    const ehVerbo   = i === dados.verbo;
+    const ehSujeito = dados.sujeito.includes(i);
+    const classe    = (ehVerbo || ehSujeito) ? 'correta' : '';
+    const papel     = ehVerbo ? 'Verbo' : ehSujeito ? 'Sujeito' : '—';
+    return `
+      <div class="checagem-resultado-item">
+        <span class="cri-palavra ${classe}">${palavra}</span>
+        <span class="cri-seta">→</span>
+        <span class="cri-classe ${classe}">${papel}</span>
+        ${(ehVerbo || ehSujeito) ? '<span class="cri-icone" style="color:#16a34a">✓</span>' : ''}
+      </div>`;
+  }).join('');
+  wrap.insertAdjacentHTML('beforeend', `
+    <div class="checagem-resultado-itens">
+      <p class="checagem-resultado-titulo">Resposta de cada item:</p>
+      <div class="checagem-resultado-lista">${linhas}</div>
+    </div>`);
 }
 
 function mostrarSentido(aula, introIdx) {
@@ -1064,7 +1230,7 @@ carregarDadosIniciais().then((carregado) => {
   let introTotalSalvo    = 0;
 
   function itensChecagemErrados(itens) {
-    return itens.filter(({ dados }) => dados._escolhida !== dados.correta);
+    return itens.filter(({ dados }) => !acertouChecagem(dados));
   }
 
   function avaliarChecagens(itens) {
@@ -1102,7 +1268,7 @@ carregarDadosIniciais().then((carregado) => {
     revisandoChecagem = true;
     checagemFila       = itens;
     checagemPos        = 0;
-    checagemFila.forEach(({ dados }) => { delete dados._escolhida; });
+    checagemFila.forEach(({ dados }) => { delete dados._escolhida; delete dados._correta; delete dados._pendente; });
     introTotalSalvo = introTotal;
     introTotal      = checagemFila.length;
     mostrarChecagemRevisaoAtual();

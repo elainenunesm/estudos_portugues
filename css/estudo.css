@@ -945,7 +945,7 @@ body {
   user-select: none;
 }
 
-.word-chip:hover:not(:disabled):not(.pontuacao):not(.correta):not(.errada) {
+.word-chip:hover:not(:disabled):not(.pontuacao):not(.correta):not(.errada):not(.verbo-pendente):not(.sujeito-pendente):not(.verbo-correto):not(.sujeito-correto):not(.verbo-errado):not(.sujeito-errado) {
   border-color: #5B2BCB;
   background: #faf7ff;
   color: #5B2BCB;
@@ -984,6 +984,151 @@ body {
   padding: 6px 12px;
   font-size: 14px;
   border-radius: 10px;
+}
+
+/* CHECAGEM DO TIPO "CLIQUE NO VERBO E NO SUJEITO" (duplo-select) */
+.dual-select-wrap {
+  margin-top: 4px;
+}
+
+.modo-toggle {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.modo-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 2px solid #e9dffb;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #6b7280;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.modo-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.modo-dot-verbo    { background: #2563eb; }
+.modo-dot-sujeito  { background: #dc2626; }
+
+.modo-btn.ativo-verbo {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.modo-btn.ativo-sujeito {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.frase-anotada-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 16px;
+}
+
+.frase-anotada {
+  display: inline-grid;
+  column-gap: 8px;
+  row-gap: 0;
+  align-items: end;
+  grid-template-rows: auto minmax(30px, auto);
+}
+
+.word-chip.verbo-pendente {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.word-chip.sujeito-pendente {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.word-chip.verbo-correto {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.word-chip.sujeito-correto {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.word-chip.verbo-errado,
+.word-chip.sujeito-errado {
+  border-color: #9ca3af;
+  background: #f9fafb;
+  color: #6b7280;
+  text-decoration: line-through;
+}
+
+.anotacao-verbo,
+.anotacao-sujeito {
+  position: relative;
+  grid-row: 2;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 5px 6px 3px;
+  margin-top: 8px;
+  border-top: 2px solid currentColor;
+  white-space: nowrap;
+}
+
+.anotacao-verbo::before, .anotacao-verbo::after,
+.anotacao-sujeito::before, .anotacao-sujeito::after {
+  content: '';
+  position: absolute;
+  top: -8px;
+  width: 2px;
+  height: 8px;
+  background: currentColor;
+}
+
+.anotacao-verbo::before,   .anotacao-sujeito::before { left: 0; }
+.anotacao-verbo::after,    .anotacao-sujeito::after  { right: 0; }
+.anotacao-verbo    { color: #2563eb; }
+.anotacao-sujeito  { color: #dc2626; }
+
+.btn-confirmar-duplo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 22px;
+  border-radius: 12px;
+  border: none;
+  background: #5B2BCB;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-confirmar-duplo:disabled {
+  background: #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
 }
 
 /* RESULTADO DE CADA PALAVRA (depois de responder a checagem de "clique na palavra") */

@@ -83,6 +83,37 @@ window.AULA_DATA = {
     },
   ],
 
+  checagem: [
+    {
+      titulo:   'Clique no verbo e no sujeito da frase:',
+      sentenca: ['O', 'cachorro', 'correu', 'no', 'parque', '.'],
+      verbo:    2,
+      sujeito:  [0, 1],
+      feedback: '"Correu" é o verbo (ação de correr). "O cachorro" é o sujeito — quem correu? O cachorro.',
+    },
+    {
+      titulo:   'Clique no verbo e no sujeito da frase:',
+      sentenca: ['O', 'avô', 'leu', 'o', 'jornal', '.'],
+      verbo:    2,
+      sujeito:  [0, 1],
+      feedback: '"Leu" é o verbo (ação de ler). "O avô" é o sujeito — quem leu? O avô.',
+    },
+    {
+      titulo:   'Clique no verbo e no sujeito da frase:',
+      sentenca: ['O', 'pai', 'vendeu', 'o', 'carro', '.'],
+      verbo:    2,
+      sujeito:  [0, 1],
+      feedback: '"Vendeu" é o verbo (ação de vender). "O pai" é o sujeito — quem vendeu? O pai.',
+    },
+    {
+      titulo:   'Clique no verbo e no sujeito da frase:',
+      sentenca: ['A', 'turma', 'aplaudiu', 'o', 'professor', '.'],
+      verbo:    2,
+      sujeito:  [0, 1],
+      feedback: '"Aplaudiu" é o verbo (ação de aplaudir). "A turma" é o sujeito — quem aplaudiu? A turma.',
+    },
+  ],
+
   licao: {
     titulo: '📖 Lição: O Sujeito',
     html: `
