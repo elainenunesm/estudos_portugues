@@ -273,6 +273,116 @@ const EXEMPLO_ICONE_FENOMENO = `
   <line x1="6" y1="12" x2="20" y2="12" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round"/>
   <path fill="none" stroke="#4A80F0" stroke-width="1.8" stroke-linecap="round" d="M8 16h4M15 16h3M10 19h3"/>`;
 
+// Rótulo do colchete anotado embaixo da palavra. Aceita um índice único ou
+// um intervalo (ex: o predicado cobre o verbo + a palavra recém-clicada).
+const ROTULO_PAPEL = { verbo: 'Verbo', sujeito: 'Sujeito', predicado: 'Predicado' };
+
+function anotarPapelInterativo(wrap, idxOuIdxs, papel) {
+  const lista  = Array.isArray(idxOuIdxs) ? idxOuIdxs : [idxOuIdxs];
+  const sorted = [...lista].sort((a, b) => a - b);
+  const col    = sorted[0] + 1;
+  const span   = sorted[sorted.length - 1] - sorted[0] + 1;
+  // O predicado fica numa linha abaixo de verbo/sujeito porque seu colchete
+  // pode cobrir a mesma coluna do verbo (ele é o núcleo do predicado).
+  const linha = papel === 'predicado' ? 3 : 2;
+  wrap.insertAdjacentHTML('beforeend',
+    `<div class="anotacao-${papel}" style="grid-column:${col}/span ${span};grid-row:${linha}">${ROTULO_PAPEL[papel]}</div>`);
+}
+
+// Passo de exemplo com mais de uma palavra clicável pro mesmo papel (ex:
+// "estudou" e "ontem", ambos parte do predicado). Diferente de marcarAntes
+// (travado, só contexto), as palavras em "corretas" continuam clicáveis —
+// algumas já têm uma cor própria conhecida (papeisIniciais, ex: o verbo
+// continua azul mesmo depois de confirmado como parte do predicado) e viram
+// a cor do papel principal quando não têm uma cor própria. O colchete do
+// papel principal cresce a cada clique, até cobrir todas as palavras certas.
+function renderInterativoMultiplo(ex, interativo, wrap) {
+  const jaAcertou = ex._acertouInterativo === true;
+  btnProxima.disabled = !jaAcertou;
+  wrap.innerHTML = '';
+
+  // Palavras já encontradas num passo anterior (ex: o verbo) entram contadas
+  // desde o início — não precisam de um clique extra pra "confirmar" de novo.
+  if (!ex._selecionadas) ex._selecionadas = [...(interativo.preSelecionadas || [])];
+  const marcarAntes    = interativo.marcarAntes || [];
+  const papeisIniciais = interativo.papeisIniciais || {};
+
+  interativo.palavras.forEach((palavra, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'word-chip word-chip-sm';
+    btn.textContent = palavra;
+    btn.style.gridColumn = String(idx + 1);
+    btn.style.gridRow    = '1';
+
+    const prefixada  = marcarAntes.find(m => m.idx === idx);
+    const ehAlvo      = interativo.corretas.includes(idx);
+    const jaSelecionada = ex._selecionadas.includes(idx);
+
+    if (prefixada) {
+      btn.disabled = true;
+      btn.classList.add(`${prefixada.papel}-correto`);
+    } else if (ehAlvo && jaAcertou) {
+      btn.disabled = true;
+      btn.classList.add(`${papeisIniciais[idx] || interativo.papel}-correto`);
+    } else if (ehAlvo) {
+      // Mesmo já contando desde o início (preSelecionadas), a palavra
+      // continua clicável — clicar nela de novo também "abre" o colchete do
+      // predicado, igual clicar numa palavra nova.
+      if (jaSelecionada || papeisIniciais[idx]) btn.classList.add(`${papeisIniciais[idx] || interativo.papel}-correto`);
+      btn.addEventListener('click', () => {
+        ex._algumClique = true;
+        if (!ex._selecionadas.includes(idx)) ex._selecionadas.push(idx);
+        if (interativo.corretas.every(i => ex._selecionadas.includes(i))) ex._acertouInterativo = true;
+        renderInterativoMultiplo(ex, interativo, wrap);
+      });
+    } else {
+      btn.disabled = true;
+    }
+    wrap.appendChild(btn);
+  });
+
+  marcarAntes.forEach(m => anotarPapelInterativo(wrap, m.idx, m.papel));
+  Object.keys(papeisIniciais).forEach(idxStr => {
+    const idx = Number(idxStr);
+    if (interativo.corretas.includes(idx) && (ex._selecionadas.includes(idx) || jaAcertou)) {
+      anotarPapelInterativo(wrap, idx, papeisIniciais[idx]);
+    }
+  });
+  // O colchete do papel principal (predicado) só aparece depois de um clique
+  // de verdade — palavras pré-selecionadas sozinhas (ex: o verbo, já sabido
+  // de um passo anterior) não bastam pra "abrir" o predicado sozinhas, mas
+  // clicar em qualquer uma das palavras-alvo (mesmo já contada) já conta.
+  const mostrarPrincipal = jaAcertou || ex._algumClique === true;
+  if (mostrarPrincipal && ex._selecionadas.length > 0) {
+    anotarPapelInterativo(wrap, ex._selecionadas, interativo.papel);
+  }
+
+  questaoArea.scrollTop = 0;
+  atualizarScrollFade();
+}
+
+// Frase já anotada, só ilustrativa (sem clique) — usada pra recapitular a
+// divisão sujeito/verbo/predicado de um passo anterior, com os colchetes
+// já prontos, em vez de repetir a explicação em texto.
+function renderFraseAnotadaEstatica(dados, wrap) {
+  dados.sentenca.forEach((palavra, i) => {
+    const btn = document.createElement('button');
+    let cls = 'word-chip word-chip-sm';
+    if (i === dados.verbo)                cls += ' verbo-correto';
+    else if (dados.sujeito.includes(i))   cls += ' sujeito-correto';
+    else if (dados.predicado.includes(i)) cls += ' predicado-correto';
+    btn.className         = cls;
+    btn.textContent        = palavra;
+    btn.disabled           = true;
+    btn.style.gridColumn   = String(i + 1);
+    btn.style.gridRow      = '1';
+    wrap.appendChild(btn);
+  });
+  if (dados.sujeito.length)   anotarPapelInterativo(wrap, dados.sujeito, 'sujeito');
+  if (dados.verbo != null)    anotarPapelInterativo(wrap, dados.verbo, 'verbo');
+  if (dados.predicado.length) anotarPapelInterativo(wrap, dados.predicado, 'predicado');
+}
+
 function mostrarExemplo(aula, introIdx, i) {
   const ex = (aula.exemplo || [])[i] || {};
   questaoInfo.textContent      = aula.titulo;
@@ -316,7 +426,10 @@ function mostrarExemplo(aula, introIdx, i) {
         </div>
         ${ex.passo.nota ? `<p class="passo-nota">${ex.passo.nota}</p>` : ''}
       </div>` : ''}
-      ${ex.caixa ? `
+      ${ex.caixa ? (ex.caixa.anotado ? `
+      <div class="passo-caixa">
+        <div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploAnotado" style="grid-template-columns:repeat(${ex.caixa.anotado.sentenca.length},auto)"></div></div>
+      </div>` : `
       <div class="passo-caixa">
         <div class="passo-caixa-cabecalho">
           <div class="passo-caixa-icone">
@@ -331,7 +444,7 @@ function mostrarExemplo(aula, introIdx, i) {
                    <p class="passo-caixa-texto">${ex.caixa.exemplo}</p>
                  </div>`}
         </div>
-        ${ex.caixa.interativo ? `<div class="sentence-display sentence-display-sm" id="exemploSentence"></div>` : ''}
+        ${ex.caixa.interativo ? `<div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploSentence" style="grid-template-columns:repeat(${ex.caixa.interativo.palavras.length},auto)"></div></div>` : ''}
         ${(ex.caixa.perguntas || []).length ? `
         <div class="passo-caixa-divisor"></div>
         <div class="passo-caixa-perguntas">
@@ -340,32 +453,49 @@ function mostrarExemplo(aula, introIdx, i) {
         ${ex.caixa.resposta ? `
         <div class="passo-caixa-divisor"></div>
         <p class="passo-caixa-resposta"><strong>Resposta:</strong> ${ex.caixa.resposta}</p>` : ''}
-      </div>` : ''}
+      </div>`) : ''}
     </div>`;
   ativarBotaoMarcar();
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
 
   // Palavras clicáveis dentro da caixa de exemplo (ex: selecionar o verbo).
   // Não é uma checagem — não conta erro, só trava o "Próximo" até acertar.
-  if (ex.caixa && ex.caixa.interativo) {
+  if (ex.caixa && ex.caixa.anotado) {
+    renderFraseAnotadaEstatica(ex.caixa.anotado, document.getElementById('exemploAnotado'));
+    btnProxima.disabled = false;
+  } else if (ex.caixa && ex.caixa.interativo && Array.isArray(ex.caixa.interativo.corretas)) {
+    renderInterativoMultiplo(ex, ex.caixa.interativo, document.getElementById('exemploSentence'));
+  } else if (ex.caixa && ex.caixa.interativo) {
     const interativo = ex.caixa.interativo;
     const jaAcertou   = ex._acertouInterativo === true;
     btnProxima.disabled = !jaAcertou;
     const wrap = document.getElementById('exemploSentence');
+    // Palavras já encontradas num passo anterior (ex: o verbo, antes de
+    // procurar o sujeito) aparecem travadas e destacadas, com o colchete já
+    // anotado embaixo — não fazem parte da pergunta deste passo, só dão
+    // contexto do que já foi descoberto.
+    const marcarAntes = interativo.marcarAntes || [];
     interativo.palavras.forEach((palavra, idx) => {
       const btn = document.createElement('button');
       btn.className = 'word-chip word-chip-sm';
       btn.textContent = palavra;
-      if (jaAcertou) {
+      btn.style.gridColumn = String(idx + 1);
+      btn.style.gridRow    = '1';
+      const prefixada = marcarAntes.find(m => m.idx === idx);
+      if (prefixada) {
         btn.disabled = true;
-        if (idx === interativo.correta) btn.classList.add('correta');
+        btn.classList.add(`${prefixada.papel}-correto`);
+      } else if (jaAcertou) {
+        btn.disabled = true;
+        if (idx === interativo.correta) btn.classList.add(interativo.papel ? `${interativo.papel}-correto` : 'correta');
       } else {
         btn.addEventListener('click', () => {
           if (idx === interativo.correta) {
             ex._acertouInterativo = true;
-            btn.classList.add('correta');
+            btn.classList.add(interativo.papel ? `${interativo.papel}-correto` : 'correta');
             Array.from(wrap.children).forEach(c => c.disabled = true);
             btnProxima.disabled = false;
+            if (interativo.papel) anotarPapelInterativo(wrap, interativo.intervaloAoAcertar || idx, interativo.papel);
           } else {
             btn.classList.add('errada');
             setTimeout(() => btn.classList.remove('errada'), 500);
@@ -374,6 +504,10 @@ function mostrarExemplo(aula, introIdx, i) {
       }
       wrap.appendChild(btn);
     });
+    marcarAntes.forEach(m => anotarPapelInterativo(wrap, m.idx, m.papel));
+    if (jaAcertou && interativo.papel) {
+      anotarPapelInterativo(wrap, interativo.intervaloAoAcertar || interativo.correta, interativo.papel);
+    }
   } else {
     btnProxima.disabled = false;
   }
@@ -399,6 +533,9 @@ const RESUMO_ICONES = {
   tarefa:   cor => `<rect x="5" y="4" width="12" height="16" rx="2" fill="none" stroke="${cor}" stroke-width="1.6"/><line x1="8" y1="8" x2="14" y2="8" stroke="${cor}" stroke-width="1.6" stroke-linecap="round"/><line x1="8" y1="12" x2="12" y2="12" stroke="${cor}" stroke-width="1.6" stroke-linecap="round"/><path d="M14 16l4-4 2 2-4 4h-2v-2z" fill="none" stroke="${cor}" stroke-width="1.4" stroke-linejoin="round"/>`,
   pergunta: cor => `<path fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"/><text x="9.5" y="14" font-size="9" font-weight="700" fill="${cor}">?</text>`,
   dica:     cor => `<path fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9c.5.4.8 1 .8 1.6v.5h5.4v-.5c0-.6.3-1.2.8-1.6A6 6 0 0 0 12 3z"/>`,
+  predVerbal:      cor => `<path fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/>`,
+  predNominal:     cor => `<circle cx="12" cy="12" r="8" fill="none" stroke="${cor}" stroke-width="1.8"/><line x1="8" y1="12" x2="16" y2="12" stroke="${cor}" stroke-width="1.8" stroke-linecap="round"/>`,
+  predVerboNominal: cor => `<path fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 17H7a5 5 0 1 1 0-10h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/>`,
 };
 
 function mostrarInfinitivo(aula, introIdx) {
@@ -537,11 +674,14 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
        <h2 class="questao-titulo checagem-titulo">${dados.titulo || ''}</h2>`
     : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>` +
       (dados.sentenca ? '' : `<p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`)) +
-    (dados.sujeito ? '<div class="dual-select-wrap" id="dualSelectWrap"></div>'
+    (dados.predicado ? '<div class="tri-select-wrap" id="triSelectWrap"></div>'
+      : dados.sujeito ? '<div class="dual-select-wrap" id="dualSelectWrap"></div>'
       : dados.sentenca ? '<div class="sentence-display" id="sentenceDisplay"></div>' : '');
   ativarBotaoMarcar();
 
-  if (dados.sujeito) {
+  if (dados.predicado) {
+    mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida);
+  } else if (dados.sujeito) {
     mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida);
   } else if (dados.sentenca) {
     const wrap = document.getElementById('sentenceDisplay');
@@ -781,6 +921,201 @@ function mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, 
         <span class="cri-seta">→</span>
         <span class="cri-classe ${classe}">${papel}</span>
         ${(ehVerbo || ehSujeito) ? '<span class="cri-icone" style="color:#16a34a">✓</span>' : ''}
+      </div>`;
+  }).join('');
+  wrap.insertAdjacentHTML('beforeend', `
+    <div class="checagem-resultado-itens">
+      <p class="checagem-resultado-titulo">Resposta de cada item:</p>
+      <div class="checagem-resultado-lista">${linhas}</div>
+    </div>`);
+}
+
+// Checagem "clique no verbo, no sujeito e no predicado" — três seleções
+// (verbo, sujeito, predicado) em vez das duas do duplo-select. O predicado
+// inclui o verbo (seu núcleo): clicar nele de novo, já em modo "predicado",
+// confirma que ele também faz parte do predicado.
+function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida) {
+  const wrap = document.getElementById('triSelectWrap');
+  const N = dados.sentenca.length;
+
+  if (!respondida) {
+    if (!dados._pendente) {
+      dados._pendente = { modo: 'verbo', verboIdx: null, sujeitoIdxs: [], predicadoIdxs: [], predicadoConfirmado: false };
+    }
+    const p = dados._pendente;
+    const podeConfirmar = p.verboIdx !== null && p.sujeitoIdxs.length > 0;
+
+    wrap.innerHTML = `
+      <div class="modo-toggle">
+        <button type="button" class="modo-btn${p.modo === 'verbo' ? ' ativo-verbo' : ''}" id="modoVerboBtn">
+          <span class="modo-dot modo-dot-verbo"></span> VERBO
+        </button>
+        <button type="button" class="modo-btn${p.modo === 'sujeito' ? ' ativo-sujeito' : ''}" id="modoSujeitoBtn">
+          <span class="modo-dot modo-dot-sujeito"></span> SUJEITO
+        </button>
+        <button type="button" class="modo-btn${p.modo === 'predicado' ? ' ativo-predicado' : ''}" id="modoPredicadoBtn">
+          <span class="modo-dot modo-dot-predicado"></span> PREDICADO
+        </button>
+      </div>
+      <div class="frase-anotada-wrap"><div class="frase-anotada" id="fraseAnotadaTri" style="grid-template-columns:repeat(${N},auto)"></div></div>
+      <button type="button" class="btn-confirmar-duplo" id="btnConfirmarTripla"${podeConfirmar ? '' : ' disabled'}>Confirmar resposta</button>`;
+
+    const grid = document.getElementById('fraseAnotadaTri');
+    dados.sentenca.forEach((palavra, i) => {
+      const ehPontuacao = PONTUACAO_RE.test(palavra);
+      const btn = document.createElement('button');
+      let cls = 'word-chip';
+      if (ehPontuacao) {
+        cls += ' pontuacao';
+      } else if (i === p.verboIdx) {
+        cls += (p.modo === 'predicado' && p.predicadoConfirmado) ? ' predicado-pendente' : ' verbo-pendente';
+      } else if (p.sujeitoIdxs.includes(i)) {
+        cls += ' sujeito-pendente';
+      } else if (p.predicadoIdxs.includes(i)) {
+        cls += ' predicado-pendente';
+      }
+      btn.className = cls;
+      btn.textContent = palavra;
+      btn.style.gridColumn = String(i + 1);
+      btn.style.gridRow = '1';
+      if (ehPontuacao) {
+        btn.disabled = true;
+      } else {
+        btn.addEventListener('click', () => {
+          if (p.modo === 'verbo') {
+            if (p.verboIdx === i) {
+              p.predicadoIdxs      = [];
+              p.predicadoConfirmado = false;
+              p.verboIdx = null;
+            } else {
+              p.sujeitoIdxs         = p.sujeitoIdxs.filter(x => x !== i);
+              p.predicadoIdxs       = [];
+              p.predicadoConfirmado = false;
+              p.verboIdx = i;
+              p.modo     = 'sujeito';
+            }
+          } else if (p.modo === 'sujeito') {
+            if (i === p.verboIdx) return;
+            p.predicadoIdxs = p.predicadoIdxs.filter(x => x !== i);
+            const idx = p.sujeitoIdxs.indexOf(i);
+            if (idx === -1) p.sujeitoIdxs.push(i); else p.sujeitoIdxs.splice(idx, 1);
+          } else {
+            if (i === p.verboIdx) {
+              p.predicadoConfirmado = true;
+              if (!p.predicadoIdxs.includes(i)) p.predicadoIdxs.push(i);
+            } else {
+              if (p.sujeitoIdxs.includes(i)) return;
+              const idx = p.predicadoIdxs.indexOf(i);
+              if (idx === -1) p.predicadoIdxs.push(i); else p.predicadoIdxs.splice(idx, 1);
+            }
+          }
+          mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+        });
+      }
+      grid.appendChild(btn);
+    });
+
+    if (p.sujeitoIdxs.length > 0) {
+      const sorted = [...p.sujeitoIdxs].sort((a, b) => a - b);
+      grid.insertAdjacentHTML('beforeend',
+        `<div class="anotacao-sujeito" style="grid-column:${sorted[0] + 1}/span ${sorted[sorted.length - 1] - sorted[0] + 1};grid-row:2">Sujeito</div>`);
+    }
+    if (p.verboIdx !== null) {
+      grid.insertAdjacentHTML('beforeend',
+        `<div class="anotacao-verbo" style="grid-column:${p.verboIdx + 1};grid-row:2">Verbo</div>`);
+    }
+    if ((p.predicadoConfirmado || p.predicadoIdxs.some(i => i !== p.verboIdx)) && p.predicadoIdxs.length > 0) {
+      const sorted = [...p.predicadoIdxs].sort((a, b) => a - b);
+      grid.insertAdjacentHTML('beforeend',
+        `<div class="anotacao-predicado" style="grid-column:${sorted[0] + 1}/span ${sorted[sorted.length - 1] - sorted[0] + 1};grid-row:3">Predicado</div>`);
+    }
+
+    document.getElementById('modoVerboBtn').addEventListener('click', () => {
+      dados._pendente.modo = 'verbo';
+      mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+    });
+    document.getElementById('modoSujeitoBtn').addEventListener('click', () => {
+      dados._pendente.modo = 'sujeito';
+      mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+    });
+    document.getElementById('modoPredicadoBtn').addEventListener('click', () => {
+      dados._pendente.modo = 'predicado';
+      mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+    });
+    if (podeConfirmar) {
+      document.getElementById('btnConfirmarTripla').addEventListener('click', () => {
+        const verboCorreto     = p.verboIdx === dados.verbo;
+        const sujeitoCorreto   = p.sujeitoIdxs.length === dados.sujeito.length &&
+                                 dados.sujeito.every(i => p.sujeitoIdxs.includes(i));
+        const predicadoCorreto = p.predicadoIdxs.length === dados.predicado.length &&
+                                  dados.predicado.every(i => p.predicadoIdxs.includes(i));
+        const acertou = verboCorreto && sujeitoCorreto && predicadoCorreto;
+        dados._escolhida = { verbo: p.verboIdx, sujeito: [...p.sujeitoIdxs], predicado: [...p.predicadoIdxs] };
+        dados._correta   = acertou;
+        if (!acertou) {
+          addErro(origemAulaId, `checagem${checagemIdx}`);
+          erroNestaSessao = true;
+        }
+        mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
+      });
+    }
+    return;
+  }
+
+  // Já respondida — mostra o resultado com a chave sujeito/verbo/predicado.
+  wrap.innerHTML = `<div class="frase-anotada-wrap"><div class="frase-anotada" id="fraseAnotadaTri" style="grid-template-columns:repeat(${N},auto)"></div></div>`;
+  const grid = document.getElementById('fraseAnotadaTri');
+  const escolhida = dados._escolhida;
+  dados.sentenca.forEach((palavra, i) => {
+    const ehPontuacao = PONTUACAO_RE.test(palavra);
+    const btn = document.createElement('button');
+    let cls = 'word-chip';
+    if (ehPontuacao) {
+      cls += ' pontuacao';
+    } else {
+      const ehVerboCorreto     = i === dados.verbo;
+      const ehSujeitoCorreto   = dados.sujeito.includes(i);
+      const ehPredicadoCorreto = dados.predicado.includes(i);
+      const foiVerbo           = i === escolhida.verbo;
+      const foiSujeito         = escolhida.sujeito.includes(i);
+      const foiPredicado       = escolhida.predicado.includes(i);
+      if      (ehVerboCorreto)                      cls += ' verbo-correto';
+      else if (ehSujeitoCorreto)                    cls += ' sujeito-correto';
+      else if (ehPredicadoCorreto)                  cls += ' predicado-correto';
+      else if (foiVerbo && !ehVerboCorreto)         cls += ' verbo-errado';
+      else if (foiSujeito && !ehSujeitoCorreto)     cls += ' sujeito-errado';
+      else if (foiPredicado && !ehPredicadoCorreto) cls += ' predicado-errado';
+    }
+    btn.className = cls;
+    btn.textContent = palavra;
+    btn.disabled = true;
+    btn.style.gridColumn = String(i + 1);
+    btn.style.gridRow = '1';
+    grid.appendChild(btn);
+  });
+
+  const sujOrd = [...dados.sujeito].sort((a, b) => a - b);
+  grid.insertAdjacentHTML('beforeend',
+    `<div class="anotacao-sujeito" style="grid-column:${sujOrd[0] + 1}/span ${sujOrd[sujOrd.length - 1] - sujOrd[0] + 1};grid-row:2">Sujeito</div>`);
+  grid.insertAdjacentHTML('beforeend',
+    `<div class="anotacao-verbo" style="grid-column:${dados.verbo + 1};grid-row:2">Verbo</div>`);
+  const predOrd = [...dados.predicado].sort((a, b) => a - b);
+  grid.insertAdjacentHTML('beforeend',
+    `<div class="anotacao-predicado" style="grid-column:${predOrd[0] + 1}/span ${predOrd[predOrd.length - 1] - predOrd[0] + 1};grid-row:3">Predicado</div>`);
+
+  const linhas = dados.sentenca.map((palavra, i) => {
+    if (PONTUACAO_RE.test(palavra)) return '';
+    const ehVerbo     = i === dados.verbo;
+    const ehSujeito   = dados.sujeito.includes(i);
+    const ehPredicado = dados.predicado.includes(i) && !ehVerbo;
+    const classe = (ehVerbo || ehSujeito || ehPredicado) ? 'correta' : '';
+    const papel  = ehVerbo ? 'Verbo' : ehSujeito ? 'Sujeito' : ehPredicado ? 'Predicado' : '—';
+    return `
+      <div class="checagem-resultado-item">
+        <span class="cri-palavra ${classe}">${palavra}</span>
+        <span class="cri-seta">→</span>
+        <span class="cri-classe ${classe}">${papel}</span>
+        ${(ehVerbo || ehSujeito || ehPredicado) ? '<span class="cri-icone" style="color:#16a34a">✓</span>' : ''}
       </div>`;
   }).join('');
   wrap.insertAdjacentHTML('beforeend', `

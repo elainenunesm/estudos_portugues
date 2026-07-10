@@ -35,4 +35,16 @@ const MODULOS = [
       },
     ],
   },
+  {
+    id:     3,
+    titulo: 'Etapa 3: Fundamentos do Predicado',
+    aulas: [
+      {
+        id:        4,
+        titulo:    'Aula 4: Aprenda o que é o predicado',
+        arquivo:   'aula-4',
+        icone:     'bandeira',
+      },
+    ],
+  },
 ];
