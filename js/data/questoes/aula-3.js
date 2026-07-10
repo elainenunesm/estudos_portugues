@@ -55,6 +55,7 @@ window.AULA_DATA = {
       },
       caixa: {
         tipo:    'pergunta',
+        titulo:  'Resultado de encontrar o verbo',
         exemplo: 'Maria <strong class="destaque">estudou</strong> ontem.',
         perguntas: [
           '<strong class="destaque">Quem estudou</strong>? Ou...',
@@ -71,7 +72,6 @@ window.AULA_DATA = {
       },
       caixa: {
         tipo:    'dica',
-        titulo:  'Resultado de encontrar o verbo',
         exemplo: 'Maria <strong class="destaque">estudou</strong> ontem.',
         perguntas: [
           '<strong class="destaque">Quem estudou</strong>? Ou...',
