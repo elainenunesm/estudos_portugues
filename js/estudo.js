@@ -720,10 +720,26 @@ function mostrarRevisaoChecagem(itens) {
   document.getElementById('resultadoOverlay').classList.add('show');
 }
 
+// Se a aula concluída é a última da sua Etapa, a celebração é pelo módulo
+// inteiro (não só pela aula) — e o próximo nível é liberado no Início.
+function infoEtapaDaAula() {
+  const etapa = (MODULOS || []).find(m => m.aulas.some(a => a.id === parseInt(aulaId)));
+  if (!etapa) return null;
+  const ehUltima = etapa.aulas[etapa.aulas.length - 1].id === parseInt(aulaId);
+  return { etapa, ehUltima };
+}
+
 function mostrarFinalizadoChecagem() {
-  document.getElementById('resultadoEmoji').textContent    = '🎉';
-  document.getElementById('resultadoTitulo').textContent   = 'Excelente!';
-  document.getElementById('resultadoDesc').textContent     = 'Você completou a aula com 100% de acerto!';
+  const infoEtapa = infoEtapaDaAula();
+  if (infoEtapa && infoEtapa.ehUltima) {
+    document.getElementById('resultadoEmoji').textContent    = '🏆';
+    document.getElementById('resultadoTitulo').textContent   = 'Parabéns!';
+    document.getElementById('resultadoDesc').textContent     = `Você concluiu o módulo "${infoEtapa.etapa.titulo}" com 100% de acerto! Um novo nível foi liberado.`;
+  } else {
+    document.getElementById('resultadoEmoji').textContent    = '🎉';
+    document.getElementById('resultadoTitulo').textContent   = 'Excelente!';
+    document.getElementById('resultadoDesc').textContent     = 'Você completou a aula com 100% de acerto!';
+  }
   document.getElementById('resultadoEstrelas').textContent = '★★★';
   document.getElementById('resultadoBtnContinuar').textContent = 'Voltar ao início';
   document.getElementById('resultadoOverlay').classList.add('show');
@@ -760,9 +776,16 @@ function mostrarResultado(aula) {
   // Só chega aqui depois de acertar 100% da rodada (a última, após as
   // revisões necessárias) — por isso sempre fecha com as 3 estrelas.
   const total = estado.totalOriginal || questoes.length;
-  document.getElementById('resultadoEmoji').textContent    = '🎉';
-  document.getElementById('resultadoTitulo').textContent   = 'Excelente!';
-  document.getElementById('resultadoDesc').textContent     = `Você completou as ${total} questões da aula com 100% de acerto!`;
+  const infoEtapa = infoEtapaDaAula();
+  if (infoEtapa && infoEtapa.ehUltima) {
+    document.getElementById('resultadoEmoji').textContent  = '🏆';
+    document.getElementById('resultadoTitulo').textContent = 'Parabéns!';
+    document.getElementById('resultadoDesc').textContent   = `Você concluiu o módulo "${infoEtapa.etapa.titulo}" com 100% de acerto! Um novo nível foi liberado.`;
+  } else {
+    document.getElementById('resultadoEmoji').textContent  = '🎉';
+    document.getElementById('resultadoTitulo').textContent = 'Excelente!';
+    document.getElementById('resultadoDesc').textContent   = `Você completou as ${total} questões da aula com 100% de acerto!`;
+  }
   document.getElementById('resultadoEstrelas').textContent = '★★★';
   document.getElementById('resultadoOverlay').classList.add('show');
 

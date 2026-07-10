@@ -4,13 +4,12 @@
 // (getErrorNotebook/addErro, gravado em gramix-progresso.json) vêm de js/idb.js
 
 // ── ESTADO ───────────────────────────────────────────────────
-const PROGRESS_VERSION = 3; // incrementar para invalidar saves antigos
+const PROGRESS_VERSION = 4; // incrementar para invalidar saves antigos
 
-// Só as aulas da Etapa 1 (visível hoje) entram no progresso salvo — a
-// aula 3 passou a ser a 1ª aula da Etapa 2, que ainda não tem tela própria.
 const DEFAULT_AULAS = () => [
   { id: 1, status: 'active',  progress: 0, stars: 0, favorita: false },
   { id: 2, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 3, status: 'locked',  progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
@@ -267,8 +266,24 @@ function renderAulas() {
   });
 
   atualizarTrilha();
+  mostrarEtapaAtiva();
 
   // Rebind dos botões após renderização — não é mais necessário (delegação)
+}
+
+// Mostra só a Etapa que contém a aula ativa (ou a última, se tudo estiver
+// concluído) — o app avança pra próxima etapa conforme o aluno progride,
+// em vez de listar todas de uma vez.
+function etapaDaAula(aulaId) {
+  return (MODULOS || []).find(m => m.aulas.some(a => a.id === aulaId));
+}
+
+function mostrarEtapaAtiva() {
+  const aulaAtiva = state.aulas.find(a => a.status === 'active') || state.aulas[state.aulas.length - 1];
+  const etapa     = aulaAtiva ? etapaDaAula(aulaAtiva.id) : null;
+  document.querySelectorAll('.etapa-view').forEach(el => {
+    el.style.display = (etapa && el.dataset.etapa === String(etapa.id)) ? '' : 'none';
+  });
 }
 
 // Acende a trilha (linha tracejada) até a aula concluída mais recente,
@@ -636,25 +651,35 @@ function setupAulaEvents(pathContainer) {
 // ── INIT ─────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', async function () {
 
-  // Colapso do hero card
-  const nivelSelector = document.getElementById('nivelSelector');
-  const heroCard      = document.getElementById('heroCard');
-  const heroContent   = document.getElementById('heroContent');
-  const pathContainer = document.getElementById('pathContainer');
-  let isCollapsed = false;
-
-  function toggleLevel() {
-    isCollapsed = !isCollapsed;
-    // heroContent permanece visível — só as aulas recolhem
-    [nivelSelector, heroCard, pathContainer].forEach(el => {
-      el.classList.toggle('collapsed', isCollapsed);
+  // Colapso do hero card — cada Etapa tem seu próprio hero-card/path-container,
+  // então configura o toggle pros dois (só um fica visível por vez).
+  function configurarColapsoHero(nivelSelector, heroCard, pathContainer) {
+    if (!nivelSelector || !heroCard || !pathContainer) return;
+    let isCollapsed = false;
+    function toggleLevel() {
+      isCollapsed = !isCollapsed;
+      // heroContent permanece visível — só as aulas recolhem
+      [nivelSelector, heroCard, pathContainer].forEach(el => {
+        el.classList.toggle('collapsed', isCollapsed);
+      });
+    }
+    nivelSelector.addEventListener('click', e => { e.stopPropagation(); toggleLevel(); });
+    heroCard.addEventListener('click', e => {
+      if (e.target.closest('.hero-content')) return;
+      toggleLevel();
     });
   }
-  nivelSelector.addEventListener('click', e => { e.stopPropagation(); toggleLevel(); });
-  heroCard.addEventListener('click', e => {
-    if (e.target.closest('.hero-content')) return;
-    toggleLevel();
-  });
+  configurarColapsoHero(
+    document.getElementById('nivelSelector'),
+    document.getElementById('heroCard'),
+    document.getElementById('pathContainer'),
+  );
+  configurarColapsoHero(
+    document.getElementById('nivelSelector2'),
+    document.getElementById('heroCard2'),
+    document.getElementById('pathContainer2'),
+  );
+  const pathContainer = document.getElementById('pathContainer');
 
   // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
   // faltando permissão); senão reabre a seleção de pasta
@@ -725,8 +750,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     observer.observe(node);
   });
 
-  // Delegação de eventos (uma única vez)
+  // Delegação de eventos (uma única vez) — nos dois containers de etapa
   setupAulaEvents(pathContainer);
+  const pathContainer2 = document.getElementById('pathContainer2');
+  if (pathContainer2) setupAulaEvents(pathContainer2);
 
   // Também permite clique em aulas bloqueadas (pointer-events é none no CSS)
   document.querySelectorAll('.aula-node.locked').forEach(node => {
