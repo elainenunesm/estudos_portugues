@@ -320,7 +320,7 @@ function mostrarExemplo(aula, introIdx, i) {
             <svg viewBox="0 0 24 24" width="22" height="22">${RESUMO_ICONES[ex.caixa.tipo] ? RESUMO_ICONES[ex.caixa.tipo]('#4A80F0') : ''}</svg>
           </div>
           ${ex.caixa.interativo
-            ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong></p>`
+            ? `<p class="passo-caixa-inline"><strong>Selecione o verbo abaixo</strong></p>`
             : ex.caixa.inline
               ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong> ${ex.caixa.exemplo}</p>`
               : `<div class="passo-caixa-corpo">
