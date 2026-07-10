@@ -55,7 +55,7 @@ const scrollFade       = document.getElementById('scrollFade');
 
 // ── TOAST ────────────────────────────────────────────────────
 let toastTimer;
-function showToast(msg) {
+function showToast(msg, type = 'default') {
   let toast = document.getElementById('toastMsg');
   if (!toast) {
     toast = document.createElement('div');
@@ -64,9 +64,10 @@ function showToast(msg) {
     document.body.appendChild(toast);
   }
   toast.textContent = msg;
+  toast.style.background = type === 'warning' ? '#d97706' : '';
   clearTimeout(toastTimer);
   toast.classList.add('show');
-  toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), type === 'warning' ? 4000 : 2200);
 }
 
 // Monta o texto da barra de feedback com o "Correto!"/"Incorreto." em
@@ -182,12 +183,24 @@ function marcarCartaoHtml(chave) {
 function ativarBotaoMarcar() {
   const btn = opcoesEl.querySelector('.btn-marcar-cartao');
   if (!btn) return;
-  btn.addEventListener('click', () => {
+  btn.addEventListener('click', async () => {
     const chave = btn.dataset.chave;
-    const marcando = !cartaoMarcadoSet.has(chave);
-    if (marcando) cartaoMarcadoSet.add(chave); else cartaoMarcadoSet.delete(chave);
-    btn.classList.toggle('marcada', marcando);
-    alternarCartaoMarcado(aulaId, chave);
+    const marcandoOtimista = !cartaoMarcadoSet.has(chave);
+    // Atualiza a tela na hora (sensação de resposta imediata), mas só
+    // confirma "salvo" depois que gravarArquivoProgresso() de fato terminar
+    // — sem isso, uma permissão de pasta "esquecida" fazia parecer que
+    // marcou quando na verdade nada foi salvo em disco.
+    if (marcandoOtimista) cartaoMarcadoSet.add(chave); else cartaoMarcadoSet.delete(chave);
+    btn.classList.toggle('marcada', marcandoOtimista);
+
+    const { marcando, salvou } = await alternarCartaoMarcado(aulaId, chave);
+    if (!salvou) {
+      // Não salvou de verdade — desfaz o estado otimista na tela.
+      if (marcandoOtimista) cartaoMarcadoSet.delete(chave); else cartaoMarcadoSet.add(chave);
+      btn.classList.toggle('marcada', !marcandoOtimista);
+      showToast('⚠️ Não foi possível salvar — reconecte a pasta e tente de novo.', 'warning');
+      return;
+    }
     showToast(marcando ? '🔖 Marcada para revisão!' : 'Removida da revisão');
   });
 }

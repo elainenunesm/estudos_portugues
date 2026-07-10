@@ -37,14 +37,30 @@ async function idbSet(key, value) {
 // ── ARQUIVO DE PROGRESSO (gramix-progresso.json) ─────────────
 const PROGRESS_FILE = 'gramix-progresso.json';
 
+// Confere a permissão da pasta e, se o navegador "esqueceu" (comum após F5
+// ou ao abrir uma aba/página nova — ex: estudo.html sem passar por
+// index.html antes), tenta pedir de novo na mesma pasta já conhecida. Como
+// essa função só é chamada a partir de uma ação do usuário (marcar um
+// cartão, responder uma questão), ainda conta como gesto pra requestPermission
+// não precisar reabrir o seletor de pastas do sistema.
+async function garantirPermissao(handle) {
+  const perm = await handle.queryPermission({ mode: 'readwrite' });
+  if (perm === 'granted') return true;
+  try {
+    const pedido = await handle.requestPermission({ mode: 'readwrite' });
+    return pedido === 'granted';
+  } catch (e) {
+    return false;
+  }
+}
+
 // Lê o arquivo salvo na pasta escolhida. Retorna null se não há pasta
 // selecionada, sem permissão de leitura, ou o arquivo ainda não existe.
 async function lerArquivoProgresso() {
   try {
     const handle = await idbGet('dirHandle');
     if (!handle) return null;
-    const perm = await handle.queryPermission({ mode: 'readwrite' });
-    if (perm !== 'granted') return null;
+    if (!(await garantirPermissao(handle))) return null;
     const fh   = await handle.getFileHandle(PROGRESS_FILE);
     const file = await fh.getFile();
     return JSON.parse(await file.text());
@@ -60,8 +76,7 @@ async function gravarArquivoProgresso(mudancas) {
   try {
     const handle = await idbGet('dirHandle');
     if (!handle) return false;
-    const perm = await handle.queryPermission({ mode: 'readwrite' });
-    if (perm !== 'granted') return false;
+    if (!(await garantirPermissao(handle))) return false;
 
     let atual = {};
     try {
@@ -99,8 +114,23 @@ async function addErro(aulaId, qIdx) {
   const set = new Set(notebook[key] || []);
   set.add(qIdx);
   notebook[key] = Array.from(set).sort((a, b) => a - b);
-  await gravarArquivoProgresso({ errosNotebook: notebook });
+
+  // Mantém uma lista separada com o horário de cada erro, só pra dar pra
+  // ordenar do mais recente pro mais antigo na aba "Geral" do Caderno de
+  // Erros — a lista por aula acima não muda (ordenada por índice, como já era).
+  const recentes = await getErrosRecentes();
+  const jaExiste  = recentes.findIndex(r => r.aulaId === key && r.chave === qIdx);
+  if (jaExiste !== -1) recentes.splice(jaExiste, 1);
+  recentes.push({ aulaId: key, chave: qIdx, quando: new Date().toISOString() });
+
+  await gravarArquivoProgresso({ errosNotebook: notebook, errosRecentes: recentes });
   return notebook;
+}
+
+// Lista plana de erros com horário, pra aba "Geral" (mais recente primeiro).
+async function getErrosRecentes() {
+  const dados = await lerArquivoProgresso();
+  return dados?.errosRecentes || [];
 }
 
 // ── CARTÕES MARCADOS PARA REVISÃO (persistido no arquivo de progresso) ──
@@ -118,6 +148,6 @@ async function alternarCartaoMarcado(aulaId, chave) {
   const marcando = !set.has(chave);
   if (marcando) set.add(chave); else set.delete(chave);
   marcados[key] = Array.from(set);
-  await gravarArquivoProgresso({ cartoesMarcados: marcados });
-  return marcando;
+  const salvou = await gravarArquivoProgresso({ cartoesMarcados: marcados });
+  return { marcando, salvou };
 }

@@ -324,7 +324,13 @@ async function updateErrosBadge() {
   return total;
 }
 
-async function renderErrosView() {
+function renderErrosView() {
+  if (subCadernoAtivo === 'geral') return renderErrosGeral();
+  return renderErrosPorAula();
+}
+
+// "Por aula" — comportamento original, agrupado por aula.
+async function renderErrosPorAula() {
   const list     = document.getElementById('errosList');
   if (!list) return;
   const notebook = await getErrorNotebook();
@@ -340,6 +346,58 @@ async function renderErrosView() {
           <p>${idxs.length} ${idxs.length !== 1 ? 'questões' : 'questão'} para revisar</p>
         </div>
         <button type="button" class="btn-praticar" data-aula="${aula.id}">Praticar</button>
+      </div>`;
+  });
+
+  list.innerHTML = html || `
+    <div class="erros-empty">
+      <p class="erros-empty-emoji">🎉</p>
+      <p>Nenhum erro registrado ainda.</p>
+      <p class="erros-empty-sub">As questões que você errar aparecem aqui e ficam disponíveis para revisão até você dominá-las.</p>
+    </div>`;
+
+  list.querySelectorAll('.btn-praticar').forEach(btn => {
+    btn.addEventListener('click', () => {
+      window.location.href = `estudo.html?aula=${btn.dataset.aula}&modo=erros`;
+    });
+  });
+
+  updateErrosBadge();
+}
+
+// "Geral" — todos os erros juntos, do mais recente pro mais antigo.
+function formatarTempoRelativo(iso) {
+  const diffMin = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
+  if (diffMin < 1)  return 'agora mesmo';
+  if (diffMin < 60) return `há ${diffMin} min`;
+  const horas = Math.floor(diffMin / 60);
+  if (horas < 24) return `há ${horas}h`;
+  const dias = Math.floor(horas / 24);
+  if (dias < 30) return `há ${dias}d`;
+  return new Date(iso).toLocaleDateString('pt-BR');
+}
+
+async function renderErrosGeral() {
+  const list     = document.getElementById('errosList');
+  if (!list) return;
+  const [notebook, recentes] = await Promise.all([getErrorNotebook(), getErrosRecentes()]);
+
+  const ordenados = recentes
+    .filter(r => (notebook[r.aulaId] || []).includes(r.chave))
+    .sort((a, b) => new Date(b.quando) - new Date(a.quando));
+
+  let html = '';
+  ordenados.forEach(item => {
+    const aulaInfo = listaAulas().find(a => String(a.id) === item.aulaId);
+    if (!aulaInfo) return;
+    const rotulo = ehPergunta(String(item.chave)) ? 'Pergunta' : 'Questão';
+    html += `
+      <div class="erro-card">
+        <div class="erro-card-info">
+          <h3>${aulaInfo.titulo}</h3>
+          <p>${rotulo} errada ${formatarTempoRelativo(item.quando)}</p>
+        </div>
+        <button type="button" class="btn-praticar" data-aula="${item.aulaId}">Praticar</button>
       </div>`;
   });
 
@@ -442,7 +500,14 @@ async function renderRevisaoView() {
 
 // ── ABAS DOS CADERNOS (Erros / Favoritos / Revisão) ────────
 let cadernoAtivo    = 'erros';
-let subCadernoAtivo = 'telas';
+let subCadernoAtivo = 'aula';
+
+// Erros e Revisão reaproveitam os 2 mesmos botões de sub-aba, só trocando
+// o rótulo/valor deles conforme a aba principal ativa.
+const SUBTABS_POR_CADERNO = {
+  erros:   [{ valor: 'aula',      label: 'Por aula' }, { valor: 'geral',     label: 'Geral' }],
+  revisao: [{ valor: 'telas',     label: 'Aulas' },    { valor: 'perguntas', label: 'Perguntas' }],
+};
 
 function renderCadernoAtivo() {
   if (cadernoAtivo === 'favoritos')     renderFavoritosView();
@@ -455,8 +520,23 @@ function trocarCadernoTab(tab) {
   document.querySelectorAll('.caderno-tab').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
+
   const subtabs = document.getElementById('cadernosSubtabs');
-  if (subtabs) subtabs.style.display = tab === 'revisao' ? 'flex' : 'none';
+  const config  = SUBTABS_POR_CADERNO[tab];
+  if (subtabs && config) {
+    subtabs.style.display = 'flex';
+    const botoes = subtabs.querySelectorAll('.caderno-subtab');
+    config.forEach((cfg, i) => {
+      if (!botoes[i]) return;
+      botoes[i].textContent    = cfg.label;
+      botoes[i].dataset.subtab = cfg.valor;
+      botoes[i].classList.toggle('active', i === 0);
+    });
+    subCadernoAtivo = config[0].valor;
+  } else if (subtabs) {
+    subtabs.style.display = 'none';
+  }
+
   renderCadernoAtivo();
 }
 
