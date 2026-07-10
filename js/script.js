@@ -62,16 +62,22 @@ async function loadProgress() {
     const fh   = await state.dirHandle.getFileHandle('gramix-progresso.json');
     const file = await fh.getFile();
     const data = JSON.parse(await file.text());
+
+    // Migra pro formato atual SEM perder o que já foi feito: cada aula que
+    // ainda existe reaproveita o estado salvo (por id); aulas novas (de um
+    // módulo criado depois) entram com o padrão (bloqueadas); aulas antigas
+    // que não existem mais são simplesmente ignoradas. Nunca reseta tudo
+    // só porque a versão do arquivo mudou.
+    const salvas = Array.isArray(data.aulas) ? data.aulas : [];
+    state.aulas = DEFAULT_AULAS().map(padrao => {
+      const salva = salvas.find(a => a.id === padrao.id);
+      return salva ? { ...padrao, ...salva } : padrao;
+    });
+    renderAulas();
+
     if (data.version !== PROGRESS_VERSION) {
-      // Save desatualizado — reseta para o estado padrão e salva novamente
-      state.aulas = DEFAULT_AULAS();
-      renderAulas();
+      // Resalva no formato atual (com o progresso já migrado acima).
       await saveProgress();
-      return;
-    }
-    if (Array.isArray(data.aulas) && data.aulas.length === state.aulas.length) {
-      state.aulas = data.aulas;
-      renderAulas();
     }
   } catch (e) {
     // Arquivo ainda não existe — usa estado padrão
