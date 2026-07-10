@@ -331,6 +331,8 @@ function mostrarExemplo(aula, introIdx, i) {
         <div class="passo-caixa-perguntas">
           ${ex.caixa.perguntas.map(p => `<p class="passo-caixa-seta">→ ${p}</p>`).join('')}
         </div>` : ''}
+        ${ex.caixa.nota ? `
+        <p class="passo-caixa-nota">${ex.caixa.nota}</p>` : ''}
         ${ex.caixa.resposta ? `
         <div class="passo-caixa-divisor"></div>
         <p class="passo-caixa-resposta"><strong>Resposta:</strong> ${ex.caixa.resposta}</p>` : ''}

@@ -73,6 +73,7 @@ window.AULA_DATA = {
           '<strong class="destaque">Quem estudou</strong>? Ou...',
           '<strong class="destaque">O que estudou</strong>?',
         ],
+        nota:     'Nesse caso quem se encaixa mais é quem estudou.',
         resposta: 'Maria',
       },
     },
