@@ -278,32 +278,41 @@ function renderAulas() {
 
 // Acende a trilha (linha tracejada) até a aula concluída mais recente,
 // igual as estrelas — a linha "enche" de dourado conforme o progresso.
+// Roda por etapa (via .etapa-view/.path-container/.path-line-lit, não por
+// id fixo), então funciona automaticamente pra qualquer módulo novo também.
 function atualizarTrilha() {
-  const container = document.getElementById('pathContainer');
-  const lit = document.getElementById('pathLineLit');
-  if (!container || !lit) return;
+  document.querySelectorAll('.etapa-view').forEach(etapaView => {
+    const container = etapaView.querySelector('.path-container');
+    const lit        = etapaView.querySelector('.path-line-lit');
+    const etapaInfo  = (MODULOS || []).find(m => String(m.id) === etapaView.dataset.etapa);
+    if (!container || !lit || !etapaInfo) return;
 
-  const circulos = state.aulas
-    .map(aula => document.querySelector(`[data-aula="${aula.id}"] .icon-circle`))
-    .filter(Boolean);
+    const aulasDaEtapa = etapaInfo.aulas
+      .map(a => state.aulas.find(s => s.id === a.id))
+      .filter(Boolean);
 
-  let ultimoCompletoIdx = -1;
-  for (let i = 0; i < state.aulas.length; i++) {
-    if (state.aulas[i].status === 'completed') ultimoCompletoIdx = i;
-    else break;
-  }
+    const circulos = aulasDaEtapa
+      .map(aula => document.querySelector(`[data-aula="${aula.id}"] .icon-circle`))
+      .filter(Boolean);
 
-  if (ultimoCompletoIdx === -1 || !circulos[ultimoCompletoIdx]) {
-    lit.style.height = '0px';
-    return;
-  }
+    let ultimoCompletoIdx = -1;
+    for (let i = 0; i < aulasDaEtapa.length; i++) {
+      if (aulasDaEtapa[i].status === 'completed') ultimoCompletoIdx = i;
+      else break;
+    }
 
-  const containerTop = container.getBoundingClientRect().top;
-  const centro = (el) => el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2;
-  const proximoCirculo = circulos[ultimoCompletoIdx + 1];
-  const altura = (proximoCirculo ? centro(proximoCirculo) : centro(circulos[ultimoCompletoIdx])) - containerTop;
+    if (ultimoCompletoIdx === -1 || !circulos[ultimoCompletoIdx]) {
+      lit.style.height = '0px';
+      return;
+    }
 
-  lit.style.height = `${Math.max(0, altura)}px`;
+    const containerTop = container.getBoundingClientRect().top;
+    const centro = (el) => el.getBoundingClientRect().top + el.getBoundingClientRect().height / 2;
+    const proximoCirculo = circulos[ultimoCompletoIdx + 1];
+    const altura = (proximoCirculo ? centro(proximoCirculo) : centro(circulos[ultimoCompletoIdx])) - containerTop;
+
+    lit.style.height = `${Math.max(0, altura)}px`;
+  });
 }
 
 // Posiciona a tela na aula ativa (a que precisa continuar), pra abrir/atualizar
