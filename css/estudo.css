@@ -946,7 +946,7 @@ body {
   user-select: none;
 }
 
-.word-chip:hover:not(:disabled):not(.pontuacao) {
+.word-chip:hover:not(:disabled):not(.pontuacao):not(.correta):not(.errada) {
   border-color: #5B2BCB;
   background: #faf7ff;
   color: #5B2BCB;
@@ -975,6 +975,16 @@ body {
   padding: 10px 2px;
   cursor: default;
   color: #1a1a2e;
+}
+
+.sentence-display-sm {
+  margin-top: 8px;
+}
+
+.word-chip-sm {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 10px;
 }
 
 /* RESULTADO DE CADA PALAVRA (depois de responder a checagem de "clique na palavra") */

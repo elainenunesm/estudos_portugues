@@ -319,13 +319,16 @@ function mostrarExemplo(aula, introIdx, i) {
           <div class="passo-caixa-icone">
             <svg viewBox="0 0 24 24" width="22" height="22">${RESUMO_ICONES[ex.caixa.tipo] ? RESUMO_ICONES[ex.caixa.tipo]('#4A80F0') : ''}</svg>
           </div>
-          ${ex.caixa.inline
-            ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong> ${ex.caixa.exemplo}</p>`
-            : `<div class="passo-caixa-corpo">
-                 <p class="passo-caixa-titulo">Exemplo:</p>
-                 <p class="passo-caixa-texto">${ex.caixa.exemplo}</p>
-               </div>`}
+          ${ex.caixa.interativo
+            ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong></p>`
+            : ex.caixa.inline
+              ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong> ${ex.caixa.exemplo}</p>`
+              : `<div class="passo-caixa-corpo">
+                   <p class="passo-caixa-titulo">Exemplo:</p>
+                   <p class="passo-caixa-texto">${ex.caixa.exemplo}</p>
+                 </div>`}
         </div>
+        ${ex.caixa.interativo ? `<div class="sentence-display sentence-display-sm" id="exemploSentence"></div>` : ''}
         ${(ex.caixa.perguntas || []).length ? `
         <div class="passo-caixa-divisor"></div>
         <div class="passo-caixa-perguntas">
@@ -340,7 +343,40 @@ function mostrarExemplo(aula, introIdx, i) {
     </div>`;
   ativarBotaoMarcar();
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
-  btnProxima.disabled  = false;
+
+  // Palavras clicáveis dentro da caixa de exemplo (ex: selecionar o verbo).
+  // Não é uma checagem — não conta erro, só trava o "Próximo" até acertar.
+  if (ex.caixa && ex.caixa.interativo) {
+    const interativo = ex.caixa.interativo;
+    const jaAcertou   = ex._acertouInterativo === true;
+    btnProxima.disabled = !jaAcertou;
+    const wrap = document.getElementById('exemploSentence');
+    interativo.palavras.forEach((palavra, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'word-chip word-chip-sm';
+      btn.textContent = palavra;
+      if (jaAcertou) {
+        btn.disabled = true;
+        if (idx === interativo.correta) btn.classList.add('correta');
+      } else {
+        btn.addEventListener('click', () => {
+          if (idx === interativo.correta) {
+            ex._acertouInterativo = true;
+            btn.classList.add('correta');
+            Array.from(wrap.children).forEach(c => c.disabled = true);
+            btnProxima.disabled = false;
+          } else {
+            btn.classList.add('errada');
+            setTimeout(() => btn.classList.remove('errada'), 500);
+          }
+        });
+      }
+      wrap.appendChild(btn);
+    });
+  } else {
+    btnProxima.disabled = false;
+  }
+
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
 }

@@ -40,7 +40,10 @@ window.AULA_DATA = {
       caixa: {
         tipo:   'tarefa',
         inline: true,
-        exemplo: 'Maria <strong class="destaque">estudou</strong> ontem',
+        interativo: {
+          palavras: ['Maria', 'estudou', 'ontem'],
+          correta:  1,
+        },
       },
     },
     {
