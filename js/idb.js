@@ -128,9 +128,33 @@ async function addErro(aulaId, qIdx) {
 }
 
 // Lista plana de erros com horário, pra aba "Geral" (mais recente primeiro).
+// Erros gravados antes dessa funcionalidade existir não têm horário — sem
+// isso "Geral" não tem como saber qual é mais recente. Na primeira vez que
+// detecta um desses, preenche retroativamente usando a data do último save
+// como referência (escalonando 1s por item, só pra manter uma ordem
+// estável entre eles) e salva, pra não recalcular toda vez. Erros novos
+// continuam ganhando o horário real de quando aconteceram, em addErro().
 async function getErrosRecentes() {
-  const dados = await lerArquivoProgresso();
-  return dados?.errosRecentes || [];
+  const dados    = await lerArquivoProgresso();
+  const notebook = dados?.errosNotebook || {};
+  const recentes = dados?.errosRecentes || [];
+  const existentes = new Set(recentes.map(r => `${r.aulaId}:${r.chave}`));
+
+  const faltando = [];
+  Object.keys(notebook).forEach(aulaId => {
+    (notebook[aulaId] || []).forEach(chave => {
+      if (!existentes.has(`${aulaId}:${chave}`)) faltando.push({ aulaId, chave });
+    });
+  });
+  if (faltando.length === 0) return recentes;
+
+  const base = dados?.savedAt ? new Date(dados.savedAt).getTime() : Date.now();
+  const completos = [
+    ...recentes,
+    ...faltando.map((item, i) => ({ ...item, quando: new Date(base - (faltando.length - i) * 1000).toISOString() })),
+  ];
+  await gravarArquivoProgresso({ errosRecentes: completos });
+  return completos;
 }
 
 // ── CARTÕES MARCADOS PARA REVISÃO (persistido no arquivo de progresso) ──
