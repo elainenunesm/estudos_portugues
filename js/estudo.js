@@ -309,11 +309,13 @@ function mostrarExemplo(aula, introIdx, i) {
           </div>`).join('')}
       </div>` : ''}
       ${ex.passo ? `
-      <div class="passo-linha">
-        <div class="passo-numero">${ex.passo.numero}</div>
-        <p class="passo-instrucao">– ${ex.passo.instrucao}</p>
-      </div>
-      ${ex.passo.nota ? `<p class="passo-nota">${ex.passo.nota}</p>` : ''}` : ''}
+      <div class="passo-bloco">
+        <div class="passo-linha">
+          <div class="passo-numero">${ex.passo.numero}</div>
+          <p class="passo-instrucao">– ${ex.passo.instrucao}</p>
+        </div>
+        ${ex.passo.nota ? `<p class="passo-nota">${ex.passo.nota}</p>` : ''}
+      </div>` : ''}
       ${ex.caixa ? `
       <div class="passo-caixa">
         <div class="passo-caixa-cabecalho">

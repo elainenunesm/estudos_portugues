@@ -69,7 +69,7 @@ window.AULA_DATA = {
       passo: {
         numero:    '3º',
         instrucao: 'A resposta da pergunta anterior será o <strong class="destaque">sujeito</strong>.',
-        nota:      'Nesse caso quem se encaixa mais é quem estudou?.',
+        nota:      'Nesse caso quem se encaixa mais é <strong class="destaque">quem estudou?</strong>.',
       },
       caixa: {
         tipo:    'dica',
