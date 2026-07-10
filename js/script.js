@@ -382,20 +382,32 @@ async function renderErrosGeral() {
   if (!list) return;
   const [notebook, recentes] = await Promise.all([getErrorNotebook(), getErrosRecentes()]);
 
-  const ordenados = recentes
-    .filter(r => (notebook[r.aulaId] || []).includes(r.chave))
-    .sort((a, b) => new Date(b.quando) - new Date(a.quando));
+  // Usa o MESMO conjunto de erros de "Por aula" (notebook) — não só a lista
+  // de horários (errosRecentes), que só existe pra erros registrados depois
+  // dessa funcionalidade. Erros antigos sem horário conhecido entram no fim.
+  const mapaQuando = new Map(recentes.map(r => [`${r.aulaId}:${r.chave}`, r.quando]));
+  const itens = [];
+  Object.keys(notebook).forEach(aulaId => {
+    (notebook[aulaId] || []).forEach(chave => {
+      itens.push({ aulaId, chave, quando: mapaQuando.get(`${aulaId}:${chave}`) || null });
+    });
+  });
+  itens.sort((a, b) => {
+    if (a.quando && b.quando) return new Date(b.quando) - new Date(a.quando);
+    return a.quando ? -1 : (b.quando ? 1 : 0);
+  });
 
   let html = '';
-  ordenados.forEach(item => {
+  itens.forEach(item => {
     const aulaInfo = listaAulas().find(a => String(a.id) === item.aulaId);
     if (!aulaInfo) return;
-    const rotulo = ehPergunta(String(item.chave)) ? 'Pergunta' : 'Questão';
+    const rotulo      = ehPergunta(String(item.chave)) ? 'Pergunta' : 'Questão';
+    const quandoTexto = item.quando ? ` ${formatarTempoRelativo(item.quando)}` : '';
     html += `
       <div class="erro-card">
         <div class="erro-card-info">
           <h3>${aulaInfo.titulo}</h3>
-          <p>${rotulo} errada ${formatarTempoRelativo(item.quando)}</p>
+          <p>${rotulo} errada${quandoTexto}</p>
         </div>
         <button type="button" class="btn-praticar" data-aula="${item.aulaId}">Praticar</button>
       </div>`;
