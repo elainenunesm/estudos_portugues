@@ -165,7 +165,7 @@ body {
 /* PATH CONTAINER */
 .path-container {
   position: relative;
-  padding: 0 30px;
+  padding: 0 40px;
   margin-top: 30px;
   overflow: hidden;
   transition: max-height 0.5s ease, opacity 0.4s ease, margin-top 0.4s ease;
