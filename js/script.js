@@ -845,9 +845,13 @@ document.addEventListener('DOMContentLoaded', async function () {
     const concluida = acertos >= Math.ceil(total * 0.5);
     if (concluida) {
       state.aulas[aulaIdx] = { id: aulaId, status: 'completed', progress: 100, stars: estrelas };
-      // Desbloqueia a próxima aula, se existir
-      if (aulaIdx + 1 < state.aulas.length) {
-        state.aulas[aulaIdx + 1] = { ...state.aulas[aulaIdx + 1], status: 'active', progress: 0 };
+      // Desbloqueia a próxima aula, se ela ainda estiver bloqueada — só isso.
+      // Se o usuário refez uma aula anterior e a próxima já estava concluída
+      // (ou em andamento) de antes, não pode voltar pra "Começar" e perder
+      // as estrelas/progresso que já tinha.
+      const proxima = state.aulas[aulaIdx + 1];
+      if (proxima && proxima.status === 'locked') {
+        state.aulas[aulaIdx + 1] = { ...proxima, status: 'active', progress: 0 };
       }
       acabouDeConcluir = true;
     } else {

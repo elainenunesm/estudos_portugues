@@ -43,6 +43,7 @@ window.AULA_DATA = {
         interativo: {
           palavras: ['Maria', 'estudou', 'ontem'],
           correta:  1,
+          papel:    'verbo',
         },
       },
     },
@@ -76,8 +77,10 @@ window.AULA_DATA = {
         inline: true,
         rotulo: 'Responda a pergunta, Quem estudou?',
         interativo: {
-          palavras: ['Maria', 'estudou', 'ontem'],
-          correta:  0,
+          palavras:    ['Maria', 'estudou', 'ontem'],
+          correta:     0,
+          papel:       'sujeito',
+          marcarAntes: [{ idx: 1, papel: 'verbo' }],
         },
       },
     },
