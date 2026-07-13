@@ -154,10 +154,18 @@ body {
   background: #5B2BCB;
 }
 
+/* NÍVEL CONCLUÍDO — quando todas as aulas da etapa estão completas,
+   .etapa-completa (aplicada via JS em renderAulas) faz a barra "acender":
+   mesmo roxo da marca, só que com um brilho, em vez de trocar de cor.
+   O resto do card (fundo, título) fica igual. */
+.hero-card.etapa-completa .segment.filled {
+  box-shadow: 0 0 10px rgba(91, 43, 203, 0.7);
+}
+
 /* PATH CONTAINER */
 .path-container {
   position: relative;
-  padding: 0 20px;
+  padding: 0 30px;
   margin-top: 30px;
   overflow: hidden;
   transition: max-height 0.5s ease, opacity 0.4s ease, margin-top 0.4s ease;

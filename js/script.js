@@ -272,6 +272,7 @@ function renderAulas() {
   });
 
   atualizarTrilha();
+  atualizarProgressoEtapas();
 
   // Rebind dos botões após renderização — não é mais necessário (delegação)
 }
@@ -312,6 +313,32 @@ function atualizarTrilha() {
     const altura = (proximoCirculo ? centro(proximoCirculo) : centro(circulos[ultimoCompletoIdx])) - containerTop;
 
     lit.style.height = `${Math.max(0, altura)}px`;
+  });
+}
+
+// Segmentos de progresso do hero card de cada etapa — um segmento por aula
+// do módulo, preenchido conforme o real state.aulas (nunca hardcoded no
+// HTML, pra não desalinhar quando uma aula é concluída ou um módulo ganha
+// aulas novas). Quando todas as aulas da etapa estão concluídas, a barra
+// "acende" (.etapa-completa, ver css/style.css) pra comemorar o nível feito.
+function atualizarProgressoEtapas() {
+  document.querySelectorAll('.etapa-view').forEach(etapaView => {
+    const heroCard     = etapaView.querySelector('.hero-card');
+    const segmentsWrap = etapaView.querySelector('.progress-segments');
+    const etapaInfo    = (MODULOS || []).find(m => String(m.id) === etapaView.dataset.etapa);
+    if (!heroCard || !segmentsWrap || !etapaInfo) return;
+
+    const aulasDaEtapa = etapaInfo.aulas
+      .map(a => state.aulas.find(s => s.id === a.id))
+      .filter(Boolean);
+    const concluidas = aulasDaEtapa.filter(a => a.status === 'completed').length;
+
+    segmentsWrap.innerHTML = aulasDaEtapa
+      .map((_, i) => `<div class="segment${i < concluidas ? ' filled' : ''}"></div>`)
+      .join('');
+
+    const etapaCompleta = aulasDaEtapa.length > 0 && concluidas === aulasDaEtapa.length;
+    heroCard.classList.toggle('etapa-completa', etapaCompleta);
   });
 }
 
@@ -652,36 +679,71 @@ document.addEventListener('DOMContentLoaded', async function () {
 
   // Colapso do hero card — cada Etapa é um bloco independente na página
   // (sempre visível, um embaixo do outro), com seu próprio recolher/expandir.
+  // O título e a barra de progresso (hero-content) continuam visíveis mesmo
+  // recolhido — só a lista de aulas (pathContainer) se esconde, pra ainda
+  // dar pra saber qual etapa é aquela e quanto já foi feito sem abrir.
+  // Expõe setCollapsed() além do toggle por clique, pra poder recolher os
+  // níveis que não estão em andamento assim que o progresso real carrega
+  // (ver aplicarColapsoInicial, chamada depois do tryReconnect()).
   function configurarColapsoHero(nivelSelector, heroCard, pathContainer) {
-    if (!nivelSelector || !heroCard || !pathContainer) return;
+    if (!nivelSelector || !heroCard || !pathContainer) return null;
     let isCollapsed = false;
-    function toggleLevel() {
-      isCollapsed = !isCollapsed;
+    function aplicar() {
       [nivelSelector, heroCard, pathContainer].forEach(el => {
         el.classList.toggle('collapsed', isCollapsed);
       });
+    }
+    function toggleLevel() {
+      isCollapsed = !isCollapsed;
+      aplicar();
     }
     nivelSelector.addEventListener('click', e => { e.stopPropagation(); toggleLevel(); });
     heroCard.addEventListener('click', e => {
       if (e.target.closest('.hero-content')) return;
       toggleLevel();
     });
+    return {
+      setCollapsed(valor) { isCollapsed = valor; aplicar(); },
+    };
   }
-  configurarColapsoHero(
-    document.getElementById('nivelSelector'),
-    document.getElementById('heroCard'),
-    document.getElementById('pathContainer'),
-  );
-  configurarColapsoHero(
-    document.getElementById('nivelSelector2'),
-    document.getElementById('heroCard2'),
-    document.getElementById('pathContainer2'),
-  );
-  configurarColapsoHero(
-    document.getElementById('nivelSelector3'),
-    document.getElementById('heroCard3'),
-    document.getElementById('pathContainer3'),
-  );
+  const colapsosPorEtapa = {
+    1: configurarColapsoHero(
+      document.getElementById('nivelSelector'),
+      document.getElementById('heroCard'),
+      document.getElementById('pathContainer'),
+    ),
+    2: configurarColapsoHero(
+      document.getElementById('nivelSelector2'),
+      document.getElementById('heroCard2'),
+      document.getElementById('pathContainer2'),
+    ),
+    3: configurarColapsoHero(
+      document.getElementById('nivelSelector3'),
+      document.getElementById('heroCard3'),
+      document.getElementById('pathContainer3'),
+    ),
+  };
+
+  // Recolhe todo nível que não está "em andamento" (nenhuma aula ativa
+  // dentro dele) — níveis ainda bloqueados e níveis já 100% concluídos
+  // ficam fechados; só o nível que o usuário está cursando agora abre.
+  // Se nenhum nível tiver aula ativa (ex.: tudo já concluído), deixa o
+  // último aberto em vez de recolher tudo.
+  function aplicarColapsoInicial() {
+    const etapas = Array.from(document.querySelectorAll('.etapa-view')).map(view => {
+      const etapaInfo = (MODULOS || []).find(m => String(m.id) === view.dataset.etapa);
+      const aulasDaEtapa = etapaInfo
+        ? etapaInfo.aulas.map(a => state.aulas.find(s => s.id === a.id)).filter(Boolean)
+        : [];
+      return { id: view.dataset.etapa, emAndamento: aulasDaEtapa.some(a => a.status === 'active') };
+    });
+    const existeEmAndamento = etapas.some(e => e.emAndamento);
+    etapas.forEach((etapa, i) => {
+      const manterAberta = etapa.emAndamento || (!existeEmAndamento && i === etapas.length - 1);
+      const controlador   = colapsosPorEtapa[etapa.id];
+      if (controlador && !manterAberta) controlador.setCollapsed(true);
+    });
+  }
   const pathContainer  = document.getElementById('pathContainer');
   const pathContainer2 = document.getElementById('pathContainer2');
   const pathContainer3 = document.getElementById('pathContainer3');
@@ -795,6 +857,10 @@ document.addEventListener('DOMContentLoaded', async function () {
     await saveProgress();
     break;
   }
+
+  // Só agora o progresso real (da pasta, ou o padrão se não há pasta) está
+  // definitivo — recolhe os níveis que não estão em andamento.
+  aplicarColapsoInicial();
 
   // Leva a tela até a aula ativa (a que precisa continuar) — suave se acabou
   // de concluir algo agora, direto se for só abrindo/atualizando a página.
