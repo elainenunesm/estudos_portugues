@@ -41,14 +41,12 @@ async function saveProgress() {
   }
   state.progressoNaoSalvo = true;
   try {
-    // Preserva o caderno de erros já salvo no arquivo (gravado por
-    // estudo.js) — essa tela só conhece/atualiza o progresso das aulas.
-    const notebook = await getErrorNotebook();
-    const data = { version: PROGRESS_VERSION, aulas: state.aulas, errosNotebook: notebook, savedAt: new Date().toISOString() };
-    const fh = await state.dirHandle.getFileHandle('gramix-progresso.json', { create: true });
-    const wr = await fh.createWritable();
-    await wr.write(JSON.stringify(data, null, 2));
-    await wr.close();
+    // Usa gravarArquivoProgresso() (js/idb.js), que mescla com o que já
+    // está no arquivo — escrever direto aqui (como antes) sobrescrevia o
+    // arquivo inteiro com só {version, aulas, errosNotebook}, apagando
+    // cartoesMarcados e errosRecentes que estudo.js tinha acabado de salvar.
+    const salvou = await gravarArquivoProgresso({ version: PROGRESS_VERSION, aulas: state.aulas });
+    if (!salvou) throw new Error('gravação falhou');
     state.progressoNaoSalvo = false;
     showToast('💾 Progresso salvo com sucesso!', 'success');
   } catch (e) {

@@ -85,7 +85,7 @@ window.AULA_DATA = {
       texto: 'Para encontrar o <strong class="destaque">predicado</strong>:',
       passo: {
         numero:    '4º',
-        instrucao: 'Tudo o que <strong class="destaque">não for o sujeito</strong> é o predicado.',
+        instrucao: 'Tudo o que não for o sujeito é o <strong class="destaque">predicado</strong>.',
         nota:      'Nesse caso, o sujeito é <strong class="destaque">Maria</strong>, então o predicado é <strong class="destaque">estudou ontem</strong>.',
       },
       caixa: {

@@ -153,9 +153,13 @@ body {
 }
 
 /* TELA DE CHECAGEM — pergunta curta em negrito antes do título grande */
+/* padding-right reserva espaço pro .btn-marcar-cartao (marca-página
+   absoluto no canto superior direito) não sobrepor o texto quando ele
+   quebra em duas linhas em telas estreitas. */
 .checagem-pergunta {
   font-weight: 700;
   margin-bottom: 6px;
+  padding-right: 48px;
 }
 
 .checagem-titulo {
@@ -166,6 +170,7 @@ body {
    frase analisada maior (é o que realmente importa ler com atenção). */
 .checagem-instrucao {
   font-size: 16px;
+  padding-right: 48px;
 }
 
 .checagem-frase {
@@ -503,7 +508,7 @@ body {
 .passo-caixa-titulo {
   font-size: 14px;
   font-weight: 700;
-  color: #4A80F0;
+  color: #1a1a2e;
 }
 
 .passo-caixa-texto {
@@ -933,11 +938,11 @@ body {
 .word-chip {
   display: inline-flex;
   align-items: center;
-  padding: 10px 16px;
+  padding: 8px 12px;
   border: 2px solid #e9dffb;
   border-radius: 12px;
   background: #ffffff;
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 600;
   color: #1a1a2e;
   cursor: pointer;
@@ -971,7 +976,7 @@ body {
 .word-chip.pontuacao {
   border: none;
   background: transparent;
-  padding: 10px 2px;
+  padding: 8px 2px;
   cursor: default;
   color: #1a1a2e;
 }
@@ -1461,6 +1466,7 @@ body {
   .opcao-texto               { font-size: 15px; }
   .infinitivo-descricao      { font-size: 17px; }
   .idf-titulo                { font-size: 17px; }
+  .word-chip                 { font-size: 13px; padding: 7px 10px; }
 }
 
 /* TOAST */
