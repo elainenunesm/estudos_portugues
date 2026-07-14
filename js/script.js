@@ -11,6 +11,7 @@ const DEFAULT_AULAS = () => [
   { id: 2, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 3, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 4, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 5, status: 'locked',  progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
@@ -30,6 +31,7 @@ const ICONES_AULA = {
   pessoa:    '<circle cx="12" cy="8" r="4"></circle><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"></path>',
   balao:     '<path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"></path>',
   bandeira:  '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line>',
+  nuvem:     '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path>',
 };
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
@@ -722,6 +724,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       document.getElementById('heroCard3'),
       document.getElementById('pathContainer3'),
     ),
+    4: configurarColapsoHero(
+      document.getElementById('nivelSelector4'),
+      document.getElementById('heroCard4'),
+      document.getElementById('pathContainer4'),
+    ),
   };
 
   // Recolhe todo nível que não está "em andamento" (nenhuma aula ativa
@@ -747,6 +754,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const pathContainer  = document.getElementById('pathContainer');
   const pathContainer2 = document.getElementById('pathContainer2');
   const pathContainer3 = document.getElementById('pathContainer3');
+  const pathContainer4 = document.getElementById('pathContainer4');
 
   // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
   // faltando permissão); senão reabre a seleção de pasta
@@ -821,6 +829,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   setupAulaEvents(pathContainer);
   if (pathContainer2) setupAulaEvents(pathContainer2);
   if (pathContainer3) setupAulaEvents(pathContainer3);
+  if (pathContainer4) setupAulaEvents(pathContainer4);
 
   // Também permite clique em aulas bloqueadas (pointer-events é none no CSS)
   document.querySelectorAll('.aula-node.locked').forEach(node => {

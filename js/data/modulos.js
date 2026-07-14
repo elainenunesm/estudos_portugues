@@ -47,4 +47,16 @@ const MODULOS = [
       },
     ],
   },
+  {
+    id:     4,
+    titulo: 'Etapa 4: Orações sem sujeito',
+    aulas: [
+      {
+        id:        5,
+        titulo:    'Aula 5: Aprenda a identificar verbos sem sujeito',
+        arquivo:   'aula-5',
+        icone:     'nuvem',
+      },
+    ],
+  },
 ];

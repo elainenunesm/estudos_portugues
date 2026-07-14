@@ -536,6 +536,16 @@ body {
   text-align: left;
 }
 
+/* Linha de exemplo dentro das perguntas, sem a seta "→" — só indentada
+   pra se alinhar com o texto das linhas com seta acima/abaixo dela. */
+.passo-caixa-nota-indent {
+  font-size: 15px;
+  color: #1a1a2e;
+  line-height: 1.4;
+  text-align: left;
+  padding-left: 20px;
+}
+
 .passo-nota {
   font-size: 16px;
   color: #1a1a2e;
@@ -1044,6 +1054,31 @@ body {
   border-color: #5B2BCB;
   background: #f5f0ff;
   color: #5B2BCB;
+}
+
+/* Botão "Oração sem sujeito" da checagem tripla — declaração explícita do
+   aluno de que a frase não tem sujeito (necessário pra liberar o "Confirmar
+   resposta" em frases impessoais, que não têm nenhuma palavra pra marcar). */
+.modo-sem-sujeito-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 10px;
+  border: 2px solid #e9dffb;
+  background: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  cursor: pointer;
+  margin-bottom: 14px;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.modo-sem-sujeito-btn.ativo {
+  border-color: #ea580c;
+  background: #fff7ed;
+  color: #ea580c;
 }
 
 .frase-anotada-wrap {

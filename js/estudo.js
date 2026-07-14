@@ -441,14 +441,18 @@ function mostrarExemplo(aula, introIdx, i) {
               ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong> ${ex.caixa.exemplo}</p>`
               : `<div class="passo-caixa-corpo">
                    <p class="passo-caixa-titulo">${ex.caixa.titulo || 'Exemplo:'}</p>
-                   <p class="passo-caixa-texto">${ex.caixa.exemplo}</p>
+                   ${ex.caixa.sentencaAnotada ? '' : `<p class="passo-caixa-texto">${ex.caixa.exemplo}</p>`}
                  </div>`}
         </div>
         ${ex.caixa.interativo ? `<div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploSentence" style="grid-template-columns:repeat(${ex.caixa.interativo.palavras.length},auto)"></div></div>` : ''}
+        ${ex.caixa.sentencaAnotada ? `<div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploCaixaAnotada" style="grid-template-columns:repeat(${ex.caixa.sentencaAnotada.sentenca.length},auto)"></div></div>` : ''}
         ${(ex.caixa.perguntas || []).length ? `
         <div class="passo-caixa-divisor"></div>
         <div class="passo-caixa-perguntas">
-          ${ex.caixa.perguntas.map(p => `<p class="passo-caixa-seta">→ ${p}</p>`).join('')}
+          ${ex.caixa.perguntas.map(p => typeof p === 'string'
+            ? `<p class="passo-caixa-seta">→ ${p}</p>`
+            : `<p class="passo-caixa-nota-indent">${p.nota}</p>`
+          ).join('')}
         </div>` : ''}
         ${ex.caixa.resposta ? `
         <div class="passo-caixa-divisor"></div>
@@ -462,6 +466,9 @@ function mostrarExemplo(aula, introIdx, i) {
   // Não é uma checagem — não conta erro, só trava o "Próximo" até acertar.
   if (ex.caixa && ex.caixa.anotado) {
     renderFraseAnotadaEstatica(ex.caixa.anotado, document.getElementById('exemploAnotado'));
+    btnProxima.disabled = false;
+  } else if (ex.caixa && ex.caixa.sentencaAnotada) {
+    renderFraseAnotadaEstatica(ex.caixa.sentencaAnotada, document.getElementById('exemploCaixaAnotada'));
     btnProxima.disabled = false;
   } else if (ex.caixa && ex.caixa.interativo && Array.isArray(ex.caixa.interativo.corretas)) {
     renderInterativoMultiplo(ex, ex.caixa.interativo, document.getElementById('exemploSentence'));
@@ -536,6 +543,7 @@ const RESUMO_ICONES = {
   predVerbal:      cor => `<path fill="none" stroke="${cor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6"/>`,
   predNominal:     cor => `<circle cx="12" cy="12" r="8" fill="none" stroke="${cor}" stroke-width="1.8"/><line x1="8" y1="12" x2="16" y2="12" stroke="${cor}" stroke-width="1.8" stroke-linecap="round"/>`,
   predVerboNominal: cor => `<path fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M9 17H7a5 5 0 1 1 0-10h2M15 7h2a5 5 0 1 1 0 10h-2M8 12h8"/>`,
+  semSujeito: cor => `<line x1="-1" y1="6"  x2="2" y2="6"  stroke="${cor}" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/><line x1="-1" y1="10" x2="2" y2="10" stroke="${cor}" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/><line x1="-1" y1="14" x2="2" y2="14" stroke="${cor}" stroke-width="1.6" stroke-linecap="round" opacity="0.5"/><circle cx="11" cy="8" r="4" fill="none" stroke="${cor}" stroke-width="1.8"/><path fill="none" stroke="${cor}" stroke-width="1.8" stroke-linecap="round" d="M4 21v-1a6 6 0 0 1 6-6h1.5"/><circle cx="18" cy="17" r="5" fill="none" stroke="${cor}" stroke-width="1.7"/><line x1="16.1" y1="15.1" x2="19.9" y2="18.9" stroke="${cor}" stroke-width="1.7" stroke-linecap="round"/><line x1="19.9" y1="15.1" x2="16.1" y2="18.9" stroke="${cor}" stroke-width="1.7" stroke-linecap="round"/>`,
 };
 
 function mostrarInfinitivo(aula, introIdx) {
@@ -940,10 +948,10 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
 
   if (!respondida) {
     if (!dados._pendente) {
-      dados._pendente = { modo: 'verbo', verboIdx: null, sujeitoIdxs: [], predicadoIdxs: [], predicadoConfirmado: false };
+      dados._pendente = { modo: 'verbo', verboIdx: null, sujeitoIdxs: [], predicadoIdxs: [], predicadoConfirmado: false, semSujeito: false };
     }
     const p = dados._pendente;
-    const podeConfirmar = p.verboIdx !== null && p.sujeitoIdxs.length > 0;
+    const podeConfirmar = p.verboIdx !== null && (p.sujeitoIdxs.length > 0 || p.semSujeito);
 
     wrap.innerHTML = `
       <div class="modo-toggle">
@@ -957,6 +965,9 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
           <span class="modo-dot modo-dot-predicado"></span> PREDICADO
         </button>
       </div>
+      <button type="button" class="modo-sem-sujeito-btn${p.semSujeito ? ' ativo' : ''}" id="btnSemSujeitoTripla">
+        <span class="sem-sujeito-icone">⊘</span> Oração sem sujeito
+      </button>
       <div class="frase-anotada-wrap"><div class="frase-anotada" id="fraseAnotadaTri" style="grid-template-columns:repeat(${N},auto)"></div></div>
       <button type="button" class="btn-confirmar-duplo" id="btnConfirmarTripla"${podeConfirmar ? '' : ' disabled'}>Confirmar resposta</button>`;
 
@@ -996,6 +1007,7 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
             }
           } else if (p.modo === 'sujeito') {
             if (i === p.verboIdx) return;
+            p.semSujeito    = false;
             p.predicadoIdxs = p.predicadoIdxs.filter(x => x !== i);
             const idx = p.sujeitoIdxs.indexOf(i);
             if (idx === -1) p.sujeitoIdxs.push(i); else p.sujeitoIdxs.splice(idx, 1);
@@ -1042,15 +1054,26 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
       dados._pendente.modo = 'predicado';
       mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
     });
+    // "Oração sem sujeito" — declaração explícita do aluno de que a frase não
+    // tem sujeito (necessário pra liberar o "Confirmar resposta" nesses casos,
+    // já que sem isso não dava pra confirmar sem marcar nenhuma palavra como
+    // sujeito). Marcar uma palavra como sujeito desfaz essa declaração.
+    document.getElementById('btnSemSujeitoTripla').addEventListener('click', () => {
+      p.semSujeito = !p.semSujeito;
+      if (p.semSujeito) p.sujeitoIdxs = [];
+      mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+    });
     if (podeConfirmar) {
       document.getElementById('btnConfirmarTripla').addEventListener('click', () => {
         const verboCorreto     = p.verboIdx === dados.verbo;
-        const sujeitoCorreto   = p.sujeitoIdxs.length === dados.sujeito.length &&
-                                 dados.sujeito.every(i => p.sujeitoIdxs.includes(i));
+        const sujeitoCorreto   = dados.sujeito.length === 0
+          ? (p.semSujeito && p.sujeitoIdxs.length === 0)
+          : (!p.semSujeito && p.sujeitoIdxs.length === dados.sujeito.length &&
+             dados.sujeito.every(i => p.sujeitoIdxs.includes(i)));
         const predicadoCorreto = p.predicadoIdxs.length === dados.predicado.length &&
                                   dados.predicado.every(i => p.predicadoIdxs.includes(i));
         const acertou = verboCorreto && sujeitoCorreto && predicadoCorreto;
-        dados._escolhida = { verbo: p.verboIdx, sujeito: [...p.sujeitoIdxs], predicado: [...p.predicadoIdxs] };
+        dados._escolhida = { verbo: p.verboIdx, sujeito: [...p.sujeitoIdxs], predicado: [...p.predicadoIdxs], semSujeito: p.semSujeito };
         dados._correta   = acertou;
         if (!acertou) {
           addErro(origemAulaId, `checagem${checagemIdx}`);
@@ -1094,9 +1117,11 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
     grid.appendChild(btn);
   });
 
-  const sujOrd = [...dados.sujeito].sort((a, b) => a - b);
-  grid.insertAdjacentHTML('beforeend',
-    `<div class="anotacao-sujeito" style="grid-column:${sujOrd[0] + 1}/span ${sujOrd[sujOrd.length - 1] - sujOrd[0] + 1};grid-row:2">Sujeito</div>`);
+  if (dados.sujeito.length > 0) {
+    const sujOrd = [...dados.sujeito].sort((a, b) => a - b);
+    grid.insertAdjacentHTML('beforeend',
+      `<div class="anotacao-sujeito" style="grid-column:${sujOrd[0] + 1}/span ${sujOrd[sujOrd.length - 1] - sujOrd[0] + 1};grid-row:2">Sujeito</div>`);
+  }
   grid.insertAdjacentHTML('beforeend',
     `<div class="anotacao-verbo" style="grid-column:${dados.verbo + 1};grid-row:2">Verbo</div>`);
   const predOrd = [...dados.predicado].sort((a, b) => a - b);
