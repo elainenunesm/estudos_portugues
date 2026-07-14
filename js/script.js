@@ -19,8 +19,46 @@ const state = {
   folderName: null,
   aulas: DEFAULT_AULAS(),
   precisaPermissao: false, // handle conhecido, mas o navegador "esqueceu" a permissão (comum após F5)
-  progressoNaoSalvo: false, // state.aulas tem mudança que ainda não foi gravada no disco com sucesso
+  resultadoPendente: null,  // resultado de aula (sessionStorage) ainda não aplicado por falta de permissão — ver aplicarResultadoAoState/tentarReconectarPermissao
 };
+
+// Referência preenchida dentro do DOMContentLoaded (precisa dos elementos do
+// DOM), mas chamada também de tentarReconectarPermissao() — que é uma função
+// de nível superior, chamada bem depois, já com o DOM pronto.
+let colapsoNiveisRef = null;
+
+// Aplica o resultado de uma aula (vindo do sessionStorage) directamente em
+// cima do que já está em state.aulas — usa spread pra não perder campos como
+// "favorita". Extraído pra poder ser chamado tanto na carga normal quanto,
+// atrasado, depois de reconectar a permissão da pasta (ver mais abaixo).
+function aplicarResultadoAoState(r) {
+  const atual = state.aulas[r.aulaIdx] || {};
+  if (r.concluida) {
+    state.aulas[r.aulaIdx] = { ...atual, id: r.aulaId, status: 'completed', progress: 100, stars: r.estrelas };
+    // Desbloqueia a próxima aula, só se ela ainda estiver bloqueada.
+    const proxima = state.aulas[r.aulaIdx + 1];
+    if (proxima && proxima.status === 'locked') {
+      state.aulas[r.aulaIdx + 1] = { ...proxima, status: 'active', progress: 0 };
+    }
+  } else {
+    state.aulas[r.aulaIdx] = { ...atual, id: r.aulaId, status: 'active', progress: Math.round((r.acertos / r.total) * 100), stars: r.estrelas };
+  }
+}
+
+// Lê (e consome) o resultado de uma aula recém-concluída, gravado em
+// sessionStorage por estudo.js antes de voltar pra essa tela. Não mexe em
+// state.aulas — quem chama decide se aplica na hora ou guarda pra depois.
+function lerResultadoSessao() {
+  for (let i = 1; i <= 10; i++) {
+    const key       = `aula${i}_resultado`;
+    const resultRaw = sessionStorage.getItem(key);
+    if (!resultRaw) continue;
+    sessionStorage.removeItem(key);
+    const { aulaId, estrelas, acertos, total } = JSON.parse(resultRaw);
+    return { aulaIdx: aulaId - 1, aulaId, estrelas, acertos, total, concluida: acertos >= Math.ceil(total * 0.5) };
+  }
+  return null;
+}
 
 // ── ÍCONES DAS AULAS ─────────────────────────────────────────
 // Trocados pelo cadeado enquanto a aula está bloqueada; ao desbloquear,
@@ -37,11 +75,9 @@ const ICONES_AULA = {
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
 async function saveProgress() {
   if (!state.dirHandle) {
-    state.progressoNaoSalvo = true;
     showToast('⚠️ Conecte uma pasta para salvar — sem isso, seu progresso se perde ao fechar a página.', 'warning');
     return;
   }
-  state.progressoNaoSalvo = true;
   try {
     // Usa gravarArquivoProgresso() (js/idb.js), que mescla com o que já
     // está no arquivo — escrever direto aqui (como antes) sobrescrevia o
@@ -49,7 +85,6 @@ async function saveProgress() {
     // cartoesMarcados e errosRecentes que estudo.js tinha acabado de salvar.
     const salvou = await gravarArquivoProgresso({ version: PROGRESS_VERSION, aulas: state.aulas });
     if (!salvou) throw new Error('gravação falhou');
-    state.progressoNaoSalvo = false;
     showToast('💾 Progresso salvo com sucesso!', 'success');
   } catch (e) {
     console.warn('Erro ao salvar progresso:', e);
@@ -151,22 +186,29 @@ async function tryReconnect() {
 }
 
 // Repede a permissão na mesma pasta já conhecida (sem reabrir o seletor do
-// sistema). Se havia uma mudança em memória que não deu para salvar por
-// falta de permissão (ex: aula recém concluída ao voltar de estudo.html),
-// grava ela agora — em vez de recarregar o disco, que estaria desatualizado
-// e faria a tela "voltar" para o estado salvo antes da conclusão.
+// sistema). SEMPRE carrega o progresso real do disco primeiro — antes disso,
+// state.aulas só tinha o padrão (DEFAULT_AULAS), já que loadProgress() nunca
+// tinha rodado por falta de permissão. Só depois de carregar o real é que
+// aplica um eventual resultado de aula pendente (ver lerResultadoSessao),
+// por cima do progresso de verdade, e salva. Fazer na ordem contrária (salvar
+// primeiro) foi o bug que apagava aulas concluídas antigas: o "progresso
+// pendente" era só o padrão + a aula recém-feita, e isso sobrescrevia o
+// arquivo real inteiro.
 async function tentarReconectarPermissao() {
   if (!state.precisaPermissao || !state.dirHandle) return false;
   try {
     const perm = await state.dirHandle.requestPermission({ mode: 'readwrite' });
     if (perm !== 'granted') return false;
     state.precisaPermissao = false;
-    if (state.progressoNaoSalvo) {
+    await loadProgress();
+    if (state.resultadoPendente) {
+      aplicarResultadoAoState(state.resultadoPendente);
+      state.resultadoPendente = null;
+      renderAulas();
       await saveProgress();
-    } else {
-      await loadProgress();
-      scrollParaAulaAtiva(false);
     }
+    if (colapsoNiveisRef) colapsoNiveisRef.aplicarColapsoInicial();
+    scrollParaAulaAtiva(false);
     updateFolderBadge();
     return true;
   } catch (e) {
@@ -736,6 +778,11 @@ document.addEventListener('DOMContentLoaded', async function () {
   // ficam fechados; só o nível que o usuário está cursando agora abre.
   // Se nenhum nível tiver aula ativa (ex.: tudo já concluído), deixa o
   // último aberto em vez de recolher tudo.
+  // Idempotente de propósito (sempre define collapsed pra true OU false,
+  // nunca só um lado): é chamada de novo depois que o progresso real termina
+  // de carregar (reconexão de pasta atrasada), e precisa conseguir REABRIR um
+  // nível que tinha sido fechado errado na primeira vez, com dados ainda
+  // incompletos — não só fechar.
   function aplicarColapsoInicial() {
     const etapas = Array.from(document.querySelectorAll('.etapa-view')).map(view => {
       const etapaInfo = (MODULOS || []).find(m => String(m.id) === view.dataset.etapa);
@@ -748,9 +795,12 @@ document.addEventListener('DOMContentLoaded', async function () {
     etapas.forEach((etapa, i) => {
       const manterAberta = etapa.emAndamento || (!existeEmAndamento && i === etapas.length - 1);
       const controlador   = colapsosPorEtapa[etapa.id];
-      if (controlador && !manterAberta) controlador.setCollapsed(true);
+      if (controlador) controlador.setCollapsed(!manterAberta);
     });
   }
+  // Exposto pra tentarReconectarPermissao() (nível superior) poder recalcular
+  // o colapso depois que o progresso real termina de carregar tardiamente.
+  colapsoNiveisRef = { aplicarColapsoInicial };
   const pathContainer  = document.getElementById('pathContainer');
   const pathContainer2 = document.getElementById('pathContainer2');
   const pathContainer3 = document.getElementById('pathContainer3');
@@ -842,33 +892,23 @@ document.addEventListener('DOMContentLoaded', async function () {
   // antigo salvo antes da aula ser concluída.
   await tryReconnect();
 
-  // Verifica resultado ao voltar da tela de estudos (qualquer aula)
+  // Verifica resultado ao voltar da tela de estudos (qualquer aula). Se a
+  // permissão da pasta ainda não foi reconcedida (state.precisaPermissao),
+  // NÃO aplica agora — nesse caso loadProgress() ainda não rodou, então
+  // state.aulas só tem o padrão (DEFAULT_AULAS), não o progresso real. Gravar
+  // isso por cima do arquivo de verdade apagaria o progresso salvo (aulas
+  // antigas voltando a "não iniciada", etc). Em vez disso, guarda o resultado
+  // e só aplica em tentarReconectarPermissao(), depois que o progresso real
+  // já tiver sido carregado do disco.
+  const resultadoSessao = lerResultadoSessao();
   let acabouDeConcluir = false;
-  for (let i = 1; i <= 10; i++) {
-    const key       = `aula${i}_resultado`;
-    const resultRaw = sessionStorage.getItem(key);
-    if (!resultRaw) continue;
-    sessionStorage.removeItem(key);
-    const { aulaId, estrelas, acertos, total } = JSON.parse(resultRaw);
-    const aulaIdx  = aulaId - 1;
-    const concluida = acertos >= Math.ceil(total * 0.5);
-    if (concluida) {
-      state.aulas[aulaIdx] = { id: aulaId, status: 'completed', progress: 100, stars: estrelas };
-      // Desbloqueia a próxima aula, se ela ainda estiver bloqueada — só isso.
-      // Se o usuário refez uma aula anterior e a próxima já estava concluída
-      // (ou em andamento) de antes, não pode voltar pra "Começar" e perder
-      // as estrelas/progresso que já tinha.
-      const proxima = state.aulas[aulaIdx + 1];
-      if (proxima && proxima.status === 'locked') {
-        state.aulas[aulaIdx + 1] = { ...proxima, status: 'active', progress: 0 };
-      }
-      acabouDeConcluir = true;
-    } else {
-      state.aulas[aulaIdx] = { id: aulaId, status: 'active', progress: Math.round((acertos / total) * 100), stars: estrelas };
-    }
+  if (resultadoSessao && !state.precisaPermissao) {
+    aplicarResultadoAoState(resultadoSessao);
     renderAulas();
     await saveProgress();
-    break;
+    acabouDeConcluir = true;
+  } else if (resultadoSessao) {
+    state.resultadoPendente = resultadoSessao;
   }
 
   // Só agora o progresso real (da pasta, ou o padrão se não há pasta) está
