@@ -2,7 +2,7 @@
 
 // Incrementar sempre que algum arquivo do app-shell mudar, pra forçar os
 // clientes a buscar a versão nova em vez de continuar usando o cache antigo.
-const CACHE_NAME = 'gramix-v78';
+const CACHE_NAME = 'gramix-v82';
 
 const APP_SHELL = [
   'index.html',
@@ -21,6 +21,7 @@ const APP_SHELL = [
   'js/data/questoes/aula-4.js',
   'js/data/questoes/aula-5.js',
   'js/data/questoes/aula-6.js',
+  'js/data/questoes/aula-7.js',
   'icons/icon-192.png',
   'icons/icon-512.png',
   'icons/icon-maskable-512.png',

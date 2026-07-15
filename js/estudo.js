@@ -441,6 +441,14 @@ function mostrarExemplo(aula, introIdx, i) {
       ${ex.caixa ? (ex.caixa.anotado ? `
       <div class="passo-caixa">
         <div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploAnotado" style="grid-template-columns:repeat(${ex.caixa.anotado.sentenca.length},auto)"></div></div>
+      </div>` : (!ex.caixa.titulo && !ex.caixa.exemplo && !ex.caixa.sentencaAnotada && !ex.caixa.interativo && !ex.caixa.inline && (ex.caixa.perguntas || []).length) ? `
+      <div class="passo-caixa passo-caixa-somente-texto">
+        <div class="passo-caixa-perguntas">
+          ${ex.caixa.perguntas.map(p => typeof p === 'string'
+            ? `<p class="passo-caixa-seta">→ ${p}</p>`
+            : `<p class="passo-caixa-nota-indent">${p.nota}</p>`
+          ).join('')}
+        </div>
       </div>` : `
       <div class="passo-caixa">
         <div class="passo-caixa-cabecalho">

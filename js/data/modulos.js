@@ -53,9 +53,15 @@ const MODULOS = [
     aulas: [
       {
         id:        5,
-        titulo:    'Aula 5: Aprenda a identificar verbos sem sujeito',
+        titulo:    'Aula 5: Verbos fenômeno da natureza',
         arquivo:   'aula-5',
         icone:     'nuvem',
+      },
+      {
+        id:        6,
+        titulo:    'Aula 6: Verbo haver',
+        arquivo:   'aula-6',
+        icone:     'haver',
       },
     ],
   },
@@ -64,9 +70,9 @@ const MODULOS = [
     titulo: 'Etapa 5: Inversão da ordem - Termos essenciais',
     aulas: [
       {
-        id:        6,
-        titulo:    'Aula 6: Aprenda a identificar os termos em ordem invertida',
-        arquivo:   'aula-6',
+        id:        7,
+        titulo:    'Aula 7: Aprenda a identificar os termos em ordem invertida',
+        arquivo:   'aula-7',
         icone:     'inversao',
       },
     ],

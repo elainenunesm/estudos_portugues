@@ -13,6 +13,7 @@ const DEFAULT_AULAS = () => [
   { id: 4, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 5, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 6, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 7, status: 'locked',  progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
@@ -72,6 +73,7 @@ const ICONES_AULA = {
   bandeira:  '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line>',
   nuvem:     '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path>',
   inversao:  '<polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>',
+  haver:     '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>',
 };
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
