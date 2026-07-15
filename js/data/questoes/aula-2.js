@@ -39,7 +39,7 @@ window.AULA_DATA = {
     {
       tipo:      'peca',
       texto:     'Exemplo: a palavra <strong class="destaque">propôs</strong>.',
-      conclusao: '<strong class="destaque">Propôs</strong> --&gt; P + <strong class="destaque">or</strong> (Terminação <strong class="destaque">or</strong> indica infinitivo) <strong class="destaque">2º conjugação.</strong>',
+      conclusao: '<strong class="destaque">Propor</strong> --&gt; Prop + <strong class="destaque">or</strong> (Terminação <strong class="destaque">or</strong> indica infinitivo) <strong class="destaque">2º conjugação.</strong>',
       obs:       '<strong class="destaque">Obs:</strong> Apesar de ter terminação <strong class="destaque">or</strong>, ele faz parte da segunda conjugação porque a palavra sofreu alteração ao longo da história, anteriormente a palavra se escrevia com <strong class="destaque">poer</strong>, terminação <strong class="destaque">er</strong>.',
     },
   ],

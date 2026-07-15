@@ -91,6 +91,18 @@ function atualizarScrollFade() {
 }
 questaoArea.addEventListener('scroll', atualizarScrollFade);
 
+// Frases longas (ex: "Aconteceram fatos estranhos naquela noite.") podem não
+// caber na largura da tela — o .frase-anotada-wrap já deixa arrastar pro
+// lado (overflow-x:auto), mas sem nenhuma pista visual isso parecia palavra
+// cortada/sumida. Liga .tem-overflow (degradê na borda, ver estudo.css) só
+// quando o conteúdo realmente não cabe inteiro. Chamada depois de popular
+// qualquer grid .frase-anotada, então roda em todas de uma vez.
+function marcarOverflowNasFrasesAnotadas() {
+  document.querySelectorAll('.frase-anotada-wrap').forEach(wrap => {
+    wrap.classList.toggle('tem-overflow', wrap.scrollWidth > wrap.clientWidth + 2);
+  });
+}
+
 // ── TELAS DE INTRODUÇÃO ─────────────────────────────────────
 let introTotal = 0;
 
@@ -441,7 +453,7 @@ function mostrarExemplo(aula, introIdx, i) {
               ? `<p class="passo-caixa-inline"><strong>Exemplo:</strong> ${ex.caixa.exemplo}</p>`
               : `<div class="passo-caixa-corpo">
                    <p class="passo-caixa-titulo">${ex.caixa.titulo || 'Exemplo:'}</p>
-                   ${ex.caixa.sentencaAnotada ? '' : `<p class="passo-caixa-texto">${ex.caixa.exemplo}</p>`}
+                   ${ex.caixa.exemplo ? `<p class="passo-caixa-texto">${ex.caixa.exemplo}</p>` : ''}
                  </div>`}
         </div>
         ${ex.caixa.interativo ? `<div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploSentence" style="grid-template-columns:repeat(${ex.caixa.interativo.palavras.length},auto)"></div></div>` : ''}
@@ -519,6 +531,7 @@ function mostrarExemplo(aula, introIdx, i) {
     btnProxima.disabled = false;
   }
 
+  marcarOverflowNasFrasesAnotadas();
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
 }
@@ -778,6 +791,7 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
 
   btnProxima.innerHTML = 'Próximo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="16" height="16"><polyline points="9 18 15 12 9 6"></polyline></svg>';
   btnProxima.disabled  = !respondida;
+  marcarOverflowNasFrasesAnotadas();
   questaoArea.scrollTop = 0;
   atualizarScrollFade();
 }
@@ -879,6 +893,7 @@ function mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, 
         mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
       });
     }
+    marcarOverflowNasFrasesAnotadas();
     return;
   }
 
@@ -936,6 +951,7 @@ function mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, 
       <p class="checagem-resultado-titulo">Resposta de cada item:</p>
       <div class="checagem-resultado-lista">${linhas}</div>
     </div>`);
+  marcarOverflowNasFrasesAnotadas();
 }
 
 // Checagem "clique no verbo, no sujeito e no predicado" — três seleções
@@ -1082,6 +1098,7 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
         mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
       });
     }
+    marcarOverflowNasFrasesAnotadas();
     return;
   }
 
@@ -1148,6 +1165,7 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
       <p class="checagem-resultado-titulo">Resposta de cada item:</p>
       <div class="checagem-resultado-lista">${linhas}</div>
     </div>`);
+  marcarOverflowNasFrasesAnotadas();
 }
 
 function mostrarSentido(aula, introIdx) {

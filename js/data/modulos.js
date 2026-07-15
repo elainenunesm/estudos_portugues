@@ -59,4 +59,16 @@ const MODULOS = [
       },
     ],
   },
+  {
+    id:     5,
+    titulo: 'Etapa 5: Inversão da ordem - Termos essenciais',
+    aulas: [
+      {
+        id:        6,
+        titulo:    'Aula 6: Aprenda a identificar os termos em ordem invertida',
+        arquivo:   'aula-6',
+        icone:     'inversao',
+      },
+    ],
+  },
 ];

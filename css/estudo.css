@@ -517,6 +517,12 @@ body {
   line-height: 1.4;
 }
 
+/* Citação de exemplo em itálico (ex: "→ João comprou um livro.") — um
+   pouco menor que o texto normal da caixa, que fica largo/pesado nesse uso. */
+.passo-caixa-texto em {
+  font-size: 13px;
+}
+
 .passo-caixa-divisor {
   height: 1px;
   background: #dde3f5;
@@ -1001,6 +1007,14 @@ body {
   border-radius: 10px;
 }
 
+/* Caixa de exemplo estático (sentencaAnotada) — frase só de referência,
+   já com os papéis marcados, sem interação. Um pouco mais compacta que os
+   chips clicáveis, que precisam ficar maiores por serem alvo de toque. */
+#exemploCaixaAnotada .word-chip-sm {
+  padding: 4px 9px;
+  font-size: 12px;
+}
+
 /* CHECAGEM DO TIPO "CLIQUE NO VERBO E NO SUJEITO" (duplo-select) */
 .dual-select-wrap {
   margin-top: 4px;
@@ -1087,12 +1101,24 @@ body {
   margin-bottom: 16px;
 }
 
+/* Quando a frase é larga demais pra tela, o wrap acima já deixa arrastar
+   pro lado — mas sem nenhuma pista visual isso parecia palavra "sumida"
+   (cortada na borda). .tem-overflow é ligada via JS (marcarOverflowHorizontal
+   em estudo.js) só quando o conteúdo realmente não cabe inteiro, e desenha
+   um degradê na borda direita pra indicar que dá pra arrastar. Usa
+   mask-image (esmaece o próprio conteúdo) em vez de sobrepor uma cor, pra
+   funcionar igual em qualquer fundo (caixa azulada ou tela branca).  */
+.frase-anotada-wrap.tem-overflow {
+  -webkit-mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, black calc(100% - 28px), transparent 100%);
+}
+
 .frase-anotada {
   display: inline-grid;
   column-gap: 8px;
-  row-gap: 0;
+  row-gap: 4px;
   align-items: end;
-  grid-template-rows: auto minmax(30px, auto) minmax(30px, auto);
+  grid-template-rows: auto minmax(38px, auto) minmax(38px, auto);
 }
 
 .word-chip.verbo-pendente {
@@ -1151,7 +1177,7 @@ body {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   padding: 5px 6px 3px;
-  margin-top: 8px;
+  margin-top: 14px;
   border-top: 2px solid currentColor;
   white-space: nowrap;
 }
@@ -1161,9 +1187,9 @@ body {
 .anotacao-predicado::before, .anotacao-predicado::after {
   content: '';
   position: absolute;
-  top: -8px;
+  top: -14px;
   width: 2px;
-  height: 8px;
+  height: 14px;
   background: currentColor;
 }
 

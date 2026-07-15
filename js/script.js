@@ -12,6 +12,7 @@ const DEFAULT_AULAS = () => [
   { id: 3, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 4, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 5, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 6, status: 'locked',  progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
@@ -70,6 +71,7 @@ const ICONES_AULA = {
   balao:     '<path d="M21 15a2 2 0 0 1-2 2H8l-4 4V5a2 2 0 0 1 2-2h13a2 2 0 0 1 2 2z"></path>',
   bandeira:  '<path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path><line x1="4" y1="22" x2="4" y2="15"></line>',
   nuvem:     '<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9z"></path>',
+  inversao:  '<polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>',
 };
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
@@ -110,6 +112,16 @@ async function loadProgress() {
       const salva = salvas.find(a => a.id === padrao.id);
       return salva ? { ...padrao, ...salva } : padrao;
     });
+    // Uma aula nova (adicionada num update) não pode ficar bloqueada pra
+    // sempre pra quem já tinha concluído a anterior — o desbloqueio normal só
+    // acontece no momento em que a aula anterior é concluída (evento único,
+    // não retroativo), então sem isso a aula nova nunca abriria pra quem já
+    // tinha passado daquele ponto antes dela existir.
+    for (let i = 1; i < state.aulas.length; i++) {
+      if (state.aulas[i].status === 'locked' && state.aulas[i - 1].status === 'completed') {
+        state.aulas[i] = { ...state.aulas[i], status: 'active' };
+      }
+    }
     renderAulas();
 
     if (data.version !== PROGRESS_VERSION) {
@@ -771,6 +783,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       document.getElementById('heroCard4'),
       document.getElementById('pathContainer4'),
     ),
+    5: configurarColapsoHero(
+      document.getElementById('nivelSelector5'),
+      document.getElementById('heroCard5'),
+      document.getElementById('pathContainer5'),
+    ),
   };
 
   // Recolhe todo nível que não está "em andamento" (nenhuma aula ativa
@@ -805,6 +822,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const pathContainer2 = document.getElementById('pathContainer2');
   const pathContainer3 = document.getElementById('pathContainer3');
   const pathContainer4 = document.getElementById('pathContainer4');
+  const pathContainer5 = document.getElementById('pathContainer5');
 
   // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
   // faltando permissão); senão reabre a seleção de pasta
@@ -880,6 +898,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (pathContainer2) setupAulaEvents(pathContainer2);
   if (pathContainer3) setupAulaEvents(pathContainer3);
   if (pathContainer4) setupAulaEvents(pathContainer4);
+  if (pathContainer5) setupAulaEvents(pathContainer5);
 
   // Também permite clique em aulas bloqueadas (pointer-events é none no CSS)
   document.querySelectorAll('.aula-node.locked').forEach(node => {
