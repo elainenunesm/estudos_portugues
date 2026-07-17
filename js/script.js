@@ -498,20 +498,80 @@ function scrollParaAulaAtiva(smooth) {
   if (node) node.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
 }
 
+// ── NÍVEIS ───────────────────────────────────────────────────
+function aulaIdsDoNivel(nivel) {
+  return (MODULOS || [])
+    .filter(m => nivel.etapas.includes(m.id))
+    .flatMap(m => m.aulas.map(a => a.id));
+}
+
+// Um nível é acessível quando a primeira aula da primeira etapa dele não
+// está mais "locked" — ou seja, o desbloqueio normal (aula anterior
+// concluída) já chegou nele. Hoje só existe o Nível 1 (sempre desbloqueado,
+// já que a Aula 1 começa ativa por padrão), mas a checagem já serve pra
+// quando um Nível 2 for adicionado.
+function nivelDesbloqueado(nivel) {
+  const ids = aulaIdsDoNivel(nivel);
+  if (ids.length === 0) return false;
+  const primeira = state.aulas.find(a => a.id === ids[0]);
+  return !!primeira && primeira.status !== 'locked';
+}
+
+function renderNiveis() {
+  const wrap = document.getElementById('niveisLista');
+  if (!wrap) return;
+  wrap.innerHTML = (NIVEIS || []).map(nivel => {
+    const desbloqueado = nivelDesbloqueado(nivel);
+    const ganhaInsignia = state.insignias.includes(nivel.insignia.id);
+    const ids        = aulaIdsDoNivel(nivel);
+    const concluidas = ids.filter(id => {
+      const aula = state.aulas.find(a => a.id === id);
+      return aula && aula.status === 'completed';
+    }).length;
+    const total = ids.length;
+    const pct   = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+    return `
+      <div class="nivel-card${desbloqueado ? '' : ' bloqueado'}" data-nivel-id="${nivel.id}">
+        <div class="nivel-card-icone">
+          ${desbloqueado
+            ? `<img src="${nivel.insignia.imagem}" alt="" class="nivel-card-img${ganhaInsignia ? '' : ' bloqueada'}">`
+            : `<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONE_CADEADO}</svg>`}
+        </div>
+        <div class="nivel-card-info">
+          <h3>${nivel.titulo}</h3>
+          <p>${desbloqueado ? `${concluidas}/${total} aulas concluídas` : 'Conclua o nível anterior para desbloquear'}</p>
+          ${desbloqueado ? `<div class="nivel-card-bar"><div class="nivel-card-bar-fill" style="width:${pct}%"></div></div>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('.nivel-card:not(.bloqueado)').forEach(card => {
+    card.addEventListener('click', () => irParaNivel(parseInt(card.dataset.nivelId, 10)));
+  });
+}
+
+// Volta pra tela de Início e rola até a primeira etapa do nível escolhido.
+function irParaNivel(nivelId) {
+  const nivel = (NIVEIS || []).find(n => n.id === nivelId);
+  if (!nivel) return;
+  showView('inicio');
+  setTimeout(() => {
+    const el = document.getElementById('etapaView' + nivel.etapas[0]);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+
 // ── DESEMPENHO (INSÍGNIAS) ──────────────────────────────────
 function renderDesempenho() {
   const wrap = document.getElementById('insigniasLista');
   if (!wrap) return;
   wrap.innerHTML = (NIVEIS || []).map(nivel => {
     const ganha = state.insignias.includes(nivel.insignia.id);
-    const aulaIdsDoNivel = (MODULOS || [])
-      .filter(m => nivel.etapas.includes(m.id))
-      .flatMap(m => m.aulas.map(a => a.id));
-    const concluidas = aulaIdsDoNivel.filter(id => {
+    const concluidas = aulaIdsDoNivel(nivel).filter(id => {
       const aula = state.aulas.find(a => a.id === id);
       return aula && aula.status === 'completed';
     }).length;
-    const total = aulaIdsDoNivel.length;
+    const total = aulaIdsDoNivel(nivel).length;
     return `
       <div class="insignia-card${ganha ? ' ganha' : ''}" data-insignia-id="${nivel.insignia.id}">
         <div class="insignia-icone" data-imagem="${nivel.insignia.imagem}" data-nome="${nivel.insignia.nome}" title="Toque para ampliar">
@@ -788,6 +848,7 @@ function showView(view) {
     inicio:      { el: document.getElementById('viewInicio'),      nav: document.getElementById('navInicio') },
     erros:       { el: document.getElementById('viewErros'),       nav: document.getElementById('navErros') },
     desempenho:  { el: document.getElementById('viewDesempenho'),  nav: document.getElementById('navDesempenho') },
+    niveis:      { el: document.getElementById('viewNiveis'),      nav: document.getElementById('navNiveis') },
   };
   Object.entries(paginas).forEach(([nome, pagina]) => {
     if (pagina.el)  pagina.el.style.display = nome === view ? '' : 'none';
@@ -796,6 +857,7 @@ function showView(view) {
 
   if (view === 'erros')      renderCadernoAtivo();
   if (view === 'desempenho') renderDesempenho();
+  if (view === 'niveis')     renderNiveis();
 }
 
 // ── TOAST ────────────────────────────────────────────────────
