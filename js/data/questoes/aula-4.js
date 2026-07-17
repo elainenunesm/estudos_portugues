@@ -137,6 +137,14 @@ window.AULA_DATA = {
       predicado: [2, 3, 4],
       feedback:  '"Leram" é o verbo. "Os alunos" é o sujeito. "Leram o livro" é o predicado.',
     },
+    {
+      titulo:    'Clique no verbo, no sujeito e no predicado da frase:',
+      sentenca:  ['O', 'menino', 'comeu', 'a', 'fruta', '.'],
+      verbo:     2,
+      sujeito:   [0, 1],
+      predicado: [2, 3, 4],
+      feedback:  '"Comeu" é o verbo. "O menino" é o sujeito. "Comeu a fruta" é o predicado.',
+    },
   ],
 
   resumo: {

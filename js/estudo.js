@@ -343,11 +343,14 @@ function renderInterativoMultiplo(ex, interativo, wrap) {
     btn.style.gridColumn = String(idx + 1);
     btn.style.gridRow    = '1';
 
-    const prefixada  = marcarAntes.find(m => m.idx === idx);
+    const prefixada  = marcarAntes.find(m => Array.isArray(m.idx) ? m.idx.includes(idx) : m.idx === idx);
     const ehAlvo      = interativo.corretas.includes(idx);
     const jaSelecionada = ex._selecionadas.includes(idx);
 
-    if (prefixada) {
+    if (PONTUACAO_RE.test(palavra)) {
+      btn.classList.add('pontuacao');
+      btn.disabled = true;
+    } else if (prefixada) {
       btn.disabled = true;
       btn.classList.add(`${prefixada.papel}-correto`);
     } else if (ehAlvo && jaAcertou) {
@@ -397,7 +400,8 @@ function renderFraseAnotadaEstatica(dados, wrap) {
   dados.sentenca.forEach((palavra, i) => {
     const btn = document.createElement('button');
     let cls = 'word-chip word-chip-sm';
-    if (i === dados.verbo)                cls += ' verbo-correto';
+    if (PONTUACAO_RE.test(palavra))       cls += ' pontuacao';
+    else if (i === dados.verbo)                cls += ' verbo-correto';
     else if (dados.sujeito.includes(i))   cls += ' sujeito-correto';
     else if (dados.predicado.includes(i)) cls += ' predicado-correto';
     btn.className         = cls;
@@ -410,6 +414,49 @@ function renderFraseAnotadaEstatica(dados, wrap) {
   if (dados.sujeito.length)   anotarPapelInterativo(wrap, dados.sujeito, 'sujeito');
   if (dados.verbo != null)    anotarPapelInterativo(wrap, dados.verbo, 'verbo');
   if (dados.predicado.length) anotarPapelInterativo(wrap, dados.predicado, 'predicado');
+}
+
+// Passo de exemplo com uma checklist de perguntas sim/não (ex: "o verbo
+// destacado é haver? é fazer? é fenômeno da natureza?") — precisa acertar
+// todas antes de liberar o "Próximo". Progresso guardado em ex._simNaoOk,
+// array paralelo a caixa.perguntasSimNao (true quando já respondida certo).
+function renderSimNao(ex, wrap) {
+  const perguntas = ex.caixa.perguntasSimNao;
+  if (!ex._simNaoOk) ex._simNaoOk = perguntas.map(() => false);
+  const todasCertas = ex._simNaoOk.every(Boolean);
+  btnProxima.disabled = !todasCertas;
+
+  wrap.innerHTML = perguntas.map((p, i) => `
+    <div class="simnao-item">
+      <p class="simnao-texto">${p.texto}</p>
+      <div class="simnao-botoes">
+        <button type="button" class="simnao-btn" data-i="${i}" data-valor="true"${ex._simNaoOk[i] ? ' disabled' : ''}>Sim</button>
+        <button type="button" class="simnao-btn" data-i="${i}" data-valor="false"${ex._simNaoOk[i] ? ' disabled' : ''}>Não</button>
+      </div>
+    </div>`).join('') +
+    (todasCertas ? `
+    <div class="passo-caixa-divisor"></div>
+    <p class="passo-caixa-seta">→ ${ex.caixa.conclusao}</p>` : '');
+
+  perguntas.forEach((p, i) => {
+    if (ex._simNaoOk[i]) {
+      const certoBtn = wrap.querySelector(`.simnao-btn[data-i="${i}"][data-valor="${p.resposta}"]`);
+      if (certoBtn) certoBtn.classList.add('correta');
+      return;
+    }
+    wrap.querySelectorAll(`.simnao-btn[data-i="${i}"]`).forEach(btn => {
+      btn.addEventListener('click', () => {
+        const valor = btn.dataset.valor === 'true';
+        if (valor === p.resposta) {
+          ex._simNaoOk[i] = true;
+          renderSimNao(ex, wrap);
+        } else {
+          btn.classList.add('errada');
+          setTimeout(() => btn.classList.remove('errada'), 500);
+        }
+      });
+    });
+  });
 }
 
 function mostrarExemplo(aula, introIdx, i) {
@@ -458,6 +505,9 @@ function mostrarExemplo(aula, introIdx, i) {
       ${ex.caixa ? (ex.caixa.anotado ? `
       <div class="passo-caixa">
         <div class="frase-anotada-wrap"><div class="frase-anotada" id="exemploAnotado" style="grid-template-columns:repeat(${ex.caixa.anotado.sentenca.length},auto)"></div></div>
+      </div>` : ex.caixa.perguntasSimNao ? `
+      <div class="passo-caixa">
+        <div class="simnao-wrap" id="simNaoWrap"></div>
       </div>` : (!ex.caixa.titulo && !ex.caixa.exemplo && !ex.caixa.sentencaAnotada && !ex.caixa.interativo && !ex.caixa.inline && (ex.caixa.perguntas || []).length) ? `
       <div class="passo-caixa passo-caixa-somente-texto">
         <div class="passo-caixa-perguntas">
@@ -507,6 +557,8 @@ function mostrarExemplo(aula, introIdx, i) {
   } else if (ex.caixa && ex.caixa.sentencaAnotada) {
     renderFraseAnotadaEstatica(ex.caixa.sentencaAnotada, document.getElementById('exemploCaixaAnotada'));
     btnProxima.disabled = false;
+  } else if (ex.caixa && ex.caixa.perguntasSimNao) {
+    renderSimNao(ex, document.getElementById('simNaoWrap'));
   } else if (ex.caixa && ex.caixa.interativo && Array.isArray(ex.caixa.interativo.corretas)) {
     renderInterativoMultiplo(ex, ex.caixa.interativo, document.getElementById('exemploSentence'));
   } else if (ex.caixa && ex.caixa.interativo) {
@@ -525,8 +577,11 @@ function mostrarExemplo(aula, introIdx, i) {
       btn.textContent = palavra;
       btn.style.gridColumn = String(idx + 1);
       btn.style.gridRow    = '1';
-      const prefixada = marcarAntes.find(m => m.idx === idx);
-      if (prefixada) {
+      const prefixada = marcarAntes.find(m => Array.isArray(m.idx) ? m.idx.includes(idx) : m.idx === idx);
+      if (PONTUACAO_RE.test(palavra)) {
+        btn.classList.add('pontuacao');
+        btn.disabled = true;
+      } else if (prefixada) {
         btn.disabled = true;
         btn.classList.add(`${prefixada.papel}-correto`);
       } else if (jaAcertou) {
@@ -1520,6 +1575,40 @@ function abrirLicao(aula) {
   document.getElementById('licaoOverlay').classList.add('show');
 }
 
+// Embaralha uma cópia do array (Fisher-Yates) — não mexe no original.
+function embaralhar(lista) {
+  const copia = [...lista];
+  for (let i = copia.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copia[i], copia[j]] = [copia[j], copia[i]];
+  }
+  return copia;
+}
+
+// Monta a aula sintética do Simulado: carrega todas as aulas dos módulos 1
+// a 5, sorteia N itens de checagem de cada módulo (aula.simulado.porModulo)
+// e embaralha a ordem final. Cada item é clonado (JSON) pra não compartilhar
+// estado (_escolhida/_correta/_pendente) com a aula original — senão
+// responder aqui "sujaria" o progresso de quem depois faz a aula de verdade.
+async function montarSimulado(aulaBase) {
+  const qtdPorModulo = (aulaBase.simulado && aulaBase.simulado.porModulo) || 5;
+  const modulosBase  = (MODULOS || []).filter(m => m.id !== aulaBase.simulado.etapaId);
+  const porAula = {};
+  await Promise.all(
+    modulosBase.flatMap(m => m.aulas.map(a => a.id))
+      .map(async id => { porAula[id] = await carregarAula(id); })
+  );
+
+  let itens = [];
+  modulosBase.forEach(modulo => {
+    const pool = modulo.aulas.flatMap(a => (porAula[a.id].checagem || []));
+    const escolhidos = embaralhar(pool).slice(0, qtdPorModulo).map(d => JSON.parse(JSON.stringify(d)));
+    itens = itens.concat(escolhidos);
+  });
+
+  return { ...aulaBase, checagem: embaralhar(itens), questoes: [] };
+}
+
 // ── INIT ─────────────────────────────────────────────────────
 // No modo "Geral" (Caderno de Erros), carrega TODAS as aulas com checagens
 // erradas de uma vez e monta uma aula sintética com os itens já na ordem
@@ -1563,11 +1652,12 @@ async function carregarDadosIniciais() {
     return { aulaOriginal, notebook, cartoesMarcados, itensGeral: itens };
   }
 
-  const [aulaOriginal, notebook, cartoesMarcados] = await Promise.all([
+  const [aulaCarregada, notebook, cartoesMarcados] = await Promise.all([
     carregarAula(aulaId),
     modoErros ? getErrorNotebook() : Promise.resolve(null),
     getCartoesMarcados(),
   ]);
+  const aulaOriginal = aulaCarregada.simulado ? await montarSimulado(aulaCarregada) : aulaCarregada;
   return { aulaOriginal, notebook, cartoesMarcados, itensGeral: null };
 }
 

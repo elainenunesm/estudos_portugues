@@ -115,6 +115,13 @@ window.AULA_DATA = {
       sujeito:  [0, 1],
       feedback: '"Aplaudiu" é o verbo (ação de aplaudir). "A turma" é o sujeito — quem aplaudiu? A turma.',
     },
+    {
+      titulo:   'Clique no verbo e no sujeito da frase:',
+      sentenca: ['As', 'crianças', 'brincaram', 'no', 'jardim', '.'],
+      verbo:    2,
+      sujeito:  [0, 1],
+      feedback: '"Brincaram" é o verbo (ação de brincar). "As crianças" é o sujeito — quem brincou? As crianças.',
+    },
   ],
 
   licao: {

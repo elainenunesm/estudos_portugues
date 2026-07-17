@@ -535,6 +535,69 @@ body {
   gap: 8px;
 }
 
+/* Checklist de perguntas sim/não dentro de um passo de exemplo (ex: "o
+   verbo destacado é haver? é fazer? é fenômeno da natureza?"). */
+.simnao-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.simnao-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.simnao-texto {
+  font-size: 14px;
+  color: #1a1a2e;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.simnao-botoes {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.simnao-btn {
+  padding: 6px 14px;
+  border: 2px solid #e9dffb;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 13px;
+  font-weight: 700;
+  color: #1a1a2e;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+.simnao-btn:hover:not(:disabled):not(.correta) {
+  border-color: #5B2BCB;
+  background: #faf7ff;
+  color: #5B2BCB;
+}
+
+.simnao-btn.correta {
+  border-color: #16a34a;
+  background: #f0fdf4;
+  color: #16a34a;
+}
+
+.simnao-btn.errada {
+  border-color: #dc2626;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.simnao-btn:disabled:not(.correta) {
+  opacity: 0.55;
+  cursor: default;
+}
+
 .passo-caixa-seta {
   font-size: 15px;
   color: #1a1a2e;

@@ -83,4 +83,22 @@ const MODULOS = [
       },
     ],
   },
+  {
+    id:     6,
+    titulo: 'Etapa 6: Resumo rápido',
+    aulas: [
+      {
+        id:        9,
+        titulo:    'Aula 9: Resumo rápido',
+        arquivo:   'aula-9',
+        icone:     'resumo',
+      },
+      {
+        id:        10,
+        titulo:    'Aula 10: Simulado Nível 1',
+        arquivo:   'aula-10',
+        icone:     'simulado',
+      },
+    ],
+  },
 ];

@@ -15,6 +15,8 @@ const DEFAULT_AULAS = () => [
   { id: 6, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 7, status: 'locked',  progress: 0, stars: 0, favorita: false },
   { id: 8, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 9, status: 'locked',  progress: 0, stars: 0, favorita: false },
+  { id: 10, status: 'locked', progress: 0, stars: 0, favorita: false },
 ];
 
 const state = {
@@ -76,6 +78,8 @@ const ICONES_AULA = {
   inversao:  '<polyline points="17 1 21 5 17 9"></polyline><path d="M3 11V9a4 4 0 0 1 4-4h14"></path><polyline points="7 23 3 19 7 15"></polyline><path d="M21 13v2a4 4 0 0 1-4 4H3"></path>',
   haver:     '<circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"></circle>',
   relogio:   '<circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 16 14"></polyline>',
+  resumo:    '<rect x="6" y="3" width="12" height="18" rx="2"></rect><line x1="9" y1="8" x2="15" y2="8"></line><line x1="9" y1="12" x2="15" y2="12"></line><line x1="9" y1="16" x2="12" y2="16"></line>',
+  simulado:  '<path d="M8 21h8"></path><path d="M12 17v4"></path><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"></path><path d="M5 4H3v2a4 4 0 0 0 4 4"></path><path d="M19 4h2v2a4 4 0 0 1-4 4"></path>',
 };
 
 // ── SALVAR PROGRESSO ─────────────────────────────────────────
@@ -792,6 +796,11 @@ document.addEventListener('DOMContentLoaded', async function () {
       document.getElementById('heroCard5'),
       document.getElementById('pathContainer5'),
     ),
+    6: configurarColapsoHero(
+      document.getElementById('nivelSelector6'),
+      document.getElementById('heroCard6'),
+      document.getElementById('pathContainer6'),
+    ),
   };
 
   // Recolhe todo nível que não está "em andamento" (nenhuma aula ativa
@@ -827,6 +836,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   const pathContainer3 = document.getElementById('pathContainer3');
   const pathContainer4 = document.getElementById('pathContainer4');
   const pathContainer5 = document.getElementById('pathContainer5');
+  const pathContainer6 = document.getElementById('pathContainer6');
 
   // Badge de pasta → tenta reconectar à mesma pasta (se conhecida e só
   // faltando permissão); senão reabre a seleção de pasta
@@ -903,6 +913,7 @@ document.addEventListener('DOMContentLoaded', async function () {
   if (pathContainer3) setupAulaEvents(pathContainer3);
   if (pathContainer4) setupAulaEvents(pathContainer4);
   if (pathContainer5) setupAulaEvents(pathContainer5);
+  if (pathContainer6) setupAulaEvents(pathContainer6);
 
   // Também permite clique em aulas bloqueadas (pointer-events é none no CSS)
   document.querySelectorAll('.aula-node.locked').forEach(node => {
