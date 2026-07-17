@@ -385,6 +385,17 @@ body {
   position: relative;
 }
 
+/* Filho de um flex column sem min-width:0 não deixa o overflow-x:auto (ver
+   .frase-anotada-wrap) funcionar — o item cresce pra caber a frase inteira
+   em vez de encolher e deixar rolar, empurrando a caixa pra fora da tela no
+   celular. Aplica em .exemplo-card (telas de exemplo) e .opcoes (telas de
+   checagem), pra cobrir qualquer frase, em qualquer tela, sem precisar
+   lembrar disso de novo a cada caixa nova. */
+.exemplo-card > *,
+.opcoes > * {
+  min-width: 0;
+}
+
 .exemplo-icone-wrap {
   width: 88px;
   height: 88px;
@@ -1134,6 +1145,7 @@ body {
 
 .modo-toggle {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 14px;
 }

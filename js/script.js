@@ -120,16 +120,26 @@ async function loadProgress() {
       const salva = salvas.find(a => a.id === padrao.id);
       return salva ? { ...padrao, ...salva } : padrao;
     });
-    // Uma aula nova (adicionada num update) não pode ficar bloqueada pra
-    // sempre pra quem já tinha concluído a anterior — o desbloqueio normal só
-    // acontece no momento em que a aula anterior é concluída (evento único,
-    // não retroativo), então sem isso a aula nova nunca abriria pra quem já
-    // tinha passado daquele ponto antes dela existir.
-    for (let i = 1; i < state.aulas.length; i++) {
-      if (state.aulas[i].status === 'locked' && state.aulas[i - 1].status === 'completed') {
-        state.aulas[i] = { ...state.aulas[i], status: 'active' };
+    // Recalcula o status a partir de "completed" em vez de confiar cegamente
+    // no "active"/"locked" salvo: a primeira aula ainda não concluída fica
+    // ativa, e tudo depois dela fica bloqueado. Isso resolve dois problemas
+    // de uma vez — (1) uma aula nova (de um update) que ficaria bloqueada pra
+    // sempre pra quem já tinha concluído a anterior, já que o desbloqueio
+    // normal só acontece no momento em que a anterior é concluída (evento
+    // único, não retroativo); e (2) um id reaproveitado por um módulo que
+    // trocou de lugar (ex: uma aula renumerada) deixar "completed" salvo por
+    // engano num id que na verdade tem outro conteúdo agora — o que fazia
+    // aulas bem mais à frente destravarem sozinhas sem o usuário ter feito
+    // o conteúdo de verdade.
+    let aulaAtivaAchada = false;
+    state.aulas = state.aulas.map(aula => {
+      if (aula.status === 'completed') return aula;
+      if (!aulaAtivaAchada) {
+        aulaAtivaAchada = true;
+        return aula.status === 'active' ? aula : { ...aula, status: 'active' };
       }
-    }
+      return aula.status === 'locked' ? aula : { ...aula, status: 'locked', progress: 0, stars: 0 };
+    });
     renderAulas();
 
     if (data.version !== PROGRESS_VERSION) {
@@ -945,11 +955,21 @@ document.addEventListener('DOMContentLoaded', async function () {
     state.resultadoPendente = resultadoSessao;
   }
 
-  // Só agora o progresso real (da pasta, ou o padrão se não há pasta) está
-  // definitivo — recolhe os níveis que não estão em andamento.
-  aplicarColapsoInicial();
+  // Enquanto falta reconectar a permissão da pasta, state.aulas ainda é só o
+  // padrão (DEFAULT_AULAS) — nem "definitivo" nem confiável. Recolher níveis
+  // e rolar até a "aula ativa" agora mostraria a aula errada (ex: sempre a
+  // Aula 1, ou uma aula que na real já foi concluída aparecendo bloqueada),
+  // já que os dados de verdade só chegam depois, em tentarReconectarPermissao()
+  // — que já cuida de repetir os dois passos abaixo assim que o progresso
+  // real termina de carregar.
+  if (!state.precisaPermissao) {
+    // Só agora o progresso real (da pasta, ou o padrão se não há pasta) está
+    // definitivo — recolhe os níveis que não estão em andamento.
+    aplicarColapsoInicial();
 
-  // Leva a tela até a aula ativa (a que precisa continuar) — suave se acabou
-  // de concluir algo agora, direto se for só abrindo/atualizando a página.
-  setTimeout(() => scrollParaAulaAtiva(acabouDeConcluir), acabouDeConcluir ? 400 : 0);
+    // Leva a tela até a aula ativa (a que precisa continuar) — suave se
+    // acabou de concluir algo agora, direto se for só abrindo/atualizando a
+    // página.
+    setTimeout(() => scrollParaAulaAtiva(acabouDeConcluir), acabouDeConcluir ? 400 : 0);
+  }
 });
