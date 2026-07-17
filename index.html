@@ -483,6 +483,14 @@
   <div class="erros-list" id="errosList"></div>
 </div>
 
+<div class="view-desempenho" id="viewDesempenho" style="display:none">
+  <div class="erros-header">
+    <h2>Desempenho</h2>
+    <p>Suas insígnias, conquistadas ao concluir cada nível.</p>
+  </div>
+  <div class="insignias-lista" id="insigniasLista"></div>
+</div>
+
 <nav class="bottom-nav">
   <div class="nav-item active" id="navInicio" data-view="inicio">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -499,7 +507,7 @@
     </div>
     <span>Cadernos</span>
   </div>
-  <div class="nav-item">
+  <div class="nav-item" id="navDesempenho" data-view="desempenho">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <line x1="18" y1="20" x2="18" y2="10"></line>
       <line x1="12" y1="20" x2="12" y2="4"></line>
@@ -528,6 +536,14 @@
     </button>
     <button class="modal-btn-secondary" id="btnSemPasta">Agora não</button>
   </div>
+</div>
+
+<!-- LIGHTBOX: VER INSÍGNIA AMPLIADA -->
+<div class="lightbox-overlay" id="insigniaLightbox">
+  <button type="button" class="lightbox-fechar" id="btnFecharLightbox" aria-label="Fechar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="22" height="22"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+  </button>
+  <img src="" alt="" class="lightbox-img" id="lightboxImg">
 </div>
 
 </div>

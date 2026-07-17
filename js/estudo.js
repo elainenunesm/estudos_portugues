@@ -31,6 +31,11 @@ const estado = {
   totalOriginal: 0,    // nº de questões da 1ª rodada, para a mensagem final após rodadas de revisão
 };
 
+// true quando a aula carregada é o Simulado (montarSimulado) — usado só em
+// mostrarFinalizadoChecagem() pra saber se deve limpar a semente do sorteio
+// ao terminar a tentativa com 100% de acerto (ver js/idb.js).
+let aulaEhSimulado = false;
+
 // ── CARREGAR QUESTÕES DINAMICAMENTE ─────────────────────────
 function carregarAula(id) {
   return new Promise((resolve, reject) => {
@@ -1498,6 +1503,10 @@ function infoEtapaDaAula() {
 }
 
 function mostrarFinalizadoChecagem() {
+  // Tentativa do Simulado terminou com 100% de acerto — limpa a semente do
+  // sorteio pra próxima vez montar um conjunto novo (ver montarSimulado).
+  if (aulaEhSimulado) limparSimuladoSeed();
+
   const infoEtapa = infoEtapaDaAula();
   if (infoEtapa && infoEtapa.ehUltima) {
     document.getElementById('resultadoEmoji').textContent    = '🏆';
@@ -1575,14 +1584,29 @@ function abrirLicao(aula) {
   document.getElementById('licaoOverlay').classList.add('show');
 }
 
-// Embaralha uma cópia do array (Fisher-Yates) — não mexe no original.
-function embaralhar(lista) {
+// Embaralha uma cópia do array (Fisher-Yates) — não mexe no original. Usa
+// `rand` (0-1) como fonte de aleatoriedade; por padrão Math.random(), mas o
+// Simulado passa um gerador com semente fixa (ver montarSimulado) pra poder
+// repetir o mesmo sorteio entre recarregamentos da mesma tentativa.
+function embaralhar(lista, rand = Math.random) {
   const copia = [...lista];
   for (let i = copia.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
+    const j = Math.floor(rand() * (i + 1));
     [copia[i], copia[j]] = [copia[j], copia[i]];
   }
   return copia;
+}
+
+// Gerador pseudoaleatório simples e determinístico (mulberry32) — mesma
+// semente sempre produz a mesma sequência, ao contrário de Math.random().
+function criarGeradorComSemente(semente) {
+  let a = semente;
+  return function() {
+    a |= 0; a = (a + 0x6D2B79F5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
 }
 
 // Monta a aula sintética do Simulado: carrega todas as aulas dos módulos 1
@@ -1590,6 +1614,12 @@ function embaralhar(lista) {
 // e embaralha a ordem final. Cada item é clonado (JSON) pra não compartilhar
 // estado (_escolhida/_correta/_pendente) com a aula original — senão
 // responder aqui "sujaria" o progresso de quem depois faz a aula de verdade.
+//
+// O sorteio usa uma semente salva no arquivo de progresso (getSimuladoSeed),
+// não Math.random() puro: enquanto a tentativa atual não termina (100% de
+// acerto), qualquer recarregamento — inclusive abrir o Caderno de Erros —
+// tem que sortear o MESMO conjunto/ordem, senão o índice "checagemN" salvo
+// no caderno passaria a apontar pra uma pergunta diferente a cada vez.
 async function montarSimulado(aulaBase) {
   const qtdPorModulo = (aulaBase.simulado && aulaBase.simulado.porModulo) || 5;
   const modulosBase  = (MODULOS || []).filter(m => m.id !== aulaBase.simulado.etapaId);
@@ -1599,14 +1629,21 @@ async function montarSimulado(aulaBase) {
       .map(async id => { porAula[id] = await carregarAula(id); })
   );
 
+  let semente = await getSimuladoSeed();
+  if (semente == null) {
+    semente = Math.floor(Math.random() * 2 ** 31);
+    await definirSimuladoSeed(semente);
+  }
+  const rand = criarGeradorComSemente(semente);
+
   let itens = [];
   modulosBase.forEach(modulo => {
     const pool = modulo.aulas.flatMap(a => (porAula[a.id].checagem || []));
-    const escolhidos = embaralhar(pool).slice(0, qtdPorModulo).map(d => JSON.parse(JSON.stringify(d)));
+    const escolhidos = embaralhar(pool, rand).slice(0, qtdPorModulo).map(d => JSON.parse(JSON.stringify(d)));
     itens = itens.concat(escolhidos);
   });
 
-  return { ...aulaBase, checagem: embaralhar(itens), questoes: [] };
+  return { ...aulaBase, checagem: embaralhar(itens, rand), questoes: [] };
 }
 
 // ── INIT ─────────────────────────────────────────────────────
@@ -1657,6 +1694,7 @@ async function carregarDadosIniciais() {
     modoErros ? getErrorNotebook() : Promise.resolve(null),
     getCartoesMarcados(),
   ]);
+  aulaEhSimulado = !!aulaCarregada.simulado;
   const aulaOriginal = aulaCarregada.simulado ? await montarSimulado(aulaCarregada) : aulaCarregada;
   return { aulaOriginal, notebook, cartoesMarcados, itensGeral: null };
 }

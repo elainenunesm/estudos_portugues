@@ -541,6 +541,49 @@ body {
   color: #6b7280;
 }
 
+/* LIGHTBOX: VER INSÍGNIA AMPLIADA */
+.lightbox-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 600;
+  padding: 32px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.lightbox-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.lightbox-img {
+  max-width: min(340px, 100%);
+  max-height: 80vh;
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+}
+
+.lightbox-fechar {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  border: none;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
 .path-line-lit {
   position: absolute;
   left: 50%;
@@ -556,7 +599,8 @@ body {
 }
 
 /* CADERNO DE ERROS */
-.view-erros {
+.view-erros,
+.view-desempenho {
   padding: 20px 20px 0;
 }
 
@@ -668,6 +712,108 @@ body {
   font-size: 14px;
   color: #ef4444;
   font-weight: 600;
+}
+
+/* DESEMPENHO (INSÍGNIAS) */
+.insignias-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insignia-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: white;
+  border: 2px solid #e9dffb;
+  border-radius: 18px;
+  padding: 16px 18px;
+  box-shadow: 0 4px 14px rgba(91, 43, 203, 0.06);
+  opacity: 0.7;
+}
+
+.insignia-card.ganha {
+  opacity: 1;
+  border-color: #ded0fa;
+  box-shadow: 0 4px 16px rgba(91, 43, 203, 0.12);
+}
+
+/* Animação de revelação ao conquistar uma insígnia nova (ver
+   celebrarInsignia em js/script.js) — pop-in seguido de um brilho pulsante
+   pra chamar atenção pro card certo na lista. */
+@keyframes insignia-revelar {
+  0%   { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  60%  { transform: scale(1.08) rotate(3deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes insignia-brilho {
+  0%, 100% { box-shadow: 0 4px 16px rgba(91, 43, 203, 0.12); }
+  50%      { box-shadow: 0 0 0 10px rgba(91, 43, 203, 0.15), 0 4px 24px rgba(91, 43, 203, 0.35); }
+}
+
+.insignia-card.nova {
+  animation: insignia-revelar 0.6s cubic-bezier(.34, 1.56, .64, 1),
+             insignia-brilho 1.5s ease-in-out 0.6s 2;
+}
+
+.insignia-icone {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  cursor: pointer;
+}
+
+.insignia-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+
+.insignia-img.bloqueada {
+  filter: grayscale(1) opacity(0.45);
+}
+
+.insignia-cadeado {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #9ca3af;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.insignia-info h3 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a2e;
+  margin-bottom: 4px;
+}
+
+.insignia-info p {
+  font-size: 13px;
+  color: #6b7280;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.insignia-status {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: #9ca3af;
+}
+
+.insignia-status.ganha {
+  color: #16a34a;
 }
 
 .erro-card-info p.cor-favorito {

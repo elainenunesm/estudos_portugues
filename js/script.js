@@ -25,7 +25,79 @@ const state = {
   aulas: DEFAULT_AULAS(),
   precisaPermissao: false, // handle conhecido, mas o navegador "esqueceu" a permissão (comum após F5)
   resultadoPendente: null,  // resultado de aula (sessionStorage) ainda não aplicado por falta de permissão — ver aplicarResultadoAoState/tentarReconectarPermissao
+  insignias: [], // ids de insígnias já conquistadas (ver NIVEIS em js/data/modulos.js) — carregado de gramix-progresso.json
 };
+
+// Confere se algum Nível foi concluído agora (todas as aulas de todas as
+// etapas dele "completed") e ainda não tem insígnia registrada — se sim,
+// grava a conquista e dispara a celebração (ver celebrarInsignia). Chamada
+// depois de qualquer atualização real de state.aulas (carregar progresso,
+// concluir aula, reconectar a pasta), pra pegar tanto quem acabou de
+// terminar quanto quem já tinha terminado tudo antes dessa funcionalidade
+// existir — nesse segundo caso a conquista é registrada mas SEM celebração
+// (comparaEraNova continua false), pra não "comemorar" algo antigo do nada.
+async function verificarInsignias() {
+  const novas = [];
+  for (const nivel of (NIVEIS || [])) {
+    if (state.insignias.includes(nivel.insignia.id)) continue;
+    const aulaIdsDoNivel = (MODULOS || [])
+      .filter(m => nivel.etapas.includes(m.id))
+      .flatMap(m => m.aulas.map(a => a.id));
+    const todasConcluidas = aulaIdsDoNivel.length > 0 && aulaIdsDoNivel.every(id => {
+      const aula = state.aulas.find(a => a.id === id);
+      return aula && aula.status === 'completed';
+    });
+    if (!todasConcluidas) continue;
+    const { nova, insignias } = await conquistarInsignia(nivel.insignia.id);
+    state.insignias = insignias;
+    if (nova) novas.push(nivel);
+  }
+  // Espera a navegação/rolagem normal de "voltar da aula" assentar antes de
+  // trocar pra tela de Desempenho — senão as duas animações brigam.
+  if (novas.length > 0) setTimeout(() => celebrarInsignia(novas[0]), 900);
+}
+
+// Toca um pequeno arpejo de conquista (dó-mi-sol-dó) via Web Audio, sem
+// depender de nenhum arquivo de áudio externo. Se o navegador bloquear
+// autoplay de áudio (sem gesto do usuário ainda) ou não suportar, falha em
+// silêncio — o resto da celebração (troca de tela + animação) continua.
+function tocarSomConquista() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'triangle';
+      osc.frequency.value = freq;
+      const inicio = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0, inicio);
+      gain.gain.linearRampToValueAtTime(0.25, inicio + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, inicio + 0.35);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(inicio);
+      osc.stop(inicio + 0.4);
+    });
+  } catch (e) {
+    // Web Audio indisponível/bloqueado — segue sem som.
+  }
+}
+
+// Leva o usuário até o Desempenho, destaca a insígnia recém-conquistada com
+// uma animação e toca o som — chamada só quando é uma conquista NOVA de
+// verdade (ver verificarInsignias).
+function celebrarInsignia(nivel) {
+  showView('desempenho');
+  tocarSomConquista();
+  setTimeout(() => {
+    const card = document.querySelector(`.insignia-card[data-insignia-id="${nivel.insignia.id}"]`);
+    if (card) {
+      card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      card.classList.add('nova');
+      setTimeout(() => card.classList.remove('nova'), 3600);
+    }
+    showToast(`🏅 Nova insígnia: ${nivel.insignia.nome}!`, 'success', 4500);
+  }, 80);
+}
 
 // Referência preenchida dentro do DOMContentLoaded (precisa dos elementos do
 // DOM), mas chamada também de tentarReconectarPermissao() — que é uma função
@@ -237,6 +309,8 @@ async function tentarReconectarPermissao() {
       renderAulas();
       await saveProgress();
     }
+    state.insignias = await getInsignias();
+    await verificarInsignias();
     if (colapsoNiveisRef) colapsoNiveisRef.aplicarColapsoInicial();
     scrollParaAulaAtiva(false);
     updateFolderBadge();
@@ -422,6 +496,52 @@ function scrollParaAulaAtiva(smooth) {
   const aulaAtiva = state.aulas.find(a => a.status === 'active');
   const node = aulaAtiva ? document.querySelector(`[data-aula="${aulaAtiva.id}"]`) : null;
   if (node) node.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+}
+
+// ── DESEMPENHO (INSÍGNIAS) ──────────────────────────────────
+function renderDesempenho() {
+  const wrap = document.getElementById('insigniasLista');
+  if (!wrap) return;
+  wrap.innerHTML = (NIVEIS || []).map(nivel => {
+    const ganha = state.insignias.includes(nivel.insignia.id);
+    const aulaIdsDoNivel = (MODULOS || [])
+      .filter(m => nivel.etapas.includes(m.id))
+      .flatMap(m => m.aulas.map(a => a.id));
+    const concluidas = aulaIdsDoNivel.filter(id => {
+      const aula = state.aulas.find(a => a.id === id);
+      return aula && aula.status === 'completed';
+    }).length;
+    const total = aulaIdsDoNivel.length;
+    return `
+      <div class="insignia-card${ganha ? ' ganha' : ''}" data-insignia-id="${nivel.insignia.id}">
+        <div class="insignia-icone" data-imagem="${nivel.insignia.imagem}" data-nome="${nivel.insignia.nome}" title="Toque para ampliar">
+          <img src="${nivel.insignia.imagem}" alt="${nivel.insignia.nome}" class="insignia-img${ganha ? '' : ' bloqueada'}">
+          ${ganha ? '' : `<div class="insignia-cadeado">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">${ICONE_CADEADO}</svg>
+          </div>`}
+        </div>
+        <div class="insignia-info">
+          <h3>${nivel.insignia.nome}</h3>
+          <p>${nivel.insignia.descricao}</p>
+          ${ganha
+            ? '<span class="insignia-status ganha">✓ Conquistada</span>'
+            : `<span class="insignia-status">${concluidas}/${total} aulas concluídas</span>`}
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function abrirLightboxInsignia(imagem, nome) {
+  const lightbox = document.getElementById('insigniaLightbox');
+  const img      = document.getElementById('lightboxImg');
+  if (!lightbox || !img) return;
+  img.src = imagem;
+  img.alt = nome || '';
+  lightbox.classList.add('show');
+}
+
+function fecharLightboxInsignia() {
+  document.getElementById('insigniaLightbox')?.classList.remove('show');
 }
 
 // ── CADERNO DE ERROS ─────────────────────────────────────────
@@ -660,19 +780,22 @@ function trocarCadernoSubTab(sub) {
 }
 
 // ── TROCA DE VIEW (Início / Cadernos) ──────────────────────
+// Mapa view -> {elemento da tela, item do menu inferior} — adicionar uma
+// tela nova (ex: "perfil") é só acrescentar uma entrada aqui, sem tocar no
+// resto da função.
 function showView(view) {
-  const viewInicio = document.getElementById('viewInicio');
-  const viewErros  = document.getElementById('viewErros');
-  const navInicio  = document.getElementById('navInicio');
-  const navErros   = document.getElementById('navErros');
-  const isErros    = view === 'erros';
+  const paginas = {
+    inicio:      { el: document.getElementById('viewInicio'),      nav: document.getElementById('navInicio') },
+    erros:       { el: document.getElementById('viewErros'),       nav: document.getElementById('navErros') },
+    desempenho:  { el: document.getElementById('viewDesempenho'),  nav: document.getElementById('navDesempenho') },
+  };
+  Object.entries(paginas).forEach(([nome, pagina]) => {
+    if (pagina.el)  pagina.el.style.display = nome === view ? '' : 'none';
+    if (pagina.nav) pagina.nav.classList.toggle('active', nome === view);
+  });
 
-  if (viewInicio) viewInicio.style.display = isErros ? 'none' : '';
-  if (viewErros)  viewErros.style.display  = isErros ? '' : 'none';
-  if (navInicio)  navInicio.classList.toggle('active', !isErros);
-  if (navErros)   navErros.classList.toggle('active', isErros);
-
-  if (isErros) renderCadernoAtivo();
+  if (view === 'erros')      renderCadernoAtivo();
+  if (view === 'desempenho') renderDesempenho();
 }
 
 // ── TOAST ────────────────────────────────────────────────────
@@ -886,6 +1009,23 @@ document.addEventListener('DOMContentLoaded', async function () {
     btn.addEventListener('click', () => trocarCadernoSubTab(btn.dataset.subtab));
   });
 
+  // Toque na insígnia (Desempenho) abre a imagem ampliada — delegado no
+  // container, já que os cards são recriados a cada renderDesempenho().
+  const insigniasLista = document.getElementById('insigniasLista');
+  if (insigniasLista) {
+    insigniasLista.addEventListener('click', (e) => {
+      const icone = e.target.closest('.insignia-icone');
+      if (icone) abrirLightboxInsignia(icone.dataset.imagem, icone.dataset.nome);
+    });
+  }
+  const lightbox = document.getElementById('insigniaLightbox');
+  if (lightbox) {
+    document.getElementById('btnFecharLightbox').addEventListener('click', fecharLightboxInsignia);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) fecharLightboxInsignia();
+    });
+  }
+
   // Abre direto no Caderno de Erros se veio de estudo.html?modo=erros
   const viewParam = new URLSearchParams(window.location.search).get('view');
   showView(viewParam === 'erros' ? 'erros' : 'inicio');
@@ -963,6 +1103,12 @@ document.addEventListener('DOMContentLoaded', async function () {
   // — que já cuida de repetir os dois passos abaixo assim que o progresso
   // real termina de carregar.
   if (!state.precisaPermissao) {
+    // Confere se algum Nível foi concluído com esse progresso já definitivo
+    // (pega tanto quem terminou agora quanto quem já tinha terminado antes
+    // de a insígnia existir).
+    state.insignias = await getInsignias();
+    await verificarInsignias();
+
     // Só agora o progresso real (da pasta, ou o padrão se não há pasta) está
     // definitivo — recolhe os níveis que não estão em andamento.
     aplicarColapsoInicial();

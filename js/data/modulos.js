@@ -102,3 +102,25 @@ const MODULOS = [
     ],
   },
 ];
+
+/**
+ * NIVEIS.JS — Agrupa etapas em níveis e define a insígnia ganha ao concluir
+ * cada um. Ao adicionar um Nível 2, basta criar um novo item aqui apontando
+ * pras etapas dele — a lógica de conquista (js/script.js, verificarInsignias)
+ * já funciona pra qualquer nível novo sem precisar mexer no código.
+ */
+const NIVEIS = [
+  {
+    id:     1,
+    titulo: 'Nível 1',
+    etapas: [1, 2, 3, 4, 5, 6],
+    insignia: {
+      id:        'nivel1',
+      nome:      'Fundamentos de Análise do Português',
+      descricao: 'Reconhece verbo, sujeito e predicado em qualquer oração, mesmo em ordem invertida — a base para analisar textos mais complexos.',
+      imagem:    'icons/insignias/nivel1.jpg',
+      cor:       '#5B2BCB',
+      corFundo:  '#f0eaff',
+    },
+  },
+];

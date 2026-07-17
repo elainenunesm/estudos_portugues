@@ -40,7 +40,7 @@ window.AULA_DATA = {
     },
     {
       tipo:  'busca',
-      texto: 'Analisando: <em>"Ontem, dormiu o gato."</em>',
+      texto: 'Analisando: <em>"Ontem, <strong class="destaque">dormiu</strong> o gato."</em>',
       passo: {
         numero:    '2º',
         instrucao: 'Identifique se é impessoal <em>(verbos impessoais: haver/existir, fazer/tempo, fenômenos da natureza)</em>',
@@ -56,7 +56,7 @@ window.AULA_DATA = {
     },
     {
       tipo:  'busca',
-      texto: 'Analisando: <em>"Ontem, dormiu o gato."</em>',
+      texto: 'Analisando: <em>"Ontem, <strong class="destaque">dormiu</strong> o gato."</em>',
       passo: {
         numero:    '3º',
         instrucao: 'Faça a pergunta: <strong class="destaque">Quem dormiu?</strong>',
@@ -77,7 +77,7 @@ window.AULA_DATA = {
     },
     {
       tipo:  'busca',
-      texto: 'Analisando: <em>"Ontem, dormiu o gato."</em>',
+      texto: 'Analisando: <em>"Ontem, <strong class="destaque">dormiu</strong> o gato."</em>',
       passo: {
         numero:    '4º',
         instrucao: 'A resposta é o sujeito: <strong class="destaque">"o gato"</strong>',
@@ -90,7 +90,7 @@ window.AULA_DATA = {
     },
     {
       tipo:  'busca',
-      texto: 'Analisando: <em>"Ontem, dormiu o gato."</em>',
+      texto: 'Analisando: <em>"Ontem, <strong class="destaque">dormiu</strong> o gato."</em>',
       passo: {
         numero:    '5º',
         instrucao: 'O que não é sujeito é o predicado, <strong class="destaque">incluindo o verbo</strong>',
@@ -113,7 +113,7 @@ window.AULA_DATA = {
     },
     {
       tipo:  'busca',
-      texto: 'Analisando: <em>"Ontem, dormiu o gato."</em>',
+      texto: 'Analisando: <em>"Ontem, <strong class="destaque">dormiu</strong> o gato."</em>',
       passo: {
         numero:    '6º',
         instrucao: 'Confirme a análise completa.',
@@ -133,19 +133,19 @@ window.AULA_DATA = {
       pontos: [
         {
           tipo:  'busca',
-          texto: '<strong class="destaque">1º</strong> Ache o verbo.',
+          texto: '<strong class="destaque">1º</strong> Ache o <strong class="destaque">verbo</strong>.',
         },
         {
           tipo:  'semSujeito',
-          texto: '<strong class="destaque">2º</strong> Verifique se é impessoal (haver/existir, fazer/tempo, fenômeno da natureza) — se for, a oração não tem sujeito.',
+          texto: '<strong class="destaque">2º</strong> Verifique se é <strong class="destaque">impessoal</strong> (haver/existir, fazer/tempo, fenômeno da natureza) — se for, a oração não tem <strong class="destaque">sujeito</strong>.',
         },
         {
           tipo:  'pergunta',
-          texto: '<strong class="destaque">3º e 4º</strong> Pergunte "quem/o que" + verbo — a resposta é o sujeito.',
+          texto: '<strong class="destaque">3º e 4º</strong> Pergunte "quem/o que" + <strong class="destaque">verbo</strong> — a resposta é o <strong class="destaque">sujeito</strong>.',
         },
         {
           tipo:  'predVerbal',
-          texto: '<strong class="destaque">5º</strong> Tudo o que não é sujeito é o predicado (incluindo o verbo).',
+          texto: '<strong class="destaque">5º</strong> Tudo o que não é <strong class="destaque">sujeito</strong> é o <strong class="destaque">predicado</strong> (incluindo o verbo).',
         },
       ],
     },

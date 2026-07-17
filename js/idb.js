@@ -175,3 +175,39 @@ async function alternarCartaoMarcado(aulaId, chave) {
   const salvou = await gravarArquivoProgresso({ cartoesMarcados: marcados });
   return { marcando, salvou };
 }
+
+// ── INSÍGNIAS (persistido no arquivo de progresso) ───────────
+// Formato: ["nivel1", ...] — ids de insígnias já conquistadas (ver
+// NIVEIS em js/data/modulos.js). Uma vez conquistada, nunca é removida.
+async function getInsignias() {
+  const dados = await lerArquivoProgresso();
+  return dados?.insignias || [];
+}
+
+async function conquistarInsignia(insigniaId) {
+  const atuais = await getInsignias();
+  if (atuais.includes(insigniaId)) return { nova: false, insignias: atuais };
+  const insignias = [...atuais, insigniaId];
+  await gravarArquivoProgresso({ insignias });
+  return { nova: true, insignias };
+}
+
+// ── SEMENTE DO SIMULADO (persistido no arquivo de progresso) ──
+// O Simulado (ver montarSimulado em js/estudo.js) sorteia 25 questões dos
+// módulos 1-5 — mas precisa sortear sempre o MESMO conjunto/ordem enquanto o
+// usuário ainda está revisando erros dessa tentativa, senão o índice salvo
+// no caderno de erros ("checagemN") passaria a apontar pra uma pergunta
+// diferente a cada recarregamento. A semente é limpa só quando a tentativa
+// termina (100% de acerto), pra próxima vez sortear um conjunto novo.
+async function getSimuladoSeed() {
+  const dados = await lerArquivoProgresso();
+  return dados?.simuladoSeed ?? null;
+}
+
+async function definirSimuladoSeed(seed) {
+  await gravarArquivoProgresso({ simuladoSeed: seed });
+}
+
+async function limparSimuladoSeed() {
+  await gravarArquivoProgresso({ simuladoSeed: null });
+}
