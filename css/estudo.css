@@ -1020,6 +1020,55 @@ body {
   margin-top: 4px;
 }
 
+/* CHECAGEM DO TIPO "REESCREVA NA ORDEM DIRETA" (banco de palavras) */
+.reordenar-wrap {
+  margin-top: 4px;
+}
+
+.reordenar-referencia {
+  background: #f5f7ff;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.reordenar-referencia-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #6b7280;
+  margin-bottom: 2px;
+}
+
+.reordenar-referencia-texto {
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a2e;
+}
+
+.reordenar-resposta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 46px;
+  padding: 10px;
+  border: 2px dashed #d8ccf5;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}
+
+.reordenar-resposta-final {
+  border-style: solid;
+  border-color: #e9dffb;
+}
+
+.reordenar-banco {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
 .modo-toggle {
   display: flex;
   gap: 8px;

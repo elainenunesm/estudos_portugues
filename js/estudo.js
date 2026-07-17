@@ -292,13 +292,30 @@ const ROTULO_PAPEL = { verbo: 'Verbo', sujeito: 'Sujeito', predicado: 'Predicado
 function anotarPapelInterativo(wrap, idxOuIdxs, papel) {
   const lista  = Array.isArray(idxOuIdxs) ? idxOuIdxs : [idxOuIdxs];
   const sorted = [...lista].sort((a, b) => a - b);
-  const col    = sorted[0] + 1;
-  const span   = sorted[sorted.length - 1] - sorted[0] + 1;
   // O predicado fica numa linha abaixo de verbo/sujeito porque seu colchete
   // pode cobrir a mesma coluna do verbo (ele é o núcleo do predicado).
   const linha = papel === 'predicado' ? 3 : 2;
-  wrap.insertAdjacentHTML('beforeend',
-    `<div class="anotacao-${papel}" style="grid-column:${col}/span ${span};grid-row:${linha}">${ROTULO_PAPEL[papel]}</div>`);
+
+  // Agrupa em blocos contíguos — um papel pode ficar "quebrado" por outro no
+  // meio da frase (ex: predicado quebrado pelo sujeito na ordem invertida:
+  // "Aconteceram fatos estranhos naquela noite" — predicado é [0,3,4], não
+  // um intervalo único, senão o colchete cobriria o sujeito também).
+  const grupos = [];
+  let inicio = sorted[0], fim = sorted[0];
+  for (let i = 1; i < sorted.length; i++) {
+    if (sorted[i] === fim + 1) {
+      fim = sorted[i];
+    } else {
+      grupos.push([inicio, fim]);
+      inicio = fim = sorted[i];
+    }
+  }
+  grupos.push([inicio, fim]);
+
+  grupos.forEach(([ini, final]) => {
+    wrap.insertAdjacentHTML('beforeend',
+      `<div class="anotacao-${papel}" style="grid-column:${ini + 1}/span ${final - ini + 1};grid-row:${linha}">${ROTULO_PAPEL[papel]}</div>`);
+  });
 }
 
 // Passo de exemplo com mais de uma palavra clicável pro mesmo papel (ex:
@@ -672,7 +689,7 @@ function mostrarIdentificacao(aula, introIdx) {
 // a resposta como objeto {verbo, sujeito:[]} em vez de um índice único,
 // então usam dados._correta (booleano) pra saber se acertou.
 function acertouChecagem(dados) {
-  return dados.sujeito ? dados._correta === true : dados._escolhida === dados.correta;
+  return (dados.sujeito || dados.banco) ? dados._correta === true : dados._escolhida === dados.correta;
 }
 
 function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aulaId) {
@@ -702,9 +719,10 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
     ? `<p class="questao-subtitulo checagem-pergunta">${dados.subtitulo || ''}</p>
        <h2 class="questao-titulo checagem-titulo">${dados.titulo || ''}</h2>`
     : `<h2 class="questao-titulo checagem-instrucao">${dados.titulo || ''}</h2>` +
-      (dados.sentenca ? '' : `<p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`)) +
+      ((dados.sentenca || dados.banco) ? '' : `<p class="questao-subtitulo checagem-frase">${dados.subtitulo || ''}</p>`)) +
     (dados.predicado ? '<div class="tri-select-wrap" id="triSelectWrap"></div>'
       : dados.sujeito ? '<div class="dual-select-wrap" id="dualSelectWrap"></div>'
+      : dados.banco ? '<div class="reordenar-wrap" id="reordenarWrap"></div>'
       : dados.sentenca ? '<div class="sentence-display" id="sentenceDisplay"></div>' : '');
   ativarBotaoMarcar();
 
@@ -712,6 +730,8 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
     mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida);
   } else if (dados.sujeito) {
     mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, respondida);
+  } else if (dados.banco) {
+    mostrarChecagemReordenar(aula, introIdx, dados, checagemIdx, origemAulaId, respondida);
   } else if (dados.sentenca) {
     const wrap = document.getElementById('sentenceDisplay');
     const PONTUACAO = /^[.,!?;:]+$/;
@@ -791,7 +811,7 @@ function mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId = aula
     const acertou = acertouChecagem(dados);
     feedbackBar.className     = `feedback-bar show ${acertou ? 'acerto' : 'erro'}`;
     feedbackIcon.textContent  = acertou ? '✅' : '❌';
-    const letraCorreta        = (dados.sentenca || dados.sujeito) ? null : LETRAS[dados.correta];
+    const letraCorreta        = (dados.sentenca || dados.sujeito || dados.banco) ? null : LETRAS[dados.correta];
     feedbackTexto.innerHTML   = montarFeedbackHtml(acertou, dados.feedback, letraCorreta);
   } else {
     feedbackBar.className = 'feedback-bar';
@@ -866,17 +886,8 @@ function mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, 
       grid.appendChild(btn);
     });
 
-    if (verboIdx !== null) {
-      grid.insertAdjacentHTML('beforeend',
-        `<div class="anotacao-verbo" style="grid-column:${verboIdx + 1};grid-row:2">Verbo</div>`);
-    }
-    if (sujeitoIdxs.length > 0) {
-      const sorted = [...sujeitoIdxs].sort((a, b) => a - b);
-      const col  = sorted[0] + 1;
-      const span = sorted[sorted.length - 1] - sorted[0] + 1;
-      grid.insertAdjacentHTML('beforeend',
-        `<div class="anotacao-sujeito" style="grid-column:${col}/span ${span};grid-row:2">Sujeito</div>`);
-    }
+    if (verboIdx !== null) anotarPapelInterativo(grid, verboIdx, 'verbo');
+    if (sujeitoIdxs.length > 0) anotarPapelInterativo(grid, sujeitoIdxs, 'sujeito');
 
     document.getElementById('modoVerboBtn').addEventListener('click', () => {
       dados._pendente.modo = 'verbo';
@@ -932,13 +943,8 @@ function mostrarChecagemDupla(aula, introIdx, dados, checagemIdx, origemAulaId, 
     btn.style.gridRow = '1';
     grid.appendChild(btn);
   });
-  grid.insertAdjacentHTML('beforeend',
-    `<div class="anotacao-verbo" style="grid-column:${dados.verbo + 1};grid-row:2">Verbo</div>`);
-  const sorted = [...dados.sujeito].sort((a, b) => a - b);
-  const col  = sorted[0] + 1;
-  const span = sorted[sorted.length - 1] - sorted[0] + 1;
-  grid.insertAdjacentHTML('beforeend',
-    `<div class="anotacao-sujeito" style="grid-column:${col}/span ${span};grid-row:2">Sujeito</div>`);
+  anotarPapelInterativo(grid, dados.verbo, 'verbo');
+  anotarPapelInterativo(grid, dados.sujeito, 'sujeito');
 
   const linhas = dados.sentenca.map((palavra, i) => {
     if (PONTUACAO_RE.test(palavra)) return '';
@@ -1051,19 +1057,10 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
       grid.appendChild(btn);
     });
 
-    if (p.sujeitoIdxs.length > 0) {
-      const sorted = [...p.sujeitoIdxs].sort((a, b) => a - b);
-      grid.insertAdjacentHTML('beforeend',
-        `<div class="anotacao-sujeito" style="grid-column:${sorted[0] + 1}/span ${sorted[sorted.length - 1] - sorted[0] + 1};grid-row:2">Sujeito</div>`);
-    }
-    if (p.verboIdx !== null) {
-      grid.insertAdjacentHTML('beforeend',
-        `<div class="anotacao-verbo" style="grid-column:${p.verboIdx + 1};grid-row:2">Verbo</div>`);
-    }
+    if (p.sujeitoIdxs.length > 0) anotarPapelInterativo(grid, p.sujeitoIdxs, 'sujeito');
+    if (p.verboIdx !== null) anotarPapelInterativo(grid, p.verboIdx, 'verbo');
     if ((p.predicadoConfirmado || p.predicadoIdxs.some(i => i !== p.verboIdx)) && p.predicadoIdxs.length > 0) {
-      const sorted = [...p.predicadoIdxs].sort((a, b) => a - b);
-      grid.insertAdjacentHTML('beforeend',
-        `<div class="anotacao-predicado" style="grid-column:${sorted[0] + 1}/span ${sorted[sorted.length - 1] - sorted[0] + 1};grid-row:3">Predicado</div>`);
+      anotarPapelInterativo(grid, p.predicadoIdxs, 'predicado');
     }
 
     document.getElementById('modoVerboBtn').addEventListener('click', () => {
@@ -1142,16 +1139,9 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
     grid.appendChild(btn);
   });
 
-  if (dados.sujeito.length > 0) {
-    const sujOrd = [...dados.sujeito].sort((a, b) => a - b);
-    grid.insertAdjacentHTML('beforeend',
-      `<div class="anotacao-sujeito" style="grid-column:${sujOrd[0] + 1}/span ${sujOrd[sujOrd.length - 1] - sujOrd[0] + 1};grid-row:2">Sujeito</div>`);
-  }
-  grid.insertAdjacentHTML('beforeend',
-    `<div class="anotacao-verbo" style="grid-column:${dados.verbo + 1};grid-row:2">Verbo</div>`);
-  const predOrd = [...dados.predicado].sort((a, b) => a - b);
-  grid.insertAdjacentHTML('beforeend',
-    `<div class="anotacao-predicado" style="grid-column:${predOrd[0] + 1}/span ${predOrd[predOrd.length - 1] - predOrd[0] + 1};grid-row:3">Predicado</div>`);
+  if (dados.sujeito.length > 0) anotarPapelInterativo(grid, dados.sujeito, 'sujeito');
+  anotarPapelInterativo(grid, dados.verbo, 'verbo');
+  anotarPapelInterativo(grid, dados.predicado, 'predicado');
 
   const linhas = dados.sentenca.map((palavra, i) => {
     if (PONTUACAO_RE.test(palavra)) return '';
@@ -1174,6 +1164,95 @@ function mostrarChecagemTripla(aula, introIdx, dados, checagemIdx, origemAulaId,
       <div class="checagem-resultado-lista">${linhas}</div>
     </div>`);
   marcarOverflowNasFrasesAnotadas();
+}
+
+// Checagem "reescreva na ordem direta" — a frase original (ordem inversa)
+// fica fixa no topo só de referência; embaixo, um banco de palavras
+// embaralhadas (dados.banco) que a pessoa clica em ordem pra ir montando a
+// resposta numa caixa no meio. dados.ordemCorreta guarda a ordem certa como
+// índices em dados.banco (não pelo texto, pra lidar com palavras repetidas).
+function mostrarChecagemReordenar(aula, introIdx, dados, checagemIdx, origemAulaId, respondida) {
+  const wrap = document.getElementById('reordenarWrap');
+
+  if (!respondida) {
+    if (!dados._pendente) dados._pendente = { escolhidos: [] };
+    const p = dados._pendente;
+    const podeConfirmar = p.escolhidos.length === dados.banco.length;
+
+    wrap.innerHTML = `
+      <div class="reordenar-referencia">
+        <p class="reordenar-referencia-label">Frase original:</p>
+        <p class="reordenar-referencia-texto">${dados.referencia.join(' ')}</p>
+      </div>
+      <div class="reordenar-resposta" id="reordenarResposta"></div>
+      <div class="reordenar-banco" id="reordenarBanco"></div>
+      <button type="button" class="btn-confirmar-duplo" id="btnConfirmarReordenar"${podeConfirmar ? '' : ' disabled'}>Confirmar resposta</button>`;
+
+    const respostaEl = document.getElementById('reordenarResposta');
+    const bancoEl     = document.getElementById('reordenarBanco');
+
+    p.escolhidos.forEach(bancoIdx => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'word-chip';
+      btn.textContent = dados.banco[bancoIdx];
+      btn.addEventListener('click', () => {
+        p.escolhidos = p.escolhidos.filter(i => i !== bancoIdx);
+        mostrarChecagemReordenar(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+      });
+      respostaEl.appendChild(btn);
+    });
+
+    dados.banco.forEach((palavra, i) => {
+      const jaEscolhida = p.escolhidos.includes(i);
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'word-chip';
+      btn.textContent = palavra;
+      btn.disabled = jaEscolhida;
+      if (!jaEscolhida) {
+        btn.addEventListener('click', () => {
+          p.escolhidos.push(i);
+          mostrarChecagemReordenar(aula, introIdx, dados, checagemIdx, origemAulaId, false);
+        });
+      }
+      bancoEl.appendChild(btn);
+    });
+
+    if (podeConfirmar) {
+      document.getElementById('btnConfirmarReordenar').addEventListener('click', () => {
+        const acertou = p.escolhidos.every((idx, pos) => idx === dados.ordemCorreta[pos]);
+        dados._escolhida = [...p.escolhidos];
+        dados._correta   = acertou;
+        if (!acertou) {
+          addErro(origemAulaId, `checagem${checagemIdx}`);
+          erroNestaSessao = true;
+        }
+        mostrarChecagem(aula, introIdx, dados, checagemIdx, origemAulaId);
+      });
+    }
+    return;
+  }
+
+  // Já respondida — mostra a resposta dada e, se errou, a ordem certa.
+  const acertou = dados._correta === true;
+  wrap.innerHTML = `
+    <div class="reordenar-referencia">
+      <p class="reordenar-referencia-label">Frase original:</p>
+      <p class="reordenar-referencia-texto">${dados.referencia.join(' ')}</p>
+    </div>
+    <p class="reordenar-referencia-label">Sua resposta:</p>
+    <div class="reordenar-resposta reordenar-resposta-final">
+      ${dados._escolhida.map((bancoIdx, pos) => {
+        const certa = dados.ordemCorreta[pos] === bancoIdx;
+        return `<span class="word-chip ${certa ? 'correta' : 'errada'}">${dados.banco[bancoIdx]}</span>`;
+      }).join('')}
+    </div>
+    ${!acertou ? `
+    <p class="reordenar-referencia-label">Ordem correta:</p>
+    <div class="reordenar-resposta reordenar-resposta-final">
+      ${dados.ordemCorreta.map(bancoIdx => `<span class="word-chip correta">${dados.banco[bancoIdx]}</span>`).join('')}
+    </div>` : ''}`;
 }
 
 function mostrarSentido(aula, introIdx) {

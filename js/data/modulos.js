@@ -63,6 +63,12 @@ const MODULOS = [
         arquivo:   'aula-6',
         icone:     'haver',
       },
+      {
+        id:        7,
+        titulo:    'Aula 7: Verbo fazer',
+        arquivo:   'aula-7',
+        icone:     'relogio',
+      },
     ],
   },
   {
@@ -70,9 +76,9 @@ const MODULOS = [
     titulo: 'Etapa 5: Inversão da ordem - Termos essenciais',
     aulas: [
       {
-        id:        7,
-        titulo:    'Aula 7: Aprenda a identificar os termos em ordem invertida',
-        arquivo:   'aula-7',
+        id:        8,
+        titulo:    'Aula 8: Aprenda a identificar os termos em ordem invertida',
+        arquivo:   'aula-8',
         icone:     'inversao',
       },
     ],
